@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+# This file is needed so that LightDM will source our shell environment
+# settings when we log in graphically.
+
+source "$HOME/.zshenv"

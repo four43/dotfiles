@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Just use the provided package
-sudo apt install -y lightdm
+sudo apt install -y zsh

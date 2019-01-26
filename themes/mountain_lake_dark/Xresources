@@ -1,0 +1,45 @@
+#define color_background #18181B
+#define color_foreground #C1CADD
+#define color_primary #A9CBE3
+#define color_secondary #223556
+
+*color.background: color_background
+*color.primary: color_primary
+*color.secondary: color_secondary
+	
+! special
+*.foreground:   color_foreground
+*.background:   color_background
+*.cursorColor:  color_foreground
+
+! black
+*.color0:       #282a2e
+*.color8:       #373741
+
+! red
+*.color1:       #5a73a6
+*.color9:       #677b99
+
+! green
+*.color2:       #a69058
+*.color10:      #998a67
+
+! yellow
+*.color3:       #a6735a
+*.color11:      #997b67
+
+! blue
+*.color4:       #5aa6a6
+*.color12:      #679999
+
+! magenta
+*.color5:       #935ba6
+*.color13:      #8f6799
+
+! cyan
+*.color6:       #90a658
+*.color14:      #859967
+
+! white
+*.color7:       #9290a6
+*.color15:      #bec0c7

@@ -1,0 +1,4 @@
+DOTFILE_DIR="$HOME/.dotfiles"
+TERMINAL="urxvt"
+
+export DOTFILE_DIR TERMINAL

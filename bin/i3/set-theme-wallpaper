@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+# Sets wallpaper according to currently selected theme
+
+# `xsetroot -solid` does not work with compton. See https://github.com/chjj/compton/issues/162.
+# Rather than use the suggested hsetroot, which is an AUR package, we trick feh into doing what
+# we want by providing a 1x1 transparent background and giving it out desired background color.
+# feh is needed for setting proper wallpapers, anyhow. Why use two utilities when you can keep
+# it to one?
+
+WALLPAPER_SET="0"
+DEFAULT_DESKTOP_BG_COLOR=$($DOTFILE_DIR/bin/xrdb-query "*color.background")
+for WALLPAPER in "$DOTFILE_DIR/themes/current/background.jpg" "$DOTFILE_DIR/themes/current/background.png"; do
+    if [[ -n "$WALLPAPER" && -f "$WALLPAPER" ]]; then
+        feh --no-fehbg --bg-tile "$WALLPAPER" --image-bg "$DEFAULT_DESKTOP_BG_COLOR" --no-xinerama
+        mkdir -p "$(dirname "$WALLPAPER_BLURRED")"
+        convert -blur 0x30 "$WALLPAPER" "$WALLPAPER_BLURRED"
+        WALLPAPER_SET=1
+        break
+    fi
+done
+
+if [[ $WALLPAPER_SET == '0' ]]; then
+    feh --no-fehbg --bg-center "$DOTFILE_DIR/x11/1x1-transparent.png" --image-bg "$DEFAULT_DESKTOP_BG_COLOR" --no-xinerama
+fi

@@ -53,7 +53,7 @@ set $kp0 90
 floating_modifier Mod1
 
 exec_always --no-startup-id xrdb -load $DOTFILE_DIR/x11/Xresources
-
+exec_always --no-startup-id $DOTIFLE_DIR/bin/i3/set-theme-wallpaper
 
 
 

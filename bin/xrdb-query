@@ -1,0 +1,3 @@
+#!/bin/bash
+
+xrdb -query | grep -F "${1}" | awk '{print $2}'

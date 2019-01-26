@@ -1,18 +1,44 @@
-*color.background: #050505
-*color.primary: #FFA100
-*color.secondary: #8E6D39
-
 ! urxvt Terminal Config
 ! @see https://wiki.archlinux.org/index.php/rxvt-unicode
 ! @see http://terminal.sexy/
 
-URxvt.font: xft:DejaVu Sans Mono Nerd Font Complete:size=12
-URxvt.letterSpace: -4
+URxvt.font: xft:Ubuntu Mono Nerd Font Complete:size=12:antialias=true
+URxvt.letterSpace: -3.5
 
 URxvt.scrollBar: false
+URxvt.secondaryScreen: 1
+URxvt.secondaryScroll: 0
+
+URxvt.perl-ext-common: default,matcher,resize-font,selection-to-clipboard,paste_clipboard
+
+URxvt.keysym.Shift-Control-V: eval:paste_clipboard
+URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
+
+! Pressing Ctrl-Shift in urxvt results in a box that says
+! "ISO 14755 Mode" or "Keycap Picture Insert Mode".
+! This setting turns that off.
+!
+! See:
+! https://wilmer.gaa.st/blog/archives/36-rxvt-unicode-and-ISO-14755-mode.html
+! https://www.reddit.com/r/urxvt/comments/35x03n/if_youve_been_vexed_by_urxvts_picture_insert_mode/
+
+URxvt.iso14755: false
+URxvt.iso14755_52: false
+
+! Ext: matcher
+URxvt.url-launcher: /usr/bin/xdg-open
+URxvt.matcher.button: 1
+
+! Ext: resize-font
+! Remap +/- font to match modern browsers
+URxvt.keysym.C-minus: resize-font:smaller
+URxvt.keysym.C-equal: resize-font:bigger
+URxvt.keysym.C-0:     resize-font:reset
+
 ! boldFont:
 ! italicFont:
 ! boldItalicFont:
 ! imFont: 
 
-#include "../backgrounds/Xresources.mountains_lake_dark"
+
+#include "../themes/current/Xresources"
