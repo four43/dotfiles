@@ -19,7 +19,8 @@ sudo apt install -y \
 	autoconf \
 	libxcb-xrm0 \
 	libxcb-xrm-dev \
-	automake
+	automake \
+	feh
 
 # Create target folder
 sudo mkdir -p /opt/i3-gaps

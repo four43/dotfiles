@@ -11,7 +11,7 @@
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font pango:monospace 8
+font pango:DejaVu Sans Mono Nerd Font Complete Mono 8
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -26,9 +26,9 @@ font pango:monospace 8
 
 # use these keys for focus, movement, and resize directions when reaching for
 # the arrows is not convenient
-set $up k 
-set $down j
 set $left h 
+set $down j
+set $up k 
 set $right l
 
 # use Mouse+Mod1 to drag floating windows to their wanted position
@@ -182,7 +182,11 @@ bar {
         status_command i3status
 }
 
-for_window [class="^.*"] border pixel 0 
+set_from_resource $color_background  i3wm.color.background  #000000
+set_from_resource $color_primary     i3wm.color.primary     #FFFFFF
+set_from_resource $color_secondary   i3wm.color.secondary   #CCCCCC
+
+for_window [class="^.*"] border pixel 1 
 
 set $gap_size 10
 set $gap_size_outer 5
@@ -194,3 +198,7 @@ gaps top $gap_size_outer
 gaps right $gap_size_outer
 gaps bottom $gap_size_outer
 gaps left $gap_size_outer
+
+client.focused $color_background $color_primary $color_primary $color_primary $color_primary 
+client.unfocused_inactive $color_background $color_secondary $color_secondary $color_secondary $color_secondary
+client.unfocused $color_background $color_secondary $color_secondary $color_secondary $color_secondary
