@@ -1,4 +1,18 @@
 *color.background: #050505
 *color.primary: #FFA100
 *color.secondary: #8E6D39
- 
+
+! urxvt Terminal Config
+! @see https://wiki.archlinux.org/index.php/rxvt-unicode
+! @see http://terminal.sexy/
+
+URxvt.font: xft:DejaVu Sans Mono Nerd Font Complete:size=12
+URxvt.letterSpace: -4
+
+URxvt.scrollBar: false
+! boldFont:
+! italicFont:
+! boldItalicFont:
+! imFont: 
+
+#include "../backgrounds/Xresources.mountains_lake_dark"

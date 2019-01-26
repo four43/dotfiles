@@ -1,0 +1,21 @@
+# Ignore vim swap files
+*.sw*
+
+# Ignore bundle files. NeoBundle checks out plugins for us.
+vim/bundle
+
+# Ignore local-only vim config files.
+vim/config/*local*.vim
+
+# Ignore vim's netrwhist.
+vim/.netrwhist
+
+# Ignore neovim undo directory
+vim/undo
+
+# Ignore downloaded vim spell files
+vim/spell
+
+# Ignore python cache files
+.mypy_cache
+__pycache__
