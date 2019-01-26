@@ -31,8 +31,32 @@ set $down j
 set $up k 
 set $right l
 
+# Keypad codes
+# see https://github.com/i3/i3/issues/2558
+#
+# If using these variables, be sure to use "bindcode"
+# instead of "bindsym"
+set $numlock Mod2
+set $kp1 87
+set $kp2 88
+set $kp3 89
+set $kp4 83
+set $kp5 84
+set $kp6 85
+set $kp7 79
+set $kp8 80
+set $kp9 81
+set $kp0 90
+
+
 # use Mouse+Mod1 to drag floating windows to their wanted position
 floating_modifier Mod1
+
+exec_always --no-startup-id xrdb -load $DOTFILE_DIR/x11/Xresources
+
+
+
+
 
 # start a terminal
 bindsym Mod1+Return exec i3-sensible-terminal
