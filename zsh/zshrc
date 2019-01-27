@@ -1,0 +1,6 @@
+for f in "$DOTFILE_DIR"/zsh/config/rc/*.zsh; do
+    source "$f"
+done
+
+# Clear status code from anything else that may have executed previously
+return 0

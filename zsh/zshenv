@@ -1,4 +1,27 @@
+# Always set environment vars
 DOTFILE_DIR="$HOME/.dotfiles"
 TERMINAL="urxvt"
 
-export DOTFILE_DIR TERMINAL
+VIM_RUNTIME_DIR="$DOTFILE_DIR/vim/config"
+
+export DOTFILE_DIR TERMINAL VIM_RUNTIME_DIR
+
+# Configure a basic path if there is not one. Should be fine for most use cases.
+[[ -z "$PATH" ]] && PATH="/usr/bin:/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/local/sbin"
+for f in "$DOTFILE_DIR"/zsh/config/rc/*lib.zsh; do
+    source "$f"
+done
+pathmunge "$DOTFILE_DIR/bin"
+[[ -d "$HOME/bin" ]] && pathmunge "$HOME/bin"
+
+host_specific_env="$DOTFILE_DIR/zsh/config/hostenv/$(hostname -s)"
+if [[ -d "$host_specific_env" ]]; then
+    for f in "$host_specific_env"/*.zsh; do
+        source "$f"
+    done
+fi
+
+secret_env="$HOME/.zshenv.secret"
+if [[ -f "$secret_env" ]]; then
+    source "$secret_env"
+fi
