@@ -2,14 +2,13 @@
 ! @see https://wiki.archlinux.org/index.php/rxvt-unicode
 ! @see http://terminal.sexy/
 
-URxvt.font: xft:Ubuntu Mono Nerd Font Complete:size=12:antialias=true
-URxvt.letterSpace: -3.5
+URxvt*font: xft:DejaVuSansMono Nerd Font Mono:pixelsize=14:antialias=true
 
 URxvt.scrollBar: false
 URxvt.secondaryScreen: 1
 URxvt.secondaryScroll: 0
 
-URxvt.perl-ext-common: default,matcher,resize-font,selection-to-clipboard,paste_clipboard
+URxvt.perl-ext-common: default,matcher,resize-font,selection-to-clipboard
 
 URxvt.keysym.Shift-Control-V: eval:paste_clipboard
 URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
