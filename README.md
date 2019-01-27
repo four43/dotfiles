@@ -2,6 +2,8 @@
 
 Here lies a collection of configurations.
 
+With lots of help from the super pro [@jkoelndorfer](https://github.com/jkoelndorfer/dotfiles)
+
 ## Installation
 
 `git clone git@github.com:four43/dotfiles.git && cd dotfiles && ./install`
