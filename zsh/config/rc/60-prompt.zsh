@@ -75,6 +75,9 @@ function git_indicator() {
     if in_git_repo; then
         echo -n " %F{green} $(git_branch)%f"
         local unpublished=$(git_unpushed_commits_indicator)
+        if [[ $(git diff --stat) != '' ]]; then
+            echo -n '%F{green}ˣ%f'
+        fi
         if [[ -n "$unpublished" ]]; then
             echo -n " $unpublished"
         fi
