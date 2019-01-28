@@ -210,7 +210,10 @@ set_from_resource $color_background  i3wm.color.background  #000000
 set_from_resource $color_primary     i3wm.color.primary     #FFFFFF
 set_from_resource $color_secondary   i3wm.color.secondary   #CCCCCC
 
-for_window [class="^.*"] border pixel 1 
+for_window [class="^.*"] border pixel 2 
+
+# Gap sizing
+smart_gaps on
 
 set $gap_size 10
 set $gap_size_outer 5
@@ -223,6 +226,7 @@ gaps right $gap_size_outer
 gaps bottom $gap_size_outer
 gaps left $gap_size_outer
 
+# Theme
 client.focused $color_background $color_primary $color_primary $color_primary $color_primary 
 client.unfocused_inactive $color_background $color_secondary $color_secondary $color_secondary $color_secondary
 client.unfocused $color_background $color_secondary $color_secondary $color_secondary $color_secondary
