@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-sudo apt install -y 
+sudo apt install -y \
 	cmake \
 	cmake-data \
 	libcairo2-dev \
@@ -8,7 +8,8 @@ sudo apt install -y
 	libxcb-icccm4-dev \
 	libxcb-image0-dev \
 	libxcb-composite0-dev \
-	libxcb-randr0-dev \
+	libxcb-proto \
+    libxcb-randr0-dev \
 	libxcb-util0-dev \
 	libxcb-xkb-dev \
 	pkg-config \
@@ -27,4 +28,4 @@ sudo chown $USERNAME:$USERNAME /opt/polybar
 cd /opt/polybar
 git clone https://github.com/jaagr/polybar.git
 cd polybar
-./build.sh
+./build.sh -A --all-features

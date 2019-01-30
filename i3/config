@@ -59,7 +59,9 @@ exec_always --no-startup-id $DOTFILE_DIR/bin/i3/set-theme-wallpaper
 
 
 # start a terminal
-bindsym Mod1+Return exec i3-sensible-terminal
+bindsym Mod1+Return exec --no-startup-id urxvt -e zsh -c '(tmux has-session -t 0 && exec tmux attach-session -t 0) || exec tmux new-session -s 0' 
+bindsym Mod1+Control+Return exec i3-sensible-terminal
+
 
 # kill focused window
 bindsym Mod1+Shift+q kill
@@ -219,12 +221,12 @@ set $gap_size 10
 set $gap_size_outer 5
 gaps inner $gap_size
 gaps outer $gap_size_outer
-gaps horizontal $gap_size
-gaps vertical $gap_size
-gaps top $gap_size_outer
-gaps right $gap_size_outer
-gaps bottom $gap_size_outer
-gaps left $gap_size_outer
+# gaps horizontal $gap_size
+# gaps vertical $gap_size
+# gaps top $gap_size_outer
+# gaps right $gap_size_outer
+# gaps bottom $gap_size_outer
+# gaps left $gap_size_outer
 
 # Theme
 client.focused $color_background $color_primary $color_primary $color_primary $color_primary 

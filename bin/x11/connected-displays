@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Prints out currently connected displays and their resolutions + offsets
+
+xrandr --query | grep ' connected' | awk -v OFS='\t' '{if ($3 == "primary") { print $1, $4} else { print $1, $3} }'
