@@ -5,7 +5,7 @@ precmd_functions=(record_lastrc "${precmd_functions[@]}")
 VIMODE='insert'
 
 function cwd_indicator() {
-    echo -n '%F{blue} %1~%f'
+    echo -n '%F{blue} %5~%f'
 }
 
 function host_indicator() {
