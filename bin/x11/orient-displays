@@ -1,14 +1,25 @@
 #!/bin/bash
 
-if [[ -z "$DISPLAYNAME_CENTER" ]]; then
-    exit 1
+if [[ -n "${DISPLAY_ORDER}" ]]; then
+    DISPLAY_ARR=( $(echo "${DISPLAY_ORDER}"))
+    for MONITOR_IDX in "${!DISPLAY_ARR[@]}"; do
+        MONITOR_VAL="${DISPLAY_ARR[$MONITOR_IDX]}"
+        if [[ $MONITOR_IDX == 0 ]]; then
+            echo "Setting up ${MONITOR_VAL} as first monitor (also primary)"
+            xrandr --output "${MONITOR_VAL}" --auto
+        else
+            echo "Setting ${MONITOR_VAL} to the right of ${DISPLAY_ARR[($MONITOR_IDX-1)]}" 
+            xrandr --output "${MONITOR_VAL}" --right-of "${DISPLAY_ARR[($MONITOR_IDX-1)]}"
+        fi
+    done
+    if [[ "${#DISPLAY_ARR[@]}" == 3 ]]; then
+        echo "Setting ${DISPLAY_ARR[1]} as primary"
+        xrandr --output "${DISPLAY_ARR[1]}" --primary
+    fi
+    exit 0
 fi
-xrandr --output "$DISPLAYNAME_CENTER" --auto
 
-if [[ -n "$DISPLAYNAME_LEFT" ]]; then
-    xrandr --output "$DISPLAYNAME_LEFT" --left-of "$DISPLAYNAME_CENTER"
+if [[ -n "$DISPLAY_PRIMARY" ]]; then
+    xrandr --output "$DISPLAY_PRIMARY" --primary 
 fi
 
-if [[ -n "$DISPLAYNAME_RIGHT" ]]; then
-    xrandr --output "$DISPLAYNAME_RIGHT" --right-of "$DISPLAYNAME_CENTER"
-fi
