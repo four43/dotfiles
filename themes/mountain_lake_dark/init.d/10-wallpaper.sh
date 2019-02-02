@@ -1,0 +1,1 @@
+../../utils/set-theme-wallpaper

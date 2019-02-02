@@ -46,7 +46,7 @@ floating_modifier $mod
 
 exec_always --no-startup-id xrdb -load $DOTFILE_DIR/x11/Xresources
 exec_always --no-startup-id $DOTFILE_DIR/bin/x11/orient-displays
-exec_always --no-startup-id $DOTFILE_DIR/bin/i3/set-theme-wallpaper
+exec_always --no-startup-id $DOTFILE_DIR/themes/start-theme.sh
 
 # start a terminal
 bindsym $mod+Return exec i3-sensible-terminal
