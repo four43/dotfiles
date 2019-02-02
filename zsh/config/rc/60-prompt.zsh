@@ -71,11 +71,12 @@ function in_git_repo() {
     fi
 }
 
+# Displays an indicator if the current git repo is dirty (any untracked files, any staged files that aren't committed yet)
 function git_indicator() {
     if in_git_repo; then
         echo -n " %F{green} $(git_branch)%f"
         local unpublished=$(git_unpushed_commits_indicator)
-        if [[ $(git diff --stat) != '' ]]; then
+        if [[ $(git status --porcelain) != '' ]]; then
             echo -n '%F{green}ˣ%f'
         fi
         if [[ -n "$unpublished" ]]; then
@@ -84,6 +85,7 @@ function git_indicator() {
     fi
 }
 
+# Displays indicator if there are local commits that haven't been pushed to a remote.
 function git_unpushed_commits_indicator() {
     local num=$(git rev-list @{u}..HEAD 2>/dev/null | wc -l)
     if [[ "$num" -gt 0 ]]; then
