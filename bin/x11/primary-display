@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Fetches the primary display from xrandr
+xrandr --query | grep " connected" | grep "primary" | awk '{print $1}'
