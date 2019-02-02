@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+route_arr=($(ip route get 8.8.8.8))
+# Grab value after "via"
+for elem_idx in ${!route_arr[@]}; do
+    prev_elem=${route_arr[(${elem_idx}-1)]}
+    if [[ "${prev_elem}" == "dev" ]]; then 
+        echo "${route_arr[${elem_idx}]}"
+        exit 0
+    fi
+done
+exit 1
+
