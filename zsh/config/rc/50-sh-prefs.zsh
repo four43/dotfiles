@@ -13,3 +13,4 @@ export SAVEHIST=${HISTSIZE}
 # Set VI mode for shell
 set -o vi
 export KEYTIMEOUT=1
+

@@ -1,0 +1,4 @@
+include /etc/inputrc
+
+set keyseq-timeout 5
+set prefer-visible-bell on
