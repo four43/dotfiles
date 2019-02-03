@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+WLAN_DEVICE=$(ifconfig | grep -Eo '^w[^:]+')
+sudo ifconfig "${WLAN_DEVICE}" up &>/dev/null
+SSID_INFO=$(sudo wpa_cli scan &>/dev/null && sudo wpa_cli scan_results 2>/dev/null | tail -n +3 | awk '{if($5!=""){print $5, $3, $2}}' | fzf)
+echo "Attempting to connect to: ${SSID_INFO}"
+echo "Passpharse: "
+read PASSPHRASE
