@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-sudo apt install -y \
+set -e 
+sudo add-apt-repository universe
+sudo apt update && sudo apt install -y \
+	build-essential \
 	cmake \
 	cmake-data \
 	libcairo2-dev \
@@ -8,8 +11,7 @@ sudo apt install -y \
 	libxcb-icccm4-dev \
 	libxcb-image0-dev \
 	libxcb-composite0-dev \
-	libxcb-proto \
-    libxcb-randr0-dev \
+	libxcb-randr0-dev \
 	libxcb-util0-dev \
 	libxcb-xkb-dev \
 	pkg-config \

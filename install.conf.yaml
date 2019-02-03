@@ -7,7 +7,6 @@
 - link:
     ~/.dotfiles: ''
     ~/.config/i3/config: i3/config
-    ~/.config/polybar/config: polybar/config
     ~/.inputrc: inputrc
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
