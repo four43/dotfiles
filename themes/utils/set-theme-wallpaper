@@ -9,7 +9,7 @@
 # it to one?
 
 WALLPAPER_SET="0"
-DEFAULT_DESKTOP_BG_COLOR=$($DOTFILE_DIR/bin/xrdb-query "*color.background")
+DEFAULT_DESKTOP_BG_COLOR=$($DOTFILE_DIR/bin/x11/xrdb-query "*color.background")
 for WALLPAPER in "$DOTFILE_DIR/themes/current/background.jpg" "$DOTFILE_DIR/themes/current/background.png"; do
     if [[ -n "$WALLPAPER" && -f "$WALLPAPER" ]]; then
         feh --no-fehbg --bg-tile "$WALLPAPER" --image-bg "$DEFAULT_DESKTOP_BG_COLOR" --no-xinerama

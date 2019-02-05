@@ -44,3 +44,6 @@
 *.color7:       #d0d0d0
 *.color15:      #f5f5f5
 
+! Polybar Config
+polybar.colors.bar_top_background: #7898c1
+polybar.colors.bar_bottom_background: #506991
