@@ -4,7 +4,7 @@
 # Connects to an existing "main" session if we have one, otherwise makes a new sesion
 TMUX_MAIN_SESSION="main"
 
-if [[ ! -z "${TMUX}" ]] || [[ "${TERM}" =~ "screen".* ]]; then
+if [[ -n "${TMUX}" ]] || [[ "${TERM}" =~ "screen".* ]]; then
     exit
 fi 
 
