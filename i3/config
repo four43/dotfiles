@@ -49,8 +49,8 @@ exec_always --no-startup-id $DOTFILE_DIR/bin/x11/orient-displays
 exec_always --no-startup-id $DOTFILE_DIR/themes/start-theme.sh
 
 # start a terminal
-bindsym $mod+Return exec i3-sensible-terminal
-bindsym $mod+$ctrl+Return exec --no-startup-id urxvt -e zsh -c '(tmux has-session -t 0 && exec tmux attach-session -t 0) || exec tmux new-session -s 0' 
+bindsym $mod+Return exec --no-startup-id i3-sensible-terminal -e zsh -c "$DOTFILE_DIR/bin/tmux-start"
+bindsym $mod+$ctrl+Return exec --no-startup-id i3-sensible-terminal
 bindsym $prog_prefix+x exec xdotool mousedown 1 # Press and hold Mouse 1 (click mouse to release)
 
 
@@ -95,7 +95,9 @@ bindsym $mod+$shift+Right move right
 #bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen toggle
+bindsym $mod+f        fullscreen toggle
+bindsym $mod+shift+f  fullscreen toggle global
+
 
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+s layout stacking
@@ -159,12 +161,17 @@ bindsym $mod+$shift+8 move container to workspace $ws8
 bindsym $mod+$shift+9 move container to workspace $ws9
 bindsym $mod+$shift+0 move container to workspace $ws10
 
+bindsym $mod+$shift+$ctrl+$left move workspace to output left
+bindsym $mod+$shift+$ctrl+$up move workspace to output center
+bindsym $mod+$shift+$ctrl+$right move workspace to output right
+
 # reload the configuration file
 bindsym $mod+$shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+$shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+$shift+e exec "zenity --question --text 'Are you sure you want to logout?' && i3-msg exit"
+bindsym $mod+Escape exec i3lock
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
