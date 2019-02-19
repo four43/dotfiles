@@ -51,8 +51,9 @@ exec_always --no-startup-id $DOTFILE_DIR/themes/start-theme.sh
 # start a terminal
 bindsym $mod+Return exec --no-startup-id i3-sensible-terminal -e zsh -c "$DOTFILE_DIR/bin/tmux-start"
 bindsym $mod+$ctrl+Return exec --no-startup-id i3-sensible-terminal
-bindsym $prog_prefix+x exec xdotool mousedown 1 # Press and hold Mouse 1 (click mouse to release)
 
+# misc. bindings
+bindsym $prog_prefix+x exec xdotool mousedown 1 # Press and hold Mouse 1 (click mouse to release)
 
 # kill focused window
 bindsym $mod+$shift+q kill
@@ -162,7 +163,8 @@ bindsym $mod+$shift+9 move container to workspace $ws9
 bindsym $mod+$shift+0 move container to workspace $ws10
 
 bindsym $mod+$shift+$ctrl+$left move workspace to output left
-bindsym $mod+$shift+$ctrl+$up move workspace to output center
+bindsym $mod+$shift+$ctrl+$up move workspace to output primary
+bindsym $mod+$shift+$ctrl+$down move workspace to output primary
 bindsym $mod+$shift+$ctrl+$right move workspace to output right
 
 # reload the configuration file
