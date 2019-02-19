@@ -14,3 +14,7 @@ export SAVEHIST=${HISTSIZE}
 set -o vi
 export KEYTIMEOUT=1
 
+# open -> xdg-open
+function open () {
+  xdg-open "$@">/dev/null 2>&1
+}
