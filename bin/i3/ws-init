@@ -1,0 +1,84 @@
+#!/bin/bash
+
+set -e
+USAGE="$(basename "$0") -w [WORKSPACE] [-o [OUTPUT]] [-p [PROGRAM]] -- Creates/switches to a workspace.
+If the workspace hasn't been created yet, runs a program.
+
+where:
+    -w|--workspace     The workspace ID in i3
+    -o|--output        Output to move the workspace to on initial creation
+    -p|--program       Run this program when the workspace starts up for the first time
+"
+
+ARGS=("$@")
+
+# read the options
+while [[ "${#ARGS[@]}" -gt 0 ]]; do
+    KEY="${ARGS[0]}"
+    VALUE="${ARGS[1]}"
+
+    case "${KEY}" in
+        -w|--workspace)
+            WORKSPACE="$VALUE"
+            ARGS=("${ARGS[@]:2}")
+            ;;
+        -o|--output)
+            OUTPUT="$VALUE"
+            ARGS=("${ARGS[@]:2}")
+            ;;
+        -p|--program)
+            PROGRAM="$VALUE"
+            ARGS=("${ARGS[@]:2}")
+            ;;
+        -h|--help)
+            echo "${USAGE}" >&2
+            exit 0
+            ;;
+        *)  # Unknown Option or "key=value"
+            while IFS='=' read -ra SPLIT <<< ${KEY}; do
+                # Split by the "=" and add back to our arguments array
+                for i in "${SPLIT[@]}"; do
+                  ARGS+=("${i}")
+                done
+                FOUND_SPLIT=1
+                ARGS=("${ARGS[@]:1}")
+                break
+            done
+            if [[ -z "${FOUND_SPLIT}" ]]; then
+                echo "Unknown option $1"
+                echo "${USAGE}"
+                exit 1
+            fi
+            ;;
+        --)
+            ARGS=("${ARGS[@]:1}")
+            break
+            ;;
+    esac
+done
+
+if [[ -z ${WORKSPACE} ]]; then
+    echo "Must supply a workspace id with -w|--workspace">&2;
+    exit 1;
+fi
+
+FILTERED_WORKSPACES=$(i3-msg -t get_workspaces | jq ".[] | select(.name == \"$WORKSPACE\" or .num == \"$WORKSPACE\")")
+
+if [[ -n ${FILTERED_WORKSPACES} ]]; then
+    # Workspace exists, just switch to it.
+    i3-msg workspace "${WORKSPACE}"
+else
+    # New workspace
+    i3-msg workspace "${WORKSPACE}"
+    if [[ -n ${OUTPUT} ]]; then
+        i3-msg move workspace to output "${OUTPUT}"
+    fi
+
+    if [[ -n ${PROGRAM} ]]; then
+        # Using i3-msg to ensure new program starts on new workspace.
+        IFS=';' read -ra ADDR <<< "${PROGRAM}"
+        for i in "${ADDR[@]}"; do
+            i3-msg exec "$i"
+        done
+    fi
+fi
