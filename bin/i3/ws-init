@@ -66,19 +66,22 @@ FILTERED_WORKSPACES=$(i3-msg -t get_workspaces | jq ".[] | select(.name == \"$WO
 
 if [[ -n ${FILTERED_WORKSPACES} ]]; then
     # Workspace exists, just switch to it.
-    i3-msg workspace "${WORKSPACE}"
+    i3-msg workspace "${WORKSPACE}" 1>&2
 else
     # New workspace
-    i3-msg workspace "${WORKSPACE}"
+    echo "New workspace: ${WORKSPACE}">&2
+
+    i3-msg workspace "${WORKSPACE}" 1>&2
     if [[ -n ${OUTPUT} ]]; then
-        i3-msg move workspace to output "${OUTPUT}"
+        echo "Moving to: ${OUTPUT}">&2
+        i3-msg move workspace to output "${OUTPUT}" 1>&2
     fi
 
     if [[ -n ${PROGRAM} ]]; then
         # Using i3-msg to ensure new program starts on new workspace.
         IFS=';' read -ra ADDR <<< "${PROGRAM}"
         for i in "${ADDR[@]}"; do
-            i3-msg exec "$i"
+            i3-msg exec "$i" 1>&2 2>/dev/null 1>&2
         done
     fi
 fi

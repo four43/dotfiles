@@ -4,9 +4,8 @@
 # * I3_WS - list of our workspace names (space delimited string)
 # * I3_WS_DISPLAYS - workspace display association (space delimited string, in the order of I3_WS)
 
-# Space delimited string -> array
-I3_WS=($(echo ${I3_WS}))
-I3_WS_DISPLAYS=($(echo ${I3_WS_DISPLAYS}))
+# Source our config file (we need "complex" data structures, our nested array)
+source "${WS_CONFIG_FILE}"
 
 POLYBAR_WS="$(grep -E '^\s*ws-icon-[0-9]+' "$DOTFILE_DIR/themes/current/polybar/config" | awk -F ' = ' '{ print $2 }')"
 
@@ -14,21 +13,42 @@ POLYBAR_WS="$(grep -E '^\s*ws-icon-[0-9]+' "$DOTFILE_DIR/themes/current/polybar/
 KEYBOARD_KEYS_WS=(1 2 3 4 5 6 7 8 9 0)
 for ws_id in ${!KEYBOARD_KEYS_WS[@]}; do
     keyboard_key="${KEYBOARD_KEYS_WS[$ws_id]}"
-    ws="${I3_WS[$ws_id]}"
-    ws_display="${I3_WS_DISPLAYS[$ws_id]}"
-    if [[ -z "${ws}" ]]; then
+
+    # Match our Keyboard key to a configured workspace
+    ws_number=""
+    ws_name=""
+    ws_display=""
+    ws_program=""
+    for ws_config_idx in ${!WS_CONFIG[@]}; do
+        ws_number=${!WS_CONFIG[ws_config_idx]:0:1}
+
+        if [[ "${ws_number}" == "${keyboard_key}" ]]; then
+            ws_name=${!WS_CONFIG[ws_config_idx]:1:1}
+            ws_display=${!WS_CONFIG[ws_config_idx]:2:1}
+            ws_program=${!WS_CONFIG[ws_config_idx]:3:1}
+            break
+        fi
+    done
+
+    if [[ -z "${ws_name}" ]]; then
         # No workspace defined, just use default numbering
         echo "set \$ws${keyboard_key} \"${keyboard_key}\""
         echo "set \$ws_command${keyboard_key} \"i3-msg workspace ${keyboard_key}\""
         continue
     fi
 
-    echo "set \$ws${keyboard_key} \"${keyboard_key}: ${ws}\""
+    echo "set \$ws${keyboard_key} \"${keyboard_key}: ${ws_name}\""
+
+    echo -ne "set \$ws_command${keyboard_key} \"$DOTFILE_DIR/bin/i3/ws-init --workspace ${ws_name}"
     if [[ -n "${ws_display}" ]]; then
-        echo "set \$ws_command${keyboard_key} \"i3-msg workspace ${ws} && i3-msg move workspace to output ${ws_display}\""
-    else
-        echo "set \$ws_command${keyboard_key} \"i3-msg workspace ${ws}\""
+        echo -ne " --output ${ws_display}"
     fi
+
+    if [[ -n "${ws_program}" ]]; then
+        echo -ne " --program '${ws_program//\"/\\\\\\\"}'"  # Bro do you even escape?
+    fi
+
+    echo -ne "\"\n"
 done
 
 # Set our $ws_command# vars
