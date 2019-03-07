@@ -101,6 +101,19 @@ function git_upstream() {
     git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null
 }
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(vimode_indicator)$(rc_indicator)\$ '
+function python_env() {
+    # Check Pipenv/venv first
+
+    # Else conda (anything but base)
+    if [[ -x conda ]]; then
+        conda_env="$(conda info --envs | grep '*' | awk '{print $1}')"
+        if [[ "${conda_env}" != "base" ]]; then
+            echo "${conda_env}"
+        fi
+    fi
+}
+
+
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(python_env)$(vimode_indicator)$(rc_indicator)\$ '
 zle -N zle-keymap-select
 zle -N accept-line
