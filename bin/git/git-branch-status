@@ -1,0 +1,33 @@
+#!/bin/bash
+# by http://github.com/kortina
+# From: https://github.com/kortina/bakpak/blob/master/bin/git-branches-vs-origin-master
+# modified from http://github.com/jehiah
+# this prints out branch ahead/behind status vs origin/master for all branches
+
+# example:
+# $ git branch-status
+# dns_check (ahead 1) | (behind 112) origin/master
+# master (ahead 2) | (behind 0) origin/master
+TAB=$(echo -e "\t")
+TMP_FILE=$(mktemp)
+{
+    echo -e "St\tBranch\tBehind\tAhead\tBase Ref"; 
+    git for-each-ref --format="%(refname:short) %(upstream:short)" refs/heads | \
+    while read local remote; do
+        branches=("$local" "$remote")
+    
+        for branch in ${branches[@]}; do
+            master="origin/master"
+            git rev-list --left-right ${branch}...${master} -- 2>/dev/null >$TMP_FILE || continue
+            AHEAD=$(grep -c '^<' $TMP_FILE)
+            BEHIND=$(grep -c '^>' $TMP_FILE)
+            if [[ "$AHEAD" == "0" ]]; then
+                STATUS="M"  
+            else
+                STATUS="A"
+            fi
+            echo -e "$STATUS\t$branch\t$BEHIND\t$AHEAD\t$master\n"
+        done
+    done | awk '$2 != "origin/master"' | sort | uniq 
+}  | column -t -s "$TAB" 
+rm $TMP_FILE
