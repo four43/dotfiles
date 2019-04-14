@@ -1,16 +1,19 @@
 #!/bin/bash
+set -x
 
 # Starts tmux in a smart way
 # Connects to an existing "main" session if we have one, otherwise makes a new sesion
 TMUX_MAIN_SESSION="main"
 
-if [[ -n "${TMUX}" ]] || [[ "${TERM}" =~ "screen".* ]]; then
-    exit
+if [[ "${TERM}" =~ "screen".* ]]; then
+    echo "Already in tmux like session" >&2
+    exit 1
 fi 
 
 SESSION_STATUS=$(tmux list-sessions | grep "${TMUX_MAIN_SESSION}")
 if [[ ! -z "${SESSION_STATUS}" ]]; then
-    if $(echo "${SESSION_STATUS}" | grep "attached"); then
+    MAIN_ATTACHED=$(echo "${SESSION_STATUS}" | grep "attached")
+    if [[ $? == "0" ]]; then
         exec tmux
     else
         exec tmux attach-session -d -t "${TMUX_MAIN_SESSION}"
