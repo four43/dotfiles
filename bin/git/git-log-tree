@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+git log --graph --oneline --decorate --branches --simplify-by-decoration
