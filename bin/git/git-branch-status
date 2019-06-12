@@ -30,7 +30,7 @@ TMP_FILE=$(mktemp)
             STATUS="A"
         fi
         echo -e "$STATUS\t$branch\t$BEHIND\t$AHEAD\t$master\n"
-    done | awk '$2 != "origin/master"'
+    done | awk '$2 != "origin/master"' | sort
 }  | column -t -s "$TAB" 
 rm "$TMP_FILE"
 
