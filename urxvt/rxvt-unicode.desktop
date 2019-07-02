@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Rxvt Color Unicode Terminal
+Comment=Use the command line
+TryExec=urxvt
+Exec=urxvt -title terminal -e /usr/bin/zsh -c "/home/seth/dotfiles/bin/tmux-start; /usr/bin/zsh"
+Icon=utilities-terminal
+Type=Application
+Categories=Utility;TerminalEmulator;
+StartupNotify=true
+Keywords=Run;
+Actions=New
+
+[Desktop Action New]
+Name=New Rxvt Color Unicode Terminal
+Exec=urxvt -title terminal -e /usr/bin/zsh -c "/home/seth/dotfiles/bin/tmux-start; /usr/bin/zsh"
+Icon=utilities-terminal
+OnlyShowIn=Unity

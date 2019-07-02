@@ -40,4 +40,4 @@ URxvt.keysym.C-0:     resize-font:reset
 ! imFont: 
 
 
-#include "../themes/current/Xresources"
+#include "dotfiles/themes/current/Xresources"

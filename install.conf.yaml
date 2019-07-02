@@ -12,6 +12,7 @@
     ~/.vim: vim/vim
     ~/.vimrc: vim/vimrc
     ~/.xprofile: x11/xprofile
+    ~/.Xresources: x11/Xresources
     ~/.zprofile: zsh/zprofile
     ~/.zshenv: zsh/zshenv
     # .zshrc is created by zsh automatically on first run, so we might actually have to
