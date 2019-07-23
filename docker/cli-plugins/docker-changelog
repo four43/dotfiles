@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+docker_cli_plugin_metadata() {
+	local vendor="thaJeztah"
+	local version="v0.0.1"
+	local url="https://twitter.com/tomwillfixit/status/1124462492804046848?s=11"
+	local description="View the Docker Engine changelog"
+	cat <<-EOF
+	{"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+EOF
+}
+
+version() {
+	docker --version | cut -d " " -f 3 | cut -d "," -f 1
+}
+
+docker_changelog() {
+	curl -s "https://raw.githubusercontent.com/docker/docker-ce/v$(version)/CHANGELOG.md" | more
+}
+
+case "$1" in
+	docker-cli-plugin-metadata)
+		docker_cli_plugin_metadata
+		;;
+	*)
+		docker_changelog
+		;;
+esac

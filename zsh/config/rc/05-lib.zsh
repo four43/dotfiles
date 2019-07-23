@@ -12,3 +12,16 @@ function pathmunge_reorder() {
     PATH="$(echo "$PATH" | sed -E -e "s#(^|:)$1($|:)#:#" | sed -E -e 's/(^:|:$)//')"
     pathmunge "$@"
 }
+
+function confirm-cmd() {
+	  cmd=$@;
+
+	  echo "Command: ${cmd}"
+	  read -q "REPLY?Are you sure [Yy]? "
+	  echo
+	  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+	      exit 1
+	  fi
+
+	  eval $cmd
+}

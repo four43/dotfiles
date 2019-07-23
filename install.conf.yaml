@@ -6,6 +6,7 @@
 
 - link:
     ~/.dotfiles: ''
+    ~/.docker/cli-plugins: docker/cli-plugins
     ~/.config/i3/config: i3/config
     ~/.inputrc: inputrc
     ~/.tmux.conf: tmux/tmux.conf
