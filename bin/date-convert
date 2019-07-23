@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+DATE=$1
+if [[ "${DATE}" =~ ^[0-9]{14}$ ]]; then
+    # DataFlow format (no delimiters)
+    DATE_PARSED="${DATE:0:4}-${DATE:4:2}-${DATE:6:2}T${DATE:8:2}:${DATE:10:2}:${DATE:12:2}"
+elif [[ "${DATE}" =~ ^[0-9]{10}$ ]]; then
+    # Unix Timestamp
+    DATE_PARSED="@${DATE}"
+elif [[ "${DATE}" =~ ^[0-9]{13}$ ]]; then
+    # Javascript Timestamp
+    DATE_PARSED="@${DATE:0:10}"
+else
+    # Just try it
+    DATE_PARSED="${DATE}"
+fi
+
+echo -e "ISO8601\t\t$(TZ=utc date --iso-8601=seconds --utc -d "$DATE_PARSED")"
+echo -e "DataFlow\t$(TZ=utc date --utc -d "$DATE_PARSED" +%Y%m%d%H%M%S)"
+echo -e "UNIX\t\t$(TZ=utc date --utc -d "$DATE_PARSED" +%s)"
