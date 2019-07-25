@@ -113,7 +113,20 @@ function python_env() {
     fi
 }
 
+function in_terraform_dir() {
+    [[ -d "$(pwd)/.terraform" ]]
+}
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(python_env)$(vimode_indicator)$(rc_indicator)\$ '
+function terraform_ws() {
+    if in_terraform_dir; then
+        # Get workspace
+        local tf_ws=$(terraform workspace list | grep -oP '^\* \K.+')
+        if [[ "$?" == 0 ]]; then
+            echo "%F{purple}$tf_ws%f"
+        fi
+    fi
+}
+
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(python_env)$(terraform_ws)$(vimode_indicator)$(rc_indicator)\$ '
 zle -N zle-keymap-select
 zle -N accept-line

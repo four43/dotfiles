@@ -76,3 +76,40 @@ function select_ssm_param() {
         jq -r '.Parameters[] | (.Name + "\t" + .Description)' |
         column -t -s "$tab" | fzf | awk '{ print $1 }'
 }
+
+
+# AerisWeather
+function ssh_aeris_api() {
+    ssh -i ~/.ssh/work/aeris-api.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null core@${@}
+}
+
+function aeris_api_load_averages() {
+    asginstances aeris-api-app-20190528141439425700000003 | while read i; do 
+        ip=$(ec2_instance_public_ip "$i")
+        echo -n "$ip: "
+        ssh_aeris_api "$ip" -n 'uptime | grep -o "load average:.*" | sed -E '"'"'s/^[^0-9]*([0-9\.]+),\s*([0-9\.]+),\s*([0-9\.]+)$/\1 \2 \3/'"'"'' 2>/dev/null
+    done | column -t
+}
+
+function aeris_api_5XX() {
+    trap 'kill $(jobs -p) 2>/dev/null' SIGINT SIGTERM EXIT
+    asginstances aeris-api-app-20190528141439425700000003 | while read i; do
+        ip=$(ec2_instance_public_ip "$i")
+        echo "Connecting to $ip">&2
+        ssh_aeris_api "$ip" -n 'sudo journalctl -fu aeris-api-nginx | grep -E '"'"' 5[0-9][0-9] "'"'"'' 2>/dev/null &
+    done
+    echo "Connected to all servers, listening for 5XX repsonse codes..." >&2
+    wait    
+}
+
+ function test_func () { while true; do echo "hello"; sleep 1; done }
+
+function test_all() {
+    trap 'kill $(jobs -p) 2>/dev/null' SIGINT SIGTERM EXIT
+
+    test_func &
+    test_func &
+
+    wait
+
+}
