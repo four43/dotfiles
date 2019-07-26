@@ -53,7 +53,9 @@ function asginstances() {
     aws autoscaling describe-auto-scaling-groups \
         --auto-scaling-group-name "$asg_name" \
         --query 'AutoScalingGroups[0].Instances[*].InstanceId' \
-        --output text | sed -e 's/\t/\n/g'
+        --output text | sed -e 's/\t/\n/g' \
+    | xargs -n 1 -I % aws ec2 describe-instances --instance-ids % \
+    | jq -r '.Reservations[0].Instances[0] | [.InstanceId,.PublicDnsName, (.Tags[] | select(.Key == "Name").Value), .State.Name] | @tsv'
 }
 
 
