@@ -8,7 +8,7 @@ URxvt.scrollBar: false
 URxvt.secondaryScreen: 1
 URxvt.secondaryScroll: 0
 
-URxvt.perl-ext-common: default,matcher,resize-font,selection-to-clipboard
+URxvt.perl-ext-common: default,matcher,resize-font
 
 URxvt.keysym.Shift-Control-V: eval:paste_clipboard
 URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
