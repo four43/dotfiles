@@ -3,9 +3,20 @@
 # Thanks jk: https://github.com/jkoelndorfer/dotfiles/blob/master/zsh/config/rc/60-aws-aliases.zsh
 
 # Dumps out all of the EC2 instances with the given name.
+function aws-ec2-ls() {
+    instances=$(aws ec2 describe-instances --filter "Name=instance-state-name,Values=running" | jq -r '.Reservations[].Instances[] | [.InstanceId,.PublicDnsName, (.Tags[] | select(.Key == "Name").Value), .State.Name] | @tsv' | columns | sort -k2)
+    if [[ -t 1 ]]; then
+        # Running in a terminal, pipe to interactive fzf
+        echo "$instances" | fzf
+    else
+        # Piping output to somewhere else, just spit out the list
+        echo "$instances"
+    fi
+}
+
 function ec2_instances_named() {
     local name="$1"
-    aws ec2 describe-instances --filters "Name=tag:Name,Values=$name"
+    aws ec2 describe-instances --filters 'Name=tag:Name,Values=*'$name'*'
 }
 
 function ec2_instance_names() {
@@ -86,8 +97,7 @@ function ssh_aeris_api() {
 }
 
 function aeris_api_load_averages() {
-    asginstances aeris-api-app-20190528141439425700000003 | while read i; do 
-        ip=$(ec2_instance_public_ip "$i")
+    asginstances aeris-api-app-20190528141439425700000003 | awk '{print $2}' | while read ip; do 
         echo -n "$ip: "
         ssh_aeris_api "$ip" -n 'uptime | grep -o "load average:.*" | sed -E '"'"'s/^[^0-9]*([0-9\.]+),\s*([0-9\.]+),\s*([0-9\.]+)$/\1 \2 \3/'"'"'' 2>/dev/null
     done | column -t
@@ -95,8 +105,7 @@ function aeris_api_load_averages() {
 
 function aeris_api_5XX() {
     trap 'kill $(jobs -p) 2>/dev/null' SIGINT SIGTERM EXIT
-    asginstances aeris-api-app-20190528141439425700000003 | while read i; do
-        ip=$(ec2_instance_public_ip "$i")
+    asginstances aeris-api-app-20190528141439425700000003 | awk '{print $2}' | while read ip; do
         echo "Connecting to $ip">&2
         ssh_aeris_api "$ip" -n 'sudo journalctl -fu aeris-api-nginx | grep -E '"'"' 5[0-9][0-9] "'"'"'' 2>/dev/null &
     done
@@ -104,14 +113,3 @@ function aeris_api_5XX() {
     wait    
 }
 
- function test_func () { while true; do echo "hello"; sleep 1; done }
-
-function test_all() {
-    trap 'kill $(jobs -p) 2>/dev/null' SIGINT SIGTERM EXIT
-
-    test_func &
-    test_func &
-
-    wait
-
-}

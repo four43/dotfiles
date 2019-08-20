@@ -25,3 +25,8 @@ function confirm-cmd() {
 
 	  eval $cmd
 }
+
+function columns() {
+    tab=$(echo -e "\t")
+    cat - | column -t -s "$tab"
+}
