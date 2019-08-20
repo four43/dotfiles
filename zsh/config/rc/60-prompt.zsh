@@ -120,7 +120,7 @@ function in_terraform_dir() {
 function terraform_ws() {
     if in_terraform_dir; then
         # Get workspace
-        local tf_ws=$(terraform workspace list | grep -oP '^\* \K.+')
+        local tf_ws=$(cat "$(pwd)/.terraform/environment")
         if [[ "$?" == 0 ]]; then
             echo "%F{purple}$tf_ws%f"
         fi
