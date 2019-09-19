@@ -1,95 +1,104 @@
 #!/usr/bin/zsh
-
 # Thanks jk: https://github.com/jkoelndorfer/dotfiles/blob/master/zsh/config/rc/60-aws-aliases.zsh
 
+function _jq_instance_output_tsv() {
+    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .State.Name] | @tsv'   
+}
+
 # Dumps out all of the EC2 instances with the given name.
+# 
+# Usage: aws-ec2-ls [optional search query]
+# Outputs: id name hostname state
 function aws-ec2-ls() {
-    instances=$(aws ec2 describe-instances --filter "Name=instance-state-name,Values=running" | jq -r '.Reservations[].Instances[] | [.InstanceId,.PublicDnsName, (.Tags[] | select(.Key == "Name").Value), .State.Name] | @tsv' | columns | sort -k2)
-    if [[ -t 1 ]]; then
-        # Running in a terminal, pipe to interactive fzf
-        echo "$instances" | fzf
-    else
-        # Piping output to somewhere else, just spit out the list
-        echo "$instances"
-    fi
+    local search_term="$1"
+    aws ec2 describe-instances --filter "Name=instance-state-name,Values=running" \
+        | _jq_instance_output_tsv \
+        | columns \
+        | sort -k2 \
+        | search-output "$search_term"
 }
 
-function ec2_instances_named() {
-    local name="$1"
-    aws ec2 describe-instances --filters 'Name=tag:Name,Values=*'$name'*'
+# Outputs names of AWS EC2 AutoScaling Groups
+# 
+# Usage: aws-ec2-asg-ls [optional search query]
+# Outputs: [asg-name]
+function aws-ec2-asg-ls() {
+    local search_term="$1"
+    aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[*].AutoScalingGroupName' --output text \
+        | sed -e 's/\t/\n/g' \
+        | sort \
+        | search-output "$search_term"
 }
 
-function ec2_instance_names() {
-    aws ec2 describe-instances --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value' | jq -r '.[][0][0]' | sort -u
-}
-
-function ec2_instance_public_ip() {
-    local instance_id=$1
-
-    aws ec2 describe-instances \
-        --instance-id "$instance_id" \
-        --query 'Reservations[0].Instances[0].PublicIpAddress' \
-        --output text
-}
-
-function lsasg() {
-    aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[*].AutoScalingGroupName' --output text |
-        sed -e 's/\t/\n/g' | sort
-}
-
-function asgmin() {
-    local asg_name=$1
-    local min_size=$2
-
+function aws-ec2-asg-set-min() {
+    local asg_name="$1"
+    local min_size="$2"
     aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --min-size "$min_size"
 }
 
-function asgdesired() {
-    local asg_name=$1
-    local desired_capacity=$2
-
-    aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --desired-capacity "$desired_capacity"
+function aws-ec2-asg-set-desired() {
+    local asg_name="$1"
+    local desired_size="$2"
+    aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --desired-capacity "$desired_size"
 }
 
-function asgmax() {
-    local asg_name=$1
-    local max_size=$2
-
+function aws-ec2-asg-set-max() {
+    local asg_name="$1"
+    local max_size="$2"
     aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --max-size "$max_size"
 }
 
-function asginstances() {
-    local asg_name=$1
+function aws-ec2-asg-instances-ls() {
+    if [[ -n "$1" ]]; then
+        local asg_name="$1"
+    elif [ ! -t 0 ]; then
+        local asg_name="$(cat)"
+    fi
+
+    if [[ -z "$asg_name" ]]; then
+        pre_force_interactive="$force_interactive"
+        force_interactive="1"
+        local asg_name="$(aws-ec2-asg-ls)"
+        force_interactive="$pre_force_interactive"
+    fi
 
     aws autoscaling describe-auto-scaling-groups \
         --auto-scaling-group-name "$asg_name" \
         --query 'AutoScalingGroups[0].Instances[*].InstanceId' \
         --output text | sed -e 's/\t/\n/g' \
     | xargs -n 1 -I % aws ec2 describe-instances --instance-ids % \
-    | jq -r '.Reservations[0].Instances[0] | [.InstanceId,.PublicDnsName, (.Tags[] | select(.Key == "Name").Value), .State.Name] | @tsv'
+    | _jq_instance_output_tsv \
+    | columns
 }
 
-
-function lsssmp() {
-    aws ssm describe-parameters --query 'Parameters[].Name' --output text | sed -e 's/\t/\n/g' | sort
+function aws-ssm-param-ls() {
+    local search_term="$1"
+    aws ssm describe-parameters \
+        | jq -r '.Parameters[] | (.Name + "\t" + .Description)' \
+        | columns \
+        | search-output "$search_term" "true"
 }
 
-function ssmp() {
+# Decrypts an SSM Param. May pass a param as the first argument, stdin, or it will prompt.
+#
+# Usage: aws-ssm-param-decrypt [optional key]
+# Outputs: [decrypted value]
+function aws-ssm-param-decrypt() {
     if [[ -n "$1" ]]; then
-        local name=$1
-    else
-        local name=$(select_ssm_param)
+        local name="$1"
+    elif [ ! -t 0 ]; then
+        local name="$(cat)"
     fi
+
+    if [[ -z "$name" ]]; then
+        pre_force_interactive="$force_interactive"
+        force_interactive="1"
+        local name="$(aws-ssm-param-ls)"
+        force_interactive="$pre_force_interactive"
+    fi
+
     aws ssm get-parameter --name "$name" --with-decryption | jq -r '.Parameter.Value'
 }
-
-function select_ssm_param() {
-    local tab=$(echo -e '\t')
-    aws ssm describe-parameters |
-        jq -r '.Parameters[] | (.Name + "\t" + .Description)' |
-        column -t -s "$tab" | fzf | awk '{ print $1 }'
-}
-
 
 # AerisWeather
 function ssh_aeris_api() {
