@@ -8,6 +8,7 @@
     ~/.dotfiles: ''
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.config/i3/config: i3/config
+    ~/.gitignore: git/gitignore
     ~/.inputrc: inputrc
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
