@@ -16,9 +16,9 @@ function pathmunge_reorder() {
 function confirm-cmd() {
 	  cmd=$@;
 
-	  echo "Command: ${cmd}"
+	  echo "Command: ${cmd}" >&2
 	  read -q "REPLY?Are you sure [Yy]? "
-	  echo
+	  echo >&2
 	  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 	      exit 1
 	  fi
