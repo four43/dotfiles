@@ -71,12 +71,48 @@ function aws-ec2-asg-instances-ls() {
     | columns
 }
 
+function aws-ec2-unhealthy() {
+    if [[ -z "$1" ]]; then
+        echo "Must provide an instance id." >&2
+        return
+    fi
+    instance_id="$1"
+    instance="$(aws-ec2-ls "$1")"
+    if [[ -n "$instance" ]]; then
+        echo "This will set the following instance to unhealthy:"
+        echo "$instance"
+        confirm-cmd aws autoscaling set-instance-health --health-status Unhealthy --instance-id "$instance_id"
+    else
+        echo "Instance with the id of $instance_id wasn't found" >&2
+        return 
+    fi
+}
+
 function aws-ssm-param-ls() {
     local search_term="$1"
     aws ssm describe-parameters \
         | jq -r '.Parameters[] | (.Name + "\t" + .Description)' \
         | columns \
         | search-output "$search_term" "true"
+}
+
+# Creates an SSM Param, making sure one doesn't exists there already
+function aws-ssm-param-create() {
+    local ssm_path="$1"
+    local value="$2"
+    local secret="$3"
+
+    local ssm_type="String"
+    if [[ -n "$secret" ]]; then
+        ssm_type="SecureString"
+    fi
+    
+    echo "Create '${ssm_path}' set to '${value}' as a '${ssm_type}'?"
+    confirm-cmd aws ssm put-parameter \
+        --name "${ssm_path}" \
+        --value "${value}" \
+        --type "${ssm_type}" \
+        --no-overwrite
 }
 
 # Decrypts an SSM Param. May pass a param as the first argument, stdin, or it will prompt.

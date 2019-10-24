@@ -14,7 +14,7 @@ function pathmunge_reorder() {
 }
 
 function confirm-cmd() {
-	  cmd=$@;
+	  cmd="$@";
 
 	  # echo "Command: ${cmd}" >&2 # Debug info
 	  read -q "REPLY?Are you sure [Yy]? "
@@ -22,7 +22,7 @@ function confirm-cmd() {
 	      exit 1
 	  fi
 
-	  eval $cmd
+	  $@
 }
 
 function columns() {
