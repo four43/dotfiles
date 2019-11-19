@@ -11,6 +11,9 @@ elif [[ "${DATE}" =~ ^[0-9]{10}$ ]]; then
 elif [[ "${DATE}" =~ ^[0-9]{13}$ ]]; then
     # Javascript Timestamp
     DATE_PARSED="@${DATE:0:10}"
+elif [[ -z "${DATE}" ]]; then
+    # Nothing passed, just use "now"
+    DATE_PARSED="$(date)"
 else
     # Just try it
     DATE_PARSED="${DATE}"
