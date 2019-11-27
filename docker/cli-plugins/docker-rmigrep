@@ -16,9 +16,9 @@ version() {
 
 docker_rmigrep() {
     echo "This will remove the following images:"
-    docker images | grep "mongo" | awk '{print $1":"$2}'
+    docker images | grep $1 | awk '{print $1":"$2}'
 
-    confirm-cmd docker images | grep "mongo" | awk '{print $1":"$2}' | xargs docker rmi
+    confirm-cmd docker images | grep $1 | awk '{print $1":"$2}' | xargs docker rmi
 }
 
 case "$1" in
@@ -26,7 +26,8 @@ case "$1" in
 		docker_cli_plugin_metadata
 		;;
 	*)
-		docker_rmigrep
+        shift
+		docker_rmigrep $@
 		;;
 esac
 
