@@ -5,6 +5,24 @@ function _jq_instance_output_tsv() {
     cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .State.Name] | @tsv'   
 }
 
+function aws-credentials-switch() {
+    local search_term="$1"
+    force_interactive="1"
+    credentials_id=$(find ~/.aws -name 'credentials.*' \
+        | cut -d '.' -f3 \
+        | search-output "$search_term")
+    echo "Selecting credentials: $credentials_id" >&2
+    
+    # Remove only if symlink
+    credentials_file="$HOME/.aws/credentials"
+    if [ -L "$credentials_file" ] || [ ! -f "$credentials_file" ]; then
+        rm "$credentials_file" 2>&1 >/dev/null
+        ln -s "${HOME}/.aws/credentials.${credentials_id}" "${credentials_file}"
+    else
+        echo "$credentials_file isn't a symlink, won't remove it." >&2
+    fi
+}
+
 # Dumps out all of the EC2 instances with the given name.
 # 
 # Usage: aws-ec2-ls [optional search query]
@@ -113,6 +131,25 @@ function aws-ssm-param-create() {
         --value "${value}" \
         --type "${ssm_type}" \
         --no-overwrite
+}
+
+# Creates an SSM Param, making sure one doesn't exists there already
+function aws-ssm-param-update() {
+    local ssm_path="$1"
+    local value="$2"
+    local secret="$3"
+
+    local ssm_type="String"
+    if [[ -n "$secret" ]]; then
+        ssm_type="SecureString"
+    fi
+    
+    echo "Update '${ssm_path}' set to '${value}' as a '${ssm_type}'?"
+    confirm-cmd aws ssm put-parameter \
+        --name "${ssm_path}" \
+        --value "${value}" \
+        --type "${ssm_type}" \
+        --overwrite
 }
 
 # Decrypts an SSM Param. May pass a param as the first argument, stdin, or it will prompt.
