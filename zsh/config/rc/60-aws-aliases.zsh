@@ -5,22 +5,12 @@ function _jq_instance_output_tsv() {
     cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .State.Name] | @tsv'   
 }
 
-function aws-credentials-switch() {
+function aws-profile-switch() {
     local search_term="$1"
     force_interactive="1"
-    credentials_id=$(find ~/.aws -name 'credentials.*' \
-        | cut -d '.' -f3 \
-        | search-output "$search_term")
-    echo "Selecting credentials: $credentials_id" >&2
-    
-    # Remove only if symlink
-    credentials_file="$HOME/.aws/credentials"
-    if [ -L "$credentials_file" ] || [ ! -f "$credentials_file" ]; then
-        rm "$credentials_file" 2>&1 >/dev/null
-        ln -s "${HOME}/.aws/credentials.${credentials_id}" "${credentials_file}"
-    else
-        echo "$credentials_file isn't a symlink, won't remove it." >&2
-    fi
+    profile_id=$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials | search-output "$search_term")
+    echo "Selecting profile: $profile_id" >&2
+    export AWS_PROFILE="$profile_id"
 }
 
 # Dumps out all of the EC2 instances with the given name.
