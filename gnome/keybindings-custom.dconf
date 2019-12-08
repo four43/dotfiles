@@ -1,0 +1,19 @@
+[custom0]
+binding='<Shift>Print'
+command='gnome-screenshot -a -c'
+name='Screenshot Copy'
+
+[custom1]
+binding='<Super>Return'
+command='urxvt'
+name='Terminal'
+
+[custom2]
+binding='<Super>d'
+command='rofi -show run'
+name='Rofi Run'
+
+[custom3]
+binding='<Super>e'
+command='emoji'
+name='Emoji (Rofi)'
