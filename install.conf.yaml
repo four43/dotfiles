@@ -13,6 +13,7 @@
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
     ~/.vimrc: vim/vimrc
+    ~/.xinitrc: x11/xinitrc  # https://unix.stackexchange.com/questions/363276/xinitrc-not-loading-xresources
     ~/.xprofile: x11/xprofile
     ~/.Xresources: x11/Xresources
     ~/.zprofile: zsh/zprofile
@@ -23,5 +24,6 @@
         path: zsh/zshrc
         relative: true
         force: true
+    ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
