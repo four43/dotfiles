@@ -1,0 +1,4 @@
+#!/bin/bash
+dconf write /org/gnome/mutter/keybindings/switch-monitor "['XF86Display']"
+
+
