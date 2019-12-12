@@ -101,15 +101,19 @@ function git_upstream() {
     git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null
 }
 
-function python_env() {
+function python_env_indicator() {
     # Check Pipenv/venv first
-
-    # Else conda (anything but base)
-    if [[ -x conda ]]; then
-        conda_env="$(conda info --envs | grep '*' | awk '{print $1}')"
-        if [[ "${conda_env}" != "base" ]]; then
-            echo "${conda_env}"
+    if [[ -n "${VIRTUAL_ENV}" ]]; then
+        if [[ "$VIRTUAL_ENV" =~ /\.venv/ ]]; then
+            env_name="$(basename "$(realpath "$VIRTUAL_ENV/../")")"
+        else
+            # Virtual env in virtualenvs folder [project-name]-[random]
+            env_name="$(echo "$VIRTUAL_ENV" | sed -E 's/^.*\/([^\/]+)-[^\-]+$/\1/')"
         fi
+        echo "%F{yellow}$env_name%f"
+    elif [[ -n "$CONDA_DEFAULT_ENV" ]] && [[ "$CONDA_DEFAULT_ENV" != "base" ]]; then
+        # Else conda (anything but base)
+        echo "%F{yellow}%B%b${CONDA_DEFAULT_ENV}%f"
     fi
 }
 
@@ -121,7 +125,7 @@ function in_terraform_dir() {
     [[ -d "$(pwd)/.terraform" ]]
 }
 
-function terraform_ws() {
+function terraform_ws_indicator() {
     if in_terraform_dir; then
         # Get workspace
         local tf_ws=$(cat "$(pwd)/.terraform/environment" 2>/dev/null)
@@ -131,6 +135,6 @@ function terraform_ws() {
     fi
 }
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env)$(terraform_ws)$(vimode_indicator)$(rc_indicator)\$ '
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator)\$ '
 zle -N zle-keymap-select
 zle -N accept-line
