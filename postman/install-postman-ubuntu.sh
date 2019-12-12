@@ -2,6 +2,7 @@
 set -e
 
 work_dir="$HOME/opt/postman"
+rm -rf "$work_dir" || true
 mkdir -p "$work_dir"
 cd "$work_dir"
 
@@ -23,5 +24,4 @@ Terminal=false
 StartupWMClass=postman
 Type=Application
 Categories=Network;
-MimeType=x-scheme-handler/tg;
-X-Desktop-File-Install-Version=0.22" > "${desktop_file_path}/Postman.desktop"
+" > "${desktop_file_path}/Postman.desktop"
