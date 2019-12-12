@@ -113,6 +113,10 @@ function python_env() {
     fi
 }
 
+function aws_profile_indicator() {
+    [[ -n "$AWS_PROFILE" ]] && [[ "$AWS_PROFILE" != "default" ]] && echo -n "%F{yellow} $AWS_PROFILE "
+}
+
 function in_terraform_dir() {
     [[ -d "$(pwd)/.terraform" ]]
 }
@@ -127,6 +131,6 @@ function terraform_ws() {
     fi
 }
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(python_env)$(terraform_ws)$(vimode_indicator)$(rc_indicator)\$ '
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env)$(terraform_ws)$(vimode_indicator)$(rc_indicator)\$ '
 zle -N zle-keymap-select
 zle -N accept-line

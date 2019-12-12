@@ -9,7 +9,6 @@ function aws-profile-switch() {
     local search_term="$1"
     force_interactive="1"
     profile_id=$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials | search-output "$search_term")
-    echo "Selecting profile: $profile_id" >&2
     export AWS_PROFILE="$profile_id"
 }
 
