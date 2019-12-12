@@ -1,0 +1,50 @@
+#!/bin/bash
+set -eo pipefail
+
+function process_project_dir() {
+    project_path="$1"
+    project_name="$(basename "$project_path")"
+   
+    project_files="$(find $project_path -maxdepth 1 -mindepth 1)" 
+    if (echo "$project_files" | grep 'package.json$')>/dev/null; then
+        echo " $project_name | $project_path"
+    elif (echo "$project_files" | grep -E '(Pipfile|requirements.txt|setup.py)$')>/dev/null; then
+        echo " $project_name | $project_path" 
+    elif (echo "$project_files" | grep -E 'composer.json$')>/dev/null; then
+        echo " $project_name | $project_path" 
+    else
+        echo "  $project_name | $project_path" 
+    fi
+}
+
+function open_project() {
+    input_project_line="$(cat -)"
+    project_type="${input_project_line:0:1}"
+    project_path="$(echo $input_project_line | sed -n -E -e 's/^(.+) \| ([^\|]+)$/\2/p')"
+    
+    project_editor=""
+    case "$project_type" in
+        "")
+            project_editor="phpstorm"
+            ;;
+        "")
+            project_editor="pycharm"
+            ;;
+        "")
+            project_editor="phpstorm"
+            ;;
+        *)
+            project_editor="phpstorm"
+            ;;
+    esac
+
+    $project_editor $project_path>2 2>/dev/null & disown
+}
+
+export -f process_project_dir
+
+find ~/projects/ -maxdepth 1 -mindepth 1 \
+    | sort \
+    | xargs -n 1 -I % bash -c 'process_project_dir "$@"' _ % \
+    | rofi -dmenu -i -p "Project" \
+    | open_project 

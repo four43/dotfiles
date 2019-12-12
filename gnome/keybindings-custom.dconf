@@ -10,10 +10,15 @@ name='Terminal'
 
 [custom2]
 binding='<Super>d'
-command='rofi -show run'
+command="rofi -modi drun,run -drun-match-fields name -show drun -i -show-icons -theme-str 'prompt { enabled: false; }'"
 name='Rofi Run'
 
 [custom3]
+binding='<Super>p'
+command='/home/seth/dotfiles/bin/open-project'
+name='Open Project'
+
+[custom4]
 binding='<Super>e'
-command='emoji'
-name='Emoji (Rofi)'
+command='/home/seth/projects/altcode/altcode'
+name='AltCode/Emoji'
