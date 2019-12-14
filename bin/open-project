@@ -1,16 +1,21 @@
 #!/bin/bash
 set -eo pipefail
 
+PROJ_EDITOR_JS="${PROJ_EDITOR_JS:-phpstorm}"
+PROJ_EDITOR_PHP="${PROJ_EDITOR_PHP:-phpstorm}"
+PROJ_EDITOR_PYTHON="${PROJ_EDITOR_PYTHON:-pycharm}"
+PROJ_EDITOR_DEFAULT="${PROJ_EDITOR_DEFAULT:-$PROJ_EDITOR_PHP}"
+
 function process_project_dir() {
     project_path="$1"
     project_name="$(basename "$project_path")"
    
     project_files="$(find $project_path -maxdepth 1 -mindepth 1)" 
-    if (echo "$project_files" | grep 'package.json$')>/dev/null; then
+    if (echo "$project_files" | grep -qE 'package.json$'); then
         echo " $project_name | $project_path"
-    elif (echo "$project_files" | grep -E '(Pipfile|requirements.txt|setup.py)$')>/dev/null; then
+    elif (echo "$project_files" | grep -qE '(Pipfile|requirements.txt|setup.py)$'); then
         echo " $project_name | $project_path" 
-    elif (echo "$project_files" | grep -E 'composer.json$')>/dev/null; then
+    elif (echo "$project_files" | grep -qE 'composer.json$'); then
         echo " $project_name | $project_path" 
     else
         echo "  $project_name | $project_path" 
@@ -25,16 +30,16 @@ function open_project() {
     project_editor=""
     case "$project_type" in
         "")
-            project_editor="phpstorm"
+            project_editor="$PROJ_EDITOR_JS"
             ;;
         "")
-            project_editor="pycharm"
+            project_editor="$PROJ_EDITOR_PYTHON"
             ;;
         "")
-            project_editor="phpstorm"
+            project_editor="$PROJ_EDITOR_PHP"
             ;;
         *)
-            project_editor="phpstorm"
+            project_editor="$PROJ_EDITOR_DEFAULT"
             ;;
     esac
 
