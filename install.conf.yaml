@@ -5,11 +5,13 @@
 - clean: ['~']
 
 - link:
+    ~/.config/rofi/config.rasi: themes/current/rofi.rasi
     ~/.dotfiles: ''
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.config/i3/config: i3/config
     ~/.gitignore: git/gitignore
     ~/.inputrc: inputrc
+    ~/.config/neofetch/config.conf: neofetch/config.conf
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
     ~/.vimrc: vim/vimrc
