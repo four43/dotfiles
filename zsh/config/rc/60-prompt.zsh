@@ -135,6 +135,6 @@ function terraform_ws_indicator() {
     fi
 }
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator)\$ '
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator) '
 zle -N zle-keymap-select
 zle -N accept-line
