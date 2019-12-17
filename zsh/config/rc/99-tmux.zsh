@@ -10,3 +10,9 @@ ssh() {
         command ssh "$@"
     fi
 }
+
+precmd() {
+    if [[ -n "$TMUX" ]]; then
+        tmux rename-window "zsh|$(basename $(pwd))"
+    fi
+}
