@@ -43,7 +43,11 @@ function open_project() {
             ;;
     esac
 
-    $project_editor $project_path>2 2>/dev/null & disown
+    # https://youtrack.jetbrains.com/issue/IDEA-157989#focus=streamItem-27-1493710.0-0
+    (
+        trap - SIGINT
+        exec /bin/bash $project_editor $project_path
+    ) & 2>&1 >/dev/null disown
 }
 
 export -f process_project_dir
