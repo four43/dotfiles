@@ -13,14 +13,14 @@ ssh() {
 
 precmd() {
     if [[ -n "$TMUX" ]]; then
-        tmux rename-window "$(basename $(pwd))"
+        tmux rename-window "$(basename "$(pwd)")"
     fi
 }
 
 python() {
 
     if [[ -n "$TMUX" ]]; then
-        tmux rename-window "$(basename $(pwd))"
+        tmux rename-window "$(basename "$(pwd)")"
         command python "$@"
         tmux set-window-option automatic-rename "on" 1>/dev/null
     else
