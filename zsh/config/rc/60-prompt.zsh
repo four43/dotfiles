@@ -104,7 +104,7 @@ function git_upstream() {
 function python_env_indicator() {
     # Check Pipenv/venv first
     if [[ -n "${VIRTUAL_ENV}" ]]; then
-        if [[ "$VIRTUAL_ENV" =~ /\.venv/ ]]; then
+        if [[ "$VIRTUAL_ENV" =~ \.venv ]]; then
             env_name="$(basename "$(realpath "$VIRTUAL_ENV/../")")"
         else
             # Virtual env in virtualenvs folder [project-name]-[random]
