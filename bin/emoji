@@ -1,7 +1,0 @@
-#!/bin/zsh
-if [[ -t 0 ]]; then
-    cat ~/dotfiles/emojis | sed -E 's/^:([^:]+):/\1 - /' | fzf | awk '{print $3}' | tr -d "\n" | xclip -sel clip
-else
-    cat ~/dotfiles/emojis | sed -E 's/^:([^:]+):/\1 - /' | rofi -dmenu | awk '{print $3}' | tr -d "\n" | xclip -sel clip
-fi
-
