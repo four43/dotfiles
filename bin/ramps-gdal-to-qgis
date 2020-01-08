@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+# Converts a gdal ramp (space delimited) to a qgis ramp
+
+echo "# QGIS Generated Color Map Export File"
+echo "INTERPOLATION:INTERPOLATED"
+
+INPUT_PATH="$1"
+
+# https://stackoverflow.com/a/1521498/387851
+while IFS="" read -r line || [ -n "$p" ]
+do
+    echo "$line" | awk '{print $1","$2","$3","$4","$5","$1}'
+done < "$INPUT_PATH"
