@@ -20,7 +20,7 @@ mkdir -p "$desktop_file_path"
 echo "[Desktop Entry]
 Version=1.0
 Name=NoSQL Booster
-Comment=NoSQL Booster
+Comment=NoSQL Booster for MongoDB
 Exec=$nosql_booster_bin
 Icon=$(dirname "$nosql_booster_bin")/nosql-booster.png
 Terminal=false
