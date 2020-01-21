@@ -24,7 +24,7 @@ Comment=NoSQL Booster for MongoDB
 Exec=$nosql_booster_bin
 Icon=$(dirname "$nosql_booster_bin")/nosql-booster.png
 Terminal=false
-StartupWMClass=nosqlbooster
+StartupWMClass=nosqlbooster for mongodb
 Type=Application
 Categories=Network;
 " > "${desktop_file_path}/NoSQLBooster.desktop"
