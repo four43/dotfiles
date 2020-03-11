@@ -1,0 +1,1 @@
+setopt SH_WORD_SPLIT
