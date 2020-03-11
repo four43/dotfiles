@@ -95,6 +95,13 @@ function aws-ec2-unhealthy() {
     fi
 }
 
+# Seth the AMI-ID on a launch template
+function aws-ec2-lt-set-ami () {
+    local lt_name=$1
+    local ami_id=$2
+    aws ec2 create-launch-template-version --launch-template-name "$lt_name" --source-version '$Latest' --launch-template-data '{"ImageId": "'"$ami_id"'"}'
+}
+
 function aws-ssm-param-ls() {
     local search_term="$1"
     aws ssm describe-parameters \
