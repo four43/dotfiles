@@ -191,3 +191,18 @@ function aeris_api_5XX() {
     wait    
 }
 
+function goes-updated-times() {
+    sats=("goes16" "goes17")
+    for sat in "${sats[@]}"; do
+        year="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
+        day="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
+        hour="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
+        file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
+        if [[ "$?" != "0" ]]; then
+            hour=$((hour-1))
+            file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
+        fi
+    echo "$sat updated at $(echo "$file_list" | sed -E 's/.*c([0-9]{4})([0-9]{3})([0-9]{2})([0-9]{2})([0-9]{2}).*/\1 d\2 @ \3:\4:\5Z/')"
+    done
+}
+
