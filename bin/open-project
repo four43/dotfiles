@@ -13,7 +13,7 @@ function process_project_dir() {
     project_files="$(find $project_path -maxdepth 1 -mindepth 1)" 
     if (echo "$project_files" | grep -qE 'package.json$'); then
         echo " $project_name | $project_path"
-    elif (echo "$project_files" | grep -qE '(Pipfile|requirements.txt|setup.py)$'); then
+    elif (echo "$project_files" | grep -qE '(Pipfile|requirements\.txt|setup\.py|poetry\.lock)$'); then
         echo " $project_name | $project_path" 
     elif (echo "$project_files" | grep -qE 'composer.json$'); then
         echo " $project_name | $project_path" 
