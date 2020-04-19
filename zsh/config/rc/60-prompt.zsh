@@ -87,14 +87,18 @@ function git_indicator() {
 
 # Displays indicator if there are local commits that haven't been pushed to a remote.
 function git_unpushed_commits_indicator() {
-    local num=$(git rev-list @{u}..HEAD 2>/dev/null | wc -l)
-    if [[ "$num" -gt 0 ]]; then
-        echo "%F{yellow}$num%f"
+    if git rev-list @{u}..HEAD >/dev/null 2>&1; then
+        local num=$(git rev-list @{u}..HEAD 2>/dev/null | wc -l)
+        if [[ "$num" -gt 0 ]]; then
+            echo "%F{yellow}$num%f"
+        fi
+    else
+        echo "%F{yellow}(new)%f"
     fi
 }
 
 function git_branch() {
-    git rev-parse --abbrev-ref HEAD
+    git rev-parse --abbrev-ref HEAD 2>/dev/null
 }
 
 function git_upstream() {
