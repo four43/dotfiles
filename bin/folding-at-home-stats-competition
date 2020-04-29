@@ -1,0 +1,34 @@
+#!/bin/bash
+
+TMP_FILE_PATH="/tmp/folding-at-home-stats/daily_user_summary.txt.bz2"
+MAX_AGE=$(((60+15) * 60))
+
+if [[ -z $FAH_USERNAME ]]; then
+    # Get username from the config
+    FAH_USERNAME=$(sed -n -E 's/^\s*<user value=\"(\S+)\"\/>.*/\1/p' /etc/fahclient/config.xml)
+fi
+
+function log() {
+    echo $@ >&2
+}
+
+function download_file() {
+    log "Downloading new scoring data from foldingathome.org..."
+    mkdir -p "$(dirname "$TMP_FILE_PATH")"
+    wget -q -O "$TMP_FILE_PATH" 'https://apps.foldingathome.org/daily_user_summary.txt.bz2'
+    touch -t "$(date "+%Y%m%d%H")00" "$TMP_FILE_PATH"
+}
+
+if ! [[ -f "$TMP_FILE_PATH" ]]; then
+    download_file;
+else
+    age=$(($(date +%s) - $(date +%s -r "$TMP_FILE_PATH")))
+    if [[ $age -gt $MAX_AGE ]]; then
+        log "Cache file too old, fetching new data"
+        download_file;
+    fi
+fi
+
+bunzip2 -c "$TMP_FILE_PATH" | awk '{print NR " " $s}' | grep -C 5 "$FAH_USERNAME" | {
+    echo "Rank User Score WUs TeamId"; cat -
+} | column -t
