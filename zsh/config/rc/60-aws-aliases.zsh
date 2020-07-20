@@ -169,6 +169,19 @@ function aws-ssm-param-decrypt() {
     aws ssm get-parameter --name "$name" --with-decryption | jq -r '.Parameter.Value'
 }
 
+function aws-s3-cat() {
+    if [[ -n "$1" ]]; then
+        local s3_path="$1"
+    elif [ ! -t 0 ]; then
+        local s3_path="$(cat)"
+    fi
+
+    tmpfile=$(mktemp /tmp/aws-s3-cat.XXXXXX)
+    aws s3 cp "$s3_path" "$tmpfile"
+    cat "$tmpfile"
+    rm "$tmpfile"
+}
+
 # AerisWeather
 function ssh_aeris_api() {
     ssh -i ~/.ssh/work/aeris-api.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null core@${@}
