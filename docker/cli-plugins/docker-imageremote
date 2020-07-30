@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# With lots of help from: https://success.docker.com/article/how-do-i-authenticate-with-the-v2-api
+
+function docker_cli_plugin_metadata() {
+        local vendor="four43"
+        local version="v1.0.0"
+        local url="https://www.github.com/four43/dotfiles"
+        local description="Lists remote image versions"
+        cat <<-EOF
+        {"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+EOF
+}
+
+function version() {
+        docker --version | cut -d " " -f 3 | cut -d "," -f 1
+}
+
+function get_token() {
+    # `docker login` just stores creds in our config file, base64 encoded, with a ":" separator
+    local base64_creds="$(cat ~/.docker/config.json | jq --raw-output '.auths["https://index.docker.io/v1/"]["auth"]')"
+    local username="$(echo "$base64_creds" | base64 -d | cut -d ':' -f1)"
+    local password="$(echo "$base64_creds" | base64 -d | cut -d ':' -f2)"
+    
+    curl --silent -X POST \
+        -H "Content-Type: application/json" \
+        -d '{"username": "'${username}'", "password": "'${password}'"}' \
+        https://hub.docker.com/v2/users/login/ | jq --raw-output '.token'
+}
+
+function main() {
+    set -o pipefail
+    image_name="$1"
+    echo "Searching for $1 tags..." >&2
+    token="$(get_token $image_name)"
+    authorization_header="Authorization: Bearer $token"
+    tag_list_url="https://hub.docker.com/v2/repositories/$image_name/tags?page_size=10000"
+    curl --silent --get -H "Accept: application/json" -H "$authorization_header" "$tag_list_url" | jq -e --raw-output '.results[].name'
+    if [[ $? != 0 ]]; then
+        echo "No repos by that name found, searching for repos..." >&2
+        repo_namespace="$(echo "$image_name" | cut -d "/" -f1)"
+        repo_name="$(echo "$image_name" | cut -d "/" -f2)"
+        repo_list_url="https://hub.docker.com/v2/repositories/${repo_namespace}/?page_size=10000"
+        curl --silent --get -H "Accept: application/json" -H "$authorization_header" "$repo_list_url" | jq --raw-output '.results[].name' | grep -E "^${repo_name}"
+    fi
+}
+
+case "$1" in
+        docker-cli-plugin-metadata)
+                docker_cli_plugin_metadata
+                ;;
+        *)
+        shift
+                main "$@"
+                ;;
+esac
+
