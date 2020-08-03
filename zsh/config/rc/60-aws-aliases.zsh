@@ -182,6 +182,10 @@ function aws-s3-cat() {
     rm "$tmpfile"
 }
 
+function aws-efs-fs-list {
+    aws efs describe-file-systems | jq -r '.FileSystems[] | [.Name,.SizeInBytes.Value,.FileSystemId] | @tsv' | awk '{print $1, $2/1024/1024/1024 "GB", $3}' | column -t | sort
+}
+
 # AerisWeather
 function ssh_aeris_api() {
     ssh -i ~/.ssh/work/aeris-api.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null core@${@}
