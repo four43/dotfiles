@@ -182,7 +182,7 @@ function aws-s3-cat() {
     rm "$tmpfile"
 }
 
-function aws-efs-fs-list {
+function aws-efs-fs-ls {
     aws efs describe-file-systems | jq -r '.FileSystems[] | [.Name,.SizeInBytes.Value,.FileSystemId] | @tsv' | awk '{print $1, $2/1024/1024/1024 "GB", $3}' | column -t | sort
 }
 
