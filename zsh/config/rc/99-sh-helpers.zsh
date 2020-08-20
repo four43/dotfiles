@@ -12,5 +12,8 @@ function password() {
 function ssh-ec2() {
     force_interactive="1"
     local ec2_data="$(aws-ec2-ls $1)"
-    ssh $(echo $ec2_data | awk '{ print $3 }')
+    if [[ $? == 0 ]]; then
+        echo "SSHing to $(echo $ec2_data | awk '{ print $2,"(",$4," ",$3,")" }')..." >&2
+        ssh $(echo $ec2_data | awk '{ print $4 }')
+    fi
 }

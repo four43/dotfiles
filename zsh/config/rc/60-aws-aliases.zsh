@@ -1,8 +1,10 @@
 #!/usr/bin/zsh
 # Thanks jk: https://github.com/jkoelndorfer/dotfiles/blob/master/zsh/config/rc/60-aws-aliases.zsh
 
+export AWS_PAGER=""
+
 function _jq_instance_output_tsv() {
-    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .State.Name] | @tsv'   
+    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'   
 }
 
 function aws-profile-switch() {
@@ -177,7 +179,7 @@ function aws-s3-cat() {
     fi
 
     tmpfile=$(mktemp /tmp/aws-s3-cat.XXXXXX)
-    aws s3 cp "$s3_path" "$tmpfile"
+    aws s3 cp "$s3_path" "$tmpfile" 2>&1 >/dev/null || exit 1;
     cat "$tmpfile"
     rm "$tmpfile"
 }
