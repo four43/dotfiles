@@ -4,5 +4,5 @@ export PATH="$PATH:$DOTFILE_DIR/bin/git"
 zstyle ':completion:*:*:git:*' user-commands ${${(M)${(k)commands}:#git-*}/git-/}
 
 function git-shortrev {
-    git rev-parse --short HEAD
+    git rev-parse --short HEAD | head -c 7
 }
