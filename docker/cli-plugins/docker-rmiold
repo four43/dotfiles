@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+docker_cli_plugin_metadata() {
+	local vendor="four43"
+	local version="v1.0.0"
+	local url="https://www.github.com/four43/dotfiles"
+	local description="Removes older images, leaving the most recent tag"
+	cat <<-EOF
+	{"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+EOF
+}
+
+version() {
+	docker --version | cut -d " " -f 3 | cut -d "," -f 1
+}
+
+docker_rmiold() {
+    docker images | awk 'seen[$1]++' | awk '{ print $1 ":" $2}' | xargs docker rmi
+}
+
+case "$1" in
+	docker-cli-plugin-metadata)
+		docker_cli_plugin_metadata
+		;;
+	*)
+        shift
+		docker_rmiold $@
+		;;
+esac
+
