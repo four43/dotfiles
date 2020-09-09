@@ -1,0 +1,151 @@
+#!/usr/bin/env python
+from dataclasses import dataclass
+import logging
+import math
+import re
+import subprocess
+from typing import List
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+RE_NODE_NAME = re.compile(r'^Name:\s*(?P<name>.*)$')
+RE_CPU_CAPACITY = re.compile(r'^\s*cpu:\s*(?P<cpu_capacity>[0-9]+[A-Za-z]*)$')
+RE_MEM_CAPACITY = re.compile(r'^\s*memory:\s*(?P<mem_capacity>[0-9]+[A-Za-z]*)$')
+RE_RESOURCES = re.compile(
+    r'^\s*(?P<cpu_req>[0-9]+[A-Za-z]*) \([0-9]+%\).*?(?P<cpu_limit>[0-9]+[A-Za-z]*) \([0-9]+%\).*?(?P<mem_req>[0-9]+[A-Za-z]*) \([0-9]+%\).*?(?P<mem_limit>[0-9]+[A-Za-z]*) \([0-9]+%\).*?$')
+
+
+@dataclass
+class Node:
+    name: str
+    cpu_capacity: float
+    mem_capacity: float
+    cpu_req: float
+    cpu_limit: float
+    mem_req: float
+    mem_limit: float
+
+    def __add__(self, other):
+        if isinstance(other, Node):
+            return Node(
+                name=f"{self.name}, {other.name}",
+                cpu_capacity=self.cpu_capacity + other.cpu_capacity,
+                mem_capacity=self.mem_capacity + other.mem_capacity,
+                cpu_req=self.cpu_req + other.cpu_req,
+                cpu_limit=self.cpu_limit + other.cpu_limit,
+                mem_req=self.mem_req + other.mem_req,
+                mem_limit=self.mem_limit + other.mem_limit
+            )
+
+    def __str__(self):
+        return f"Node: {self.name}\n" \
+               f"\tCPU Capacity:  {format_cpu(self.cpu_capacity)}\n" \
+               f"\tMem Capacity:  {format_mem(self.mem_capacity, 'gi')}\n\n" \
+               f"\tCPU Requested: {format_cpu(self.cpu_req)} ({self.cpu_req / self.cpu_capacity * 100:0.2f}%)\n" \
+               f"\tCPU Limit:     {format_cpu(self.cpu_limit)} ({self.cpu_limit / self.cpu_capacity * 100:0.2f}%)\n" \
+               f"\tMem Requested: {format_mem(self.mem_req, 'gi')} ({self.mem_req / self.mem_capacity * 100:0.2f}%)\n" \
+               f"\tMem Limit:     {format_mem(self.mem_limit, 'gi')} ({self.mem_limit / self.mem_capacity * 100:0.2f}%)\n"
+
+    @classmethod
+    def from_describe(cls, describe_lines: List[str]):
+        regexes = [
+            RE_NODE_NAME,
+            RE_CPU_CAPACITY,
+            RE_MEM_CAPACITY,
+            RE_RESOURCES
+        ]
+        matched_args = {}
+        for line in describe_lines:
+            for pattern in regexes:
+                match_result = pattern.match(line)
+                if match_result is not None:
+                    matched_args.update(**match_result.groupdict())
+
+        return cls(
+            name=matched_args["name"],
+            cpu_capacity=parse_cpu(matched_args["cpu_capacity"]),
+            mem_capacity=parse_mem(matched_args["mem_capacity"]),
+            cpu_req=parse_cpu(matched_args["cpu_req"]),
+            cpu_limit=parse_cpu(matched_args["cpu_limit"]),
+            mem_req=parse_mem(matched_args["mem_req"]),
+            mem_limit=parse_mem(matched_args["mem_limit"]),
+        )
+
+
+def parse_cpu(cpu: str) -> float:
+    """ Return CPU value in whole units """
+    if cpu is None:
+        return 0
+    if type(cpu) is int:
+        return cpu
+    g = re.match('(\d*)(\w*)', cpu).groups()
+    amt = int(g[0])
+    if len(g) > 1:
+        unit = g[1]
+        # TODO: add more possible unit types?
+        if unit == "m":
+            amt = float(amt) / 1000.0
+    return amt
+
+
+def format_cpu(cpu: float, unit: str = "") -> str:
+    if unit.lower() == "m":
+        # return CPU formatted in milliunits
+        return f"{float(cpu) * 1000.0:0.0f}m"
+    return f"{cpu}"
+
+
+def parse_mem(mem: str) -> float:
+    """ Return mem value in bytes """
+    if mem is None:
+        return 0
+    if type(mem) is int:
+        return mem
+    g = re.match('(\d*)(\w*)', mem).groups()
+    amt = int(g[0])
+    if len(g) > 1:
+        unit = g[1]
+        # TODO: add more possible unit types?
+        if unit.lower() == "ki":
+            amt *= 1024
+        elif unit.lower() == "mi":
+            amt *= (1024 * 1024)
+        elif unit.lower() == "gi":
+            amt *= (1024 * 1024 * 1024)
+    return amt
+
+
+def format_mem(mem, unit=""):
+    if unit.lower() == "ki":
+        # return mem formatted in kibibytes
+        return f"{round(mem / 1024)}Ki"
+    elif unit.lower() == "mi":
+        # return mem formatted in mebibytes
+        return f"{round(mem / math.pow(1024, 2))}Mi"
+    elif unit.lower() == "gi":
+        # return mem formatted in gibibytes
+        return f"{round(mem / math.pow(1024, 3))}Gi"
+    return mem
+
+
+if __name__ == '__main__':
+    logger.info("Querying Kubernetes for nodes...")
+    node_data = subprocess.check_output(
+        ["kubectl", "describe", "node"]
+    ).decode('ascii')
+
+    nodes = []
+    describe_node_lines = []
+    for line in node_data.splitlines():
+        if len(line):
+            describe_node_lines.append(line)
+        else:
+            if len(describe_node_lines):
+                nodes.append(Node.from_describe(describe_node_lines))
+            describe_node_lines = []
+
+    total_node = sum(nodes[1:], nodes[0])
+    print(total_node)
+
+    # main()
