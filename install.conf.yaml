@@ -5,6 +5,7 @@
 - clean: ['~']
 
 - link:
+    ~/bin/kc-utilization: bin/kc-utilization
     ~/.config/rofi/config.rasi: themes/current/rofi.rasi
     ~/.dotfiles: ''
     ~/.docker/cli-plugins: docker/cli-plugins
@@ -12,6 +13,7 @@
     ~/.gitignore: git/gitignore
     ~/.inputrc: inputrc
     ~/.config/neofetch/config.conf: neofetch/config.conf
+    ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
     ~/.vimrc: vim/vimrc

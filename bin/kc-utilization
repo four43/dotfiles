@@ -42,10 +42,10 @@ class Node:
         return f"Node: {self.name}\n" \
                f"\tCPU Capacity:  {format_cpu(self.cpu_capacity)}\n" \
                f"\tMem Capacity:  {format_mem(self.mem_capacity, 'gi')}\n\n" \
-               f"\tCPU Requested: {format_cpu(self.cpu_req)} ({self.cpu_req / self.cpu_capacity * 100:0.2f}%)\n" \
-               f"\tCPU Limit:     {format_cpu(self.cpu_limit)} ({self.cpu_limit / self.cpu_capacity * 100:0.2f}%)\n" \
-               f"\tMem Requested: {format_mem(self.mem_req, 'gi')} ({self.mem_req / self.mem_capacity * 100:0.2f}%)\n" \
-               f"\tMem Limit:     {format_mem(self.mem_limit, 'gi')} ({self.mem_limit / self.mem_capacity * 100:0.2f}%)\n"
+               f"\tCPU Requested: {format_cpu(self.cpu_req)} / {format_cpu(self.cpu_capacity)} ({self.cpu_req / self.cpu_capacity * 100:0.2f}%)\n" \
+               f"\tCPU Limit:     {format_cpu(self.cpu_limit)} / {format_cpu(self.cpu_capacity)} ({self.cpu_limit / self.cpu_capacity * 100:0.2f}%)\n" \
+               f"\tMem Requested: {format_mem(self.mem_req, 'gi')} / {format_mem(self.mem_capacity, 'gi')} ({self.mem_req / self.mem_capacity * 100:0.2f}%)\n" \
+               f"\tMem Limit:     {format_mem(self.mem_limit, 'gi')} / {format_mem(self.mem_capacity, 'gi')} ({self.mem_limit / self.mem_capacity * 100:0.2f}%)\n"
 
     @classmethod
     def from_describe(cls, describe_lines: List[str]):
@@ -93,7 +93,7 @@ def format_cpu(cpu: float, unit: str = "") -> str:
     if unit.lower() == "m":
         # return CPU formatted in milliunits
         return f"{float(cpu) * 1000.0:0.0f}m"
-    return f"{cpu}"
+    return f"{cpu:0.2f}"
 
 
 def parse_mem(mem: str) -> float:
@@ -107,7 +107,9 @@ def parse_mem(mem: str) -> float:
     if len(g) > 1:
         unit = g[1]
         # TODO: add more possible unit types?
-        if unit.lower() == "ki":
+        if unit.lower() == "m":
+            amt /= 1000
+        elif unit.lower() == "ki":
             amt *= 1024
         elif unit.lower() == "mi":
             amt *= (1024 * 1024)
@@ -116,7 +118,7 @@ def parse_mem(mem: str) -> float:
     return amt
 
 
-def format_mem(mem, unit=""):
+def format_mem(mem: float, unit="") -> str:
     if unit.lower() == "ki":
         # return mem formatted in kibibytes
         return f"{round(mem / 1024)}Ki"
@@ -126,14 +128,15 @@ def format_mem(mem, unit=""):
     elif unit.lower() == "gi":
         # return mem formatted in gibibytes
         return f"{round(mem / math.pow(1024, 3))}Gi"
-    return mem
+    return f"{mem:0.2f}"
 
 
 if __name__ == '__main__':
     logger.info("Querying Kubernetes for nodes...")
     node_data = subprocess.check_output(
-        ["kubectl", "describe", "node"]
+        ["kubectl", "describe", "node", "-l", "env-production=true"]
     ).decode('ascii')
+    logger.info("Parsing output...")
 
     nodes = []
     describe_node_lines = []
@@ -147,5 +150,3 @@ if __name__ == '__main__':
 
     total_node = sum(nodes[1:], nodes[0])
     print(total_node)
-
-    # main()
