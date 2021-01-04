@@ -1,10 +1,9 @@
 #!/bin/bash
+set -ex
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "$DIR"
-source ./.venv/bin/activate
-
-IP=192.168.1.126
+IP=192.168.1.101
 
 function is_on() {
     python -m flux_led "$IP" -i 2>/dev/null | grep -iq " on "
@@ -18,7 +17,7 @@ function turn_off() {
     python -m flux_led "$IP" --off 2>/dev/null
 }
 
-
+source ./.venv/bin/activate
 if is_on; then
     # LED is currently on
     turn_off
