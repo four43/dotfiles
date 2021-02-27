@@ -2,9 +2,10 @@
 # Thanks jk: https://github.com/jkoelndorfer/dotfiles/blob/master/zsh/config/rc/60-aws-aliases.zsh
 
 export AWS_PAGER=""
+tab="$(printf '\t')"
 
 function _jq_instance_output_tsv() {
-    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'   
+    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
 }
 
 function aws-profile-switch() {
@@ -15,7 +16,7 @@ function aws-profile-switch() {
 }
 
 # Dumps out all of the EC2 instances with the given name.
-# 
+#
 # Usage: aws-ec2-ls [optional search query]
 # Outputs: id name hostname state
 function aws-ec2-ls() {
@@ -28,7 +29,7 @@ function aws-ec2-ls() {
 }
 
 # Outputs names of AWS EC2 AutoScaling Groups
-# 
+#
 # Usage: aws-ec2-asg-ls [optional search query]
 # Outputs: [asg-name]
 function aws-ec2-asg-ls() {
@@ -93,20 +94,57 @@ function aws-ec2-unhealthy() {
         confirm-cmd aws autoscaling set-instance-health --health-status Unhealthy --instance-id "$instance_id"
     else
         echo "Instance with the id of $instance_id wasn't found" >&2
-        return 
+        return
     fi
 }
 
-# Seth the AMI-ID on a launch template
+function _aws-ec2-ami-ls() {
+    aws ec2 describe-images --owners self | jq -r '.Images[] | [.Name, .ImageId, .CreationDate] | join("\t")' | sort -k3 -r -t "$tab"
+}
+
+function aws-ami-ls() {
+    _aws-ec2-ami-ls | columns
+}
+
+function aws-ec2-ami-select() {
+    {
+        echo -e "Name\tImage ID\tCreation Date"
+        _aws-ec2-ami-ls
+    } | columns | fzf --header-lines 1 | awk '{ print $2 }'
+}
+
+function _aws-ec2-lt-ls() {
+    aws ec2 describe-launch-templates | jq -r '.LaunchTemplates[] | [.LaunchTemplateName, .LaunchTemplateId, .LatestVersionNumber] | join("\t")'
+}
+
+function aws-ec2-lt-ls() {
+    {
+        echo -e 'Launch Template Name\tLaunch Template ID\tLatest Version'
+        _aws-ec2-lt-ls
+    } | columns
+}
+
+function aws-ec2-lt-select() {
+    aws-ec2-lt-ls | fzf --header-lines 1 | awk '{ print $2 }'
+}
+
+
+# Set the AMI-ID on a launch template
 function aws-ec2-lt-set-ami () {
-    local lt_name=$1
+    local lt_id=$1
     local ami_id=$2
-    aws ec2 create-launch-template-version --launch-template-name "$lt_name" --source-version '$Latest' --launch-template-data '{"ImageId": "'"$ami_id"'"}'
+    aws ec2 create-launch-template-version --launch-template-id "$lt_id" --source-version '$Latest' --launch-template-data '{"ImageId": "'"$ami_id"'"}'
 }
 
 function aws-ssm-param-ls() {
     local search_term="$1"
-    aws ssm describe-parameters \
+    if [[ -z "$search_term" ]]; then
+        results="$(aws ssm describe-parameters)"
+    else
+        results="$(aws ssm get-parameters-by-path --recursive --path $search_term)"
+    fi
+
+    echo "$results" \
         | jq -r '.Parameters[] | (.Name + "\t" + .Description)' \
         | columns \
         | search-output "$search_term" "true"
@@ -122,7 +160,7 @@ function aws-ssm-param-create() {
     if [[ -n "$secret" ]]; then
         ssm_type="SecureString"
     fi
-    
+
     echo "Create '${ssm_path}' set to '${value}' as a '${ssm_type}'?"
     confirm-cmd aws ssm put-parameter \
         --name "${ssm_path}" \
@@ -141,7 +179,7 @@ function aws-ssm-param-update() {
     if [[ -n "$secret" ]]; then
         ssm_type="SecureString"
     fi
-    
+
     echo "Update '${ssm_path}' set to '${value}' as a '${ssm_type}'?"
     confirm-cmd aws ssm put-parameter \
         --name "${ssm_path}" \
@@ -189,27 +227,6 @@ function aws-efs-fs-ls {
 }
 
 # AerisWeather
-function ssh_aeris_api() {
-    ssh -i ~/.ssh/work/aeris-api.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null core@${@}
-}
-
-function aeris_api_load_averages() {
-    asginstances aeris-api-app-20190528141439425700000003 | awk '{print $2}' | while read ip; do 
-        echo -n "$ip: "
-        ssh_aeris_api "$ip" -n 'uptime | grep -o "load average:.*" | sed -E '"'"'s/^[^0-9]*([0-9\.]+),\s*([0-9\.]+),\s*([0-9\.]+)$/\1 \2 \3/'"'"'' 2>/dev/null
-    done | column -t
-}
-
-function aeris_api_5XX() {
-    trap 'kill $(jobs -p) 2>/dev/null' SIGINT SIGTERM EXIT
-    asginstances aeris-api-app-20190528141439425700000003 | awk '{print $2}' | while read ip; do
-        echo "Connecting to $ip">&2
-        ssh_aeris_api "$ip" -n 'sudo journalctl -fu aeris-api-nginx | grep -E '"'"' 5[0-9][0-9] "'"'"'' 2>/dev/null &
-    done
-    echo "Connected to all servers, listening for 5XX repsonse codes..." >&2
-    wait    
-}
-
 function goes-updated-times() {
     sats=("goes16" "goes17")
     for sat in "${sats[@]}"; do
@@ -217,6 +234,7 @@ function goes-updated-times() {
         day="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
         hour="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
         file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
+        echo "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" >&2
         if [[ "$?" != "0" ]]; then
             hour=$((hour-1))
             file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
