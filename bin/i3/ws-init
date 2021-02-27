@@ -70,12 +70,7 @@ if [[ -n ${FILTERED_WORKSPACES} ]]; then
 else
     # New workspace
     echo "New workspace: ${WORKSPACE}">&2
-
     i3-msg workspace "${WORKSPACE}" 1>&2
-    if [[ -n ${OUTPUT} ]]; then
-        echo "Moving to: ${OUTPUT}">&2
-        i3-msg move workspace to output "${OUTPUT}" 1>&2
-    fi
 
     if [[ -n ${PROGRAM} ]]; then
         # Using i3-msg to ensure new program starts on new workspace.
@@ -83,5 +78,10 @@ else
         for i in "${ADDR[@]}"; do
             i3-msg exec "$i" 1>&2 2>/dev/null 1>&2
         done
+    fi
+
+    if [[ -n ${OUTPUT} ]]; then
+        echo "Moving to: ${OUTPUT}">&2
+        i3-msg move workspace to output "${OUTPUT}" 1>&2
     fi
 fi

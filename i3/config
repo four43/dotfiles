@@ -44,15 +44,16 @@ font pango:DejaVu Sans Mono Nerd Font Complete Mono 8
 # use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-exec_always --no-startup-id xrdb -load $DOTFILE_DIR/x11/Xresources
+#exec_always --no-startup-id xrdb -load $DOTFILE_DIR/x11/Xresources
 exec_always --no-startup-id $DOTFILE_DIR/bin/x11/orient-displays
 exec_always --no-startup-id $DOTFILE_DIR/themes/start-theme.sh
 
 # start a terminal
-bindsym $mod+Return exec --no-startup-id i3-sensible-terminal -e zsh -c "$DOTFILE_DIR/bin/tmux-start"
+bindsym $mod+Return exec --no-startup-id i3-sensible-terminal -e zsh -c "$DOTFILE_DIR"'/bin/tmux-start && /usr/bin/zsh'
 bindsym $mod+$ctrl+Return exec --no-startup-id i3-sensible-terminal
 
 # misc. bindings
+bindsym --release $shift+Print exec gnome-screenshot -a -c
 bindsym $prog_prefix+x exec xdotool mousedown 1 # Press and hold Mouse 1 (click mouse to release)
 
 # kill focused window
@@ -127,9 +128,9 @@ bindsym $mod+minus scratchpad show
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
 set $ws1 "1: terminal"
-set $ws_command1 "/home/seth/.dotfiles/bin/i3/ws-init --workspace terminal --output DVI-D-0 --program 'i3-sensible-terminal -e zsh -c \\"/home/seth/.dotfiles/bin/tmux-start\\"'"
+set $ws_command1 "$DOTFILE_DIR/bin/i3/ws-init --workspace terminal --output DVI-D-0 --program 'i3-sensible-terminal -e zsh -c \\"$DOTFILE_DIR/bin/tmux-start\\" && /usr/bin/zsh'"
 set $ws2 "2: browser"
-set $ws_command2 "/home/seth/.dotfiles/bin/i3/ws-init --workspace browser --output DVI-D-0 --program 'google-chrome'"
+set $ws_command2 "$DOTFILE_DIR/bin/i3/ws-init --workspace browser --output DP-5 --program 'google-chrome --password-store=gnome'"
 set $ws3 "3"
 set $ws_command3 "i3-msg workspace 3"
 set $ws4 "4"
