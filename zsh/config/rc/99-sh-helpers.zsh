@@ -14,6 +14,6 @@ function ssh-ec2() {
     local ec2_data="$(aws-ec2-ls $1)"
     if [[ $? == 0 ]]; then
         echo "SSHing to $(echo $ec2_data | awk '{ print $2,"(",$4," ",$3,")" }')..." >&2
-        ssh $(echo $ec2_data | awk '{ print $4 }')
+        ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" $(echo $ec2_data | awk '{ print $4 }')
     fi
 }
