@@ -26,23 +26,24 @@ function confirm-cmd() {
 }
 
 function columns() {
-    tab=$(echo -e "\t")
+    # Use printf for better portability: https://stackoverflow.com/a/525873/387851
+    tab=$(printf '\t')
     cat - | column -t -s "$tab"
 }
 
-# Filters output via fzf if interactive (or if force_interactive is set to 1). 
+# Filters output via fzf if interactive (or if force_interactive is set to 1).
 # Pass a search term as first arg, only output first column if arg2 is true
 function search-output() {
     local search_term="$1"
     local only_first_flag="$2"
     local data=$(cat)
-    
-    function output_filter_only_first() { 
+
+    function output_filter_only_first() {
         if [[ -n "$only_first_flag" ]]; then
             cat | awk '{print $1}'
         else
-            cat 
-        fi 
+            cat
+        fi
     }
 
     if [[ -t 1 ]] || [[ "$force_interactive" == "1" ]]; then
