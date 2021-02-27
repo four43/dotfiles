@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -o pipefail
 
 PROJ_EDITOR_JS="${PROJ_EDITOR_JS:-phpstorm}"
 PROJ_EDITOR_PHP="${PROJ_EDITOR_PHP:-phpstorm}"
@@ -9,7 +9,7 @@ PROJ_EDITOR_DEFAULT="${PROJ_EDITOR_DEFAULT:-$PROJ_EDITOR_PHP}"
 function process_project_dir() {
     project_path="$1"
     project_name="$(basename "$project_path")"
-   
+    
     project_files="$(find $project_path -maxdepth 1 -mindepth 1)" 
     if (echo "$project_files" | grep -qE 'package.json$'); then
         echo " $project_name | $project_path"
@@ -23,7 +23,7 @@ function process_project_dir() {
 }
 
 function open_project() {
-    input_project_line="$(cat -)"
+    input_project_line="$1"
     project_type="${input_project_line:0:1}"
     project_path="$(echo $input_project_line | sed -n -E -e 's/^(.+) \| ([^\|]+)$/\2/p')"
     
@@ -52,8 +52,11 @@ function open_project() {
 
 export -f process_project_dir
 
-find ~/projects/ -maxdepth 1 -mindepth 1 \
+rofi_choice="$(find ~/projects/ -maxdepth 1 -mindepth 1 \
     | sort \
     | xargs -n 1 -I % bash -c 'process_project_dir "$@"' _ % \
-    | rofi -dmenu -i -p "Project" \
-    | open_project 
+    | rofi -dmenu --no-custom -i -p "Project")"
+if [[ $? == 0 ]]; then
+    open_project "$rofi_choice"
+fi
+
