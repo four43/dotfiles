@@ -8,6 +8,9 @@
 # $ git branch-status
 # dns_check (ahead 1) | (behind 112) origin/master
 # master (ahead 2) | (behind 0) origin/master
+
+git fetch || echo "Couldn't update from remote, showing local version only!" >&2
+
 TAB=$(echo -e "\t")
 TMP_FILE=$(mktemp)
 {
