@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "start at `date`" >> ~/Documents/time-tracking.log
+dbus-monitor --session "type=signal,interface=org.gnome.ScreenSaver" |
+  while read MSG; do
+    LOCK_STAT=`echo $MSG | grep boolean | awk '{print $2}'`
+    if [[ "$LOCK_STAT" == "true" ]]; then
+        echo "locked `date +%s` `date`" >> ~/Documents/time-tracking.log
+    elif [[ "$LOCK_STAT" == "false" ]]; then
+        echo "unlock `date +%s` `date`" >> ~/Documents/time-tracking.log
+    fi
+  done

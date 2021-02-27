@@ -13,6 +13,7 @@ WS_TERMINAL=("1" "terminal" "${DISPLAYS[1]}" "i3-sensible-terminal -e zsh -c \"$
 WS_BROWSER=("2" "browser" "${DISPLAYS[0]}" "google-chrome")
 
 export WS_CONFIG=(
-    WS_TERMINAL[@]
-    WS_BROWSER[@]
+    ${WS_TERMINAL[@]}
+    ${WS_BROWSER[@]}
 )
+

@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+
+FILE_PATH="${1}"
+
+export DISPLAYS=($(echo $DISPLAY_ORDER))
+
+function get-value-raw {
+    grep $1 "${FILE_PATH}" | sed -E 's/^\w+=//'
+}
+
+function get-value {
+    eval "echo $(grep $1 "${FILE_PATH}" | sed -E 's/^\w+=//')"
+}
+
+WS_KEY=$(basename "${FILE_PATH}" | sed -E "s/-.+//")
+DISPLAY_ID=$(basename "${FILE_PATH}" | sed -E "s/^[^-]-+//" | sed -E "s/-\w+\.desktop//")
+
+if [[ -f "${FILE_PATH}" ]]; then
+    NAME="$(get-value 'Name')"
+    OUTPUT=${DISPLAYS[$DISPLAY_ID]}
+    EXEC=$(get-value-raw 'Exec')
+    
+    echo "set \$ws$WS_KEY \"$WS_KEY: $NAME\""
+    echo "set \$ws_command$WS_KEY \"$DOTFILE_DIR/bin/i3/ws-init --workspace $NAME --output $OUTPUT --program $EXEC\""
+else
+    echo "set \$ws$WS_KEY \"$WS_KEY\""
+    echo "set \$ws_command$WS_KEY \"i3-msg workspace $WS_KEY\""
+fi
+# echo $WS_KEY
+# echo $DISPLAY_ID
+# echo $NAME
+# echo $OUTPUT
+# echo $EXEC

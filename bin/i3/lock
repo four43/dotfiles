@@ -1,0 +1,6 @@
+#!/bin/bash
+set -xe
+OUTPUT_FILE=$(mktemp /tmp/screenshot.XXXXX.png)
+scrot "$OUTPUT_FILE"
+convert "$OUTPUT_FILE" -scale 10% -scale 1000% "$OUTPUT_FILE"
+

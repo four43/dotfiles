@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=terminal
+Icon=terminal
+IconFont=
+Path="${HOME}"
+Exec=i3-sensible-terminal -e zsh -c \\"/home/seth/.dotfiles/bin/tmux-start\\"
