@@ -3,6 +3,7 @@
 TMP_FILE_PATH="/tmp/folding-at-home-stats/daily_user_summary.txt.bz2"
 MAX_AGE=$(((60+15) * 60))
 
+FAH_USERNAME="${FAH_USERNAME:-$1}"
 if [[ -z $FAH_USERNAME ]]; then
     # Get username from the config
     FAH_USERNAME=$(sed -n -E 's/^\s*<user value=\"(\S+)\"\/>.*/\1/p' /etc/fahclient/config.xml)

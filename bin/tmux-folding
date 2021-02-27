@@ -1,16 +1,17 @@
 #!/bin/bash
 
-# Name first Window and start zsh
+# Creates a folding@home tmux pane split, showing:
+#  FAHClient, top, nvidia-smi, CPU Temps, personal stats
 tmux rename-window 'Folding@Home'
-tmux send-keys 'zsh' C-m 'clear' C-m 'FAHClient'
+tmux send-keys 'clear' C-m 'FAHClient'
 tmux split-window -h
 tmux send-keys 'top' C-m
 tmux resize-pane -L 10
 tmux split-window -v
-tmux resize-pane -U 15
+tmux resize-pane -U 10
 tmux send-keys 'watch -n 1 nvidia-smi' C-m
 tmux split-window -v
 tmux send-keys 'watch -n 3 "sensors | grep Core"' C-m
 tmux resize-pane -D 5
 tmux split-window -v
-tmux send-keys 'folding-at-home-stats' C-m
+tmux send-keys 'folding-at-home-stats-competition' C-m
