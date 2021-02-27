@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a9eea01f1499a59d77218e7b5f0d4b05e9bf6b9731b1d4444cdce09aa8037c15"
+            "sha256": "6fb043fa586dedcfa0227bb7269204fc09b720544bba59a9f5e241c6a343e3ed"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.7"
+            "python_version": "3.8"
         },
         "sources": [
             {
@@ -18,8 +18,7 @@
     "default": {
         "flux-led": {
             "hashes": [
-                "sha256:a69b4cbd34362fdc40662863fe8d326f6e036e3dde91bace4600beeba4f89546",
-                "sha256:df592e6de87004308f58da5f9a1db688e5f9760acd86640ffdcf8be944cda2de"
+                "sha256:a69b4cbd34362fdc40662863fe8d326f6e036e3dde91bace4600beeba4f89546"
             ],
             "index": "pypi",
             "version": "==0.22"
