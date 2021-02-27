@@ -18,3 +18,6 @@ Fun utilities to show off customizations
   * gtop - System load history as cli charts. Uses node.js though :(
 
 
+# Nice Utils
+
+ * [http-prompt](http://http-prompt.com/) - HTTPie wrapper, auto-complete via OpenAPI spec
