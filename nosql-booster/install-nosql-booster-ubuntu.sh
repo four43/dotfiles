@@ -6,7 +6,8 @@ rm -rf "$work_dir" || true
 mkdir -p "$work_dir"
 cd "$work_dir"
 
-wget https://nosqlbooster.com/s3/download/releasesv5/nosqlbooster4mongo-5.2.9.AppImage -O nosql-booster.AppImage
+NOSQL_BOOSTER_VERSION=5.2.12
+wget 'https://nosqlbooster.com/s3/download/releasesv5/nosqlbooster4mongo-'"${NOSQL_BOOSTER_VERSION}"'.AppImage' -O nosql-booster.AppImage
 chmod +x nosql-booster.AppImage
 ./nosql-booster.AppImage --appimage-extract
 cp squashfs-root/nosqlbooster4mongo.png ./nosql-booster.png
