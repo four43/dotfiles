@@ -38,12 +38,16 @@ function kc-exec() {
 
 function kc-rolling-update() {
     pod_search_term="$1"
-    sleep_time="${2:-"10"}"
+    confirm_yes="${2:-"y"}"
 
     echo -e "Rolling update: \n $(kc-pod-names "${pod_search_term}")\n"
-    echo "Are you sure [Yy]?"
-    read -k 1
-    echo
+    if [[ -n $confirm_yes ]]; then
+        REPLY="$confirm_yes"
+    else
+        echo "Are you sure [Yy]?"
+        read -k 1
+        echo
+    fi
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
        echo "Wasn't Y/y, quitting"
@@ -86,4 +90,3 @@ function kc-grep() {
     CMD="grep -E \"${pattern}\" /var/log/app/ap*.log";
     kube-exec ${pod_name} "${CMD}";
 }
-
