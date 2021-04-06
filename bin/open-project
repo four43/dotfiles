@@ -52,7 +52,7 @@ function open_project() {
 
 export -f process_project_dir
 
-rofi_choice="$(find ~/projects/ -maxdepth 1 -mindepth 1 \
+rofi_choice="$(find ~/projects/ ~/projects/personal -maxdepth 1 -mindepth 1 \
     | sort \
     | xargs -n 1 -I % bash -c 'process_project_dir "$@"' _ % \
     | rofi -dmenu --no-custom -i -p "Project")"
