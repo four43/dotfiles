@@ -1,0 +1,4 @@
+#!/bin/bash
+
+amixer -D pulse --card 2 sset Mic toggle && amixer --card 2 get Mic
+
