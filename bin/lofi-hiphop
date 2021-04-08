@@ -1,10 +1,11 @@
 #!/bin/bash
 # requires: mpv (apt) and youtube-dl (pip)
 
-if pgrep --full 'mpv.+5qap5aO4i9A'; then
-    pkill --full 'mpv.+5qap5aO4i9A';
-    notify-send "lofi hip hop" "Stopped stream"
+VIDEO_ID="5qap5aO4i9A"
+if pgrep --full 'mpv.+'"$VIDEO_ID"; then
+    pkill --full 'mpv.+'"$VIDEO_ID";
+    notify-send --expire-time 1000 "lofi hip hop" "Stopped stream"
 else
-    notify-send "lofi hip hop" "Started stream"
-    exec mpv 'https://www.youtube.com/watch?v=5qap5aO4i9A' --no-video 2>&1 >/tmp/lofi.log
+    notify-send --expire-time 1000 "lofi hip hop" "Started stream"
+    exec mpv 'https://www.youtube.com/watch?v='"$VIDEO_ID" --no-video 2>&1
 fi
