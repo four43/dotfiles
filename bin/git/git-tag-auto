@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eo pipefail
+latest_version="$(cat ./CHANGELOG.md | grep -E '## v[0-9]+\.[0-9]+\.[0-9]+' | sed -E 's/^## (v[0-9]+\.[0-9]+\.[0-9]+)/\1/' | head -n 1)"
+contents="$(sed '/^## '"$latest_version"'$/,/^## v.*/!d;//d;/^$/d' ./CHANGELOG.md)"
+git tag -a "$latest_version" -m "$contents"
+echo "Created tag:
+$latest_version
+$contents
+
+To push to origin, run: git push origin tags/$latest_version
+" >&2
