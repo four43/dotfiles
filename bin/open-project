@@ -4,7 +4,7 @@ set -o pipefail
 PROJ_EDITOR_JS="${PROJ_EDITOR_JS:-phpstorm}"
 PROJ_EDITOR_PHP="${PROJ_EDITOR_PHP:-phpstorm}"
 PROJ_EDITOR_PYTHON="${PROJ_EDITOR_PYTHON:-pycharm}"
-PROJ_EDITOR_DEFAULT="${PROJ_EDITOR_DEFAULT:-$PROJ_EDITOR_PHP}"
+PROJ_EDITOR_DEFAULT="${PROJ_EDITOR_DEFAULT:-$PROJ_EDITOR_PYTHON}"
 
 function process_project_dir() {
     project_path="$1"
