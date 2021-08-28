@@ -1,5 +1,5 @@
 [custom0]
-binding='<Shift>Print'
+binding=''
 command='gnome-screenshot -a -c'
 name='Screenshot Copy'
 
@@ -20,5 +20,25 @@ name='Open Project'
 
 [custom4]
 binding='<Super>e'
-command='/home/seth/projects/altcode/altcode'
+command='/bin/bash -c "/home/seth/projects/altcode/altcode > /tmp/altcode.out.txt 2>&1"'
 name='AltCode/Emoji'
+
+[custom5]
+binding='<Super>grave'
+command='/home/seth/dotfiles/bin/home/desk-led-toggle'
+name='LED-Desk-Toggle'
+
+[custom6]
+binding='<Super>m'
+command='/home/seth/dotfiles/bin/monitor-kick'
+name='Monitor Kick'
+
+[custom7]
+binding='<Super>comma'
+command='/home/seth/dotfiles/bin/home/toggle-mic'
+name='Mic Toggle'
+
+[custom8]
+binding='<Super>Pause'
+command='/home/seth/dotfiles/bin/lofi-hiphop'
+name='lofi hip hop'
