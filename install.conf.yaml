@@ -5,14 +5,19 @@
 - clean: ['~']
 
 - link:
-    ~/bin/kc-utilization: bin/kc-utilization
-    ~/.config/rofi/config.rasi: themes/current/rofi.rasi
     ~/.dotfiles: ''
-    ~/.docker/cli-plugins: docker/cli-plugins
+
     ~/.config/i3/config: i3/config
-    ~/.gitignore: git/gitignore
-    ~/.inputrc: inputrc
     ~/.config/neofetch/config.conf: neofetch/config.conf
+    ~/.config/rofi/config.rasi: themes/current/rofi.rasi
+    ~/.config/ulauncher:
+        path: ulauncher/config
+        relative: true
+        force: true
+    ~/.docker/cli-plugins: docker/cli-plugins
+    ~/.gitignore_global: git/gitignore
+    ~/.inputrc: inputrc
+    ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
@@ -28,6 +33,6 @@
         path: zsh/zshrc
         relative: true
         force: true
-    ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
+
 - shell:
   - [git submodule update --init --recursive, Installing submodules]

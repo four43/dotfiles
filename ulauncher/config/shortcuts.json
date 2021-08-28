@@ -1,0 +1,52 @@
+{
+    "6423587d-52d2-4215-b761-9f06d9d12f80": {
+        "id": "6423587d-52d2-4215-b761-9f06d9d12f80",
+        "name": "Google Search",
+        "keyword": "g",
+        "cmd": "https://google.com/search?q=%s",
+        "icon": "/usr/share/ulauncher/media/google-search-icon.png",
+        "is_default_search": true,
+        "run_without_argument": false,
+        "added": 1628105169.8242567
+    },
+    "056b033f-527f-47b1-968b-00f9b9a9d896": {
+        "id": "056b033f-527f-47b1-968b-00f9b9a9d896",
+        "name": "Stack Overflow",
+        "keyword": "so",
+        "cmd": "http://stackoverflow.com/search?q=%s",
+        "icon": "/usr/share/ulauncher/media/stackoverflow-icon.svg",
+        "is_default_search": true,
+        "run_without_argument": false,
+        "added": 1628105169.82429
+    },
+    "cfea1dec-05f0-4b66-a9d9-e184fa301270": {
+        "id": "cfea1dec-05f0-4b66-a9d9-e184fa301270",
+        "name": "Wikipedia",
+        "keyword": "wiki",
+        "cmd": "https://en.wikipedia.org/wiki/%s",
+        "icon": "/usr/share/ulauncher/media/wikipedia-icon.png",
+        "is_default_search": true,
+        "run_without_argument": false,
+        "added": 1628105169.8243105
+    },
+    "9ca78e39-4d52-4d70-8620-8c808eb47a84": {
+        "id": "9ca78e39-4d52-4d70-8620-8c808eb47a84",
+        "name": "Terraform",
+        "keyword": "tf",
+        "cmd": "https://www.google.com/search?q=terraform+%s",
+        "icon": null,
+        "is_default_search": false,
+        "run_without_argument": false,
+        "added": 1628693875.8804097
+    },
+    "0e428a5c-d398-4be5-b236-847938643b3a": {
+        "id": "0e428a5c-d398-4be5-b236-847938643b3a",
+        "name": "Python Docs",
+        "keyword": "py",
+        "cmd": "https://www.google.com/search?btnI=1&q=site:https://docs.python.org %s",
+        "icon": null,
+        "is_default_search": false,
+        "run_without_argument": false,
+        "added": 1628799564.9201756
+    }
+}
