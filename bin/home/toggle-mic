@@ -1,4 +1,4 @@
 #!/bin/bash
-
-amixer -D pulse --card 2 sset Mic toggle && amixer --card 2 get Mic
+# aplay -L to list cards
+amixer -D pulse --card Microphone sset Mic toggle && amixer --card Microphone get Mic
 
