@@ -1,0 +1,54 @@
+{
+	"required_api_version": "^2.0.0",
+	"name": "Dev Project Opener",
+	"description": "Development Project Opener",
+	"developer_name": "Seth Miller",
+	"icon": "images/icon.svg",
+	"options": {
+		"query_debounce": 0.5
+	},
+	"preferences": [
+		{
+			"id": "project_kw",
+			"type": "keyword",
+			"name": "Project Keyword",
+			"description": "The prefix keyword to use to start searching for projects",
+			"default_value": "p"
+		},
+		{
+			"id": "project_dirs",
+			"type": "text",
+			"name": "Project Directories",
+			"descriptions": "Directories to search for different projects, \":\" delimited (Will only search with a depth of 1)",
+			"default_value": "~"
+		},
+		{
+			"id": "editor_python",
+			"type": "text",
+			"name": "Python Editor",
+			"descriptions": "The command to run to start your Python editor",
+			"default_value": "pycharm"
+		},
+		{
+			"id": "editor_js",
+			"type": "text",
+			"name": "JavaScript Editor",
+			"descriptions": "The command to run to start your JavaScript editor",
+			"default_value": "phpstorm"
+		},
+		{
+			"id": "editor_php",
+			"type": "text",
+			"name": "PHP Editor",
+			"descriptions": "The command to run to start your PHP editor",
+			"default_value": "phpstorm"
+		},
+		{
+			"id": "editor_default",
+			"type": "text",
+			"name": "Default Editor",
+			"descriptions": "The command to run to edit projects of unknown",
+			"default_value": "pycharm"
+		}
+	]
+}
