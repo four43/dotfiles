@@ -2,17 +2,17 @@
 
 # With lots of help from: https://success.docker.com/article/how-do-i-authenticate-with-the-v2-api
 function docker_cli_plugin_metadata() {
-        local vendor="four43"
-        local version="v1.0.0"
-        local url="https://www.github.com/four43/dotfiles"
-        local description="Copies a file from an image, not just a container. (By running a container temporarily)"
-        cat <<-EOF
-        {"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+    local vendor="four43"
+    local version="v1.0.0"
+    local url="https://www.github.com/four43/dotfiles"
+    local description="Copies a file from an image, not just a container. (By running a container temporarily)"
+    cat <<-EOF
+    {"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
 EOF
 }
 
 function version() {
-        docker --version | cut -d " " -f 3 | cut -d "," -f 1
+    docker --version | cut -d " " -f 3 | cut -d "," -f 1
 }
 
 docker_cpimg() {
