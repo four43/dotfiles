@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# With lots of help from: https://success.docker.com/article/how-do-i-authenticate-with-the-v2-api
+function docker_cli_plugin_metadata() {
+        local vendor="four43"
+        local version="v1.0.0"
+        local url="https://www.github.com/four43/dotfiles"
+        local description="Copies a file from an image, not just a container. (By running a container temporarily)"
+        cat <<-EOF
+        {"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+EOF
+}
+
+function version() {
+        docker --version | cut -d " " -f 3 | cut -d "," -f 1
+}
+
+docker_cpimg() {
+    local image_name=$(echo "$1" | sed -E 's/^([^:]+:[^:]+):(.+)$/\1/')
+    local remote_path=$(echo "$1" | sed -E 's/^([^:]+:[^:]+):(.+)$/\2/')
+    local local_path="$2"
+
+    echo "Copying from ${image_name} $remote_path -> $local_path" >&2
+
+    container_id="$(docker create "${image_name}")"
+    trap "docker rm -v \"$container_id\"" EXIT
+    docker cp "${container_id}:${remote_path}" "${local_path}"
+}
+
+case "$1" in
+	docker-cli-plugin-metadata)
+		docker_cli_plugin_metadata
+		;;
+	*)
+	    shift;
+		docker_cpimg "$@"
+		;;
+esac
+
