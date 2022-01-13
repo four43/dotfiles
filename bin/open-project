@@ -9,16 +9,16 @@ PROJ_EDITOR_DEFAULT="${PROJ_EDITOR_DEFAULT:-$PROJ_EDITOR_PYTHON}"
 function process_project_dir() {
     project_path="$1"
     project_name="$(basename "$project_path")"
-    
-    project_files="$(find $project_path -maxdepth 1 -mindepth 1)" 
+
+    project_files="$(find $project_path -maxdepth 1 -mindepth 1)"
     if (echo "$project_files" | grep -qE 'package.json$'); then
         echo " $project_name | $project_path"
     elif (echo "$project_files" | grep -qE '(Pipfile|requirements\.txt|setup\.py|poetry\.lock)$'); then
-        echo " $project_name | $project_path" 
+        echo " $project_name | $project_path"
     elif (echo "$project_files" | grep -qE 'composer.json$'); then
-        echo " $project_name | $project_path" 
+        echo " $project_name | $project_path"
     else
-        echo "  $project_name | $project_path" 
+        echo "  $project_name | $project_path"
     fi
 }
 
@@ -26,7 +26,7 @@ function open_project() {
     input_project_line="$1"
     project_type="${input_project_line:0:1}"
     project_path="$(echo $input_project_line | sed -n -E -e 's/^(.+) \| ([^\|]+)$/\2/p')"
-    
+
     project_editor=""
     case "$project_type" in
         "")
@@ -52,7 +52,7 @@ function open_project() {
 
 export -f process_project_dir
 
-rofi_choice="$(find ~/projects/ ~/projects/personal -maxdepth 1 -mindepth 1 \
+rofi_choice="$(find ~/projects/aerisweather ~/projects/four43 ~/projects/personal -maxdepth 1 -mindepth 1 \
     | sort \
     | xargs -n 1 -I % bash -c 'process_project_dir "$@"' _ % \
     | rofi -dmenu --no-custom -i -p "Project")"
