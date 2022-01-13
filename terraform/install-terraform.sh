@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xeo pipefail
 
-latest_url="$(curl -s 'https://www.terraform.io/downloads.html' | grep -oE 'https://releases.hashicorp.com/terraform/0\.15\.[0-9]+/terraform_0\.15\.[0-9]+_linux_amd64\.zip')"
+latest_url="$(curl -s 'https://www.terraform.io/downloads.html' | grep -oE 'https://releases.hashicorp.com/terraform/1\.[0-9]+\.[0-9]+/terraform_1\.[0-9]+\.[0-9]+_linux_amd64\.zip')"
 # Specific version URL if you need:
 # latest_url='https://releases.hashicorp.com/terraform/0.12.29/terraform_0.12.29_linux_amd64.zip'
 
