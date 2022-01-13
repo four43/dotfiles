@@ -4,5 +4,5 @@ __pycache__/
 .mypy_cache
 .pytest_cache
 .terraform
-.terraform.lock.hcl
+.coverage
 
