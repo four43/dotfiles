@@ -18,6 +18,7 @@
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
+    ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
