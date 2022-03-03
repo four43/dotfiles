@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Opens a web browser with the origin remote as https://[origin]
+# Opens a web browser with the origin remote as https://[origin] to the CI runner page
 # This works with bitbucket and github
 
 origin_url=$(git remote get-url origin)
@@ -10,5 +10,8 @@ if [[ -z "$origin_url" ]]; then
 fi
 
 origin_web_url=$(echo "$origin_url" | cut -d '@' -f2 | sed 's/:/\//g' | sed 's/\.git$//')
-xdg-open "https://$origin_web_url" >&2 2> /dev/null
-
+if echo $origin_web_url | grep 'bitbucket'; then
+    xdg-open "https://${origin_web_url}/addon/pipelines/home" >&2 2> /dev/null
+else
+    xdg-open "https://${origin_web_url}/actions"  >&2 2> /dev/null
+fi
