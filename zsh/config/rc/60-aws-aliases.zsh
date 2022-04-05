@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# Thanks jk: https://github.com/jkoelndorfer/dotfiles/blob/master/zsh/config/rc/60-aws-aliases.zsh
 
 export AWS_PAGER=""
 tab="$(printf '\t')"
@@ -10,9 +9,16 @@ function _jq_instance_output_tsv() {
 
 function aws-profile-switch() {
     local search_term="$1"
-    force_interactive="1"
-    profile_id=$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials | search-output "$search_term")
-    export AWS_PROFILE="$profile_id"
+    if [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    profile_id="$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials | search-output "$search_term")"
+    if [[ $? == 0 ]]; then
+        export AWS_PROFILE="$profile_id"
+    else
+        echo "Failed selecting profile by ${search_term}" >&2
+        # return 1
+    fi
 }
 
 # Dumps out all of the EC2 instances with the given name.
@@ -33,6 +39,9 @@ function aws-ec2-ls() {
 # Usage: aws-ec2-asg-ls [optional search query]
 # Outputs: [asg-name]
 function aws-ec2-asg-ls() {
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
     local search_term="$1"
     aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[*].AutoScalingGroupName' --output text \
         | sed -e 's/\t/\n/g' \
@@ -41,44 +50,47 @@ function aws-ec2-asg-ls() {
 }
 
 function aws-ec2-asg-set-min() {
-    local asg_name="$1"
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    local asg_name="$(aws-ec2-asg-ls "$1")"
     local min_size="$2"
     aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --min-size "$min_size"
+    echo "$asg_name min size set to $min_size" >&2
 }
 
 function aws-ec2-asg-set-desired() {
-    local asg_name="$1"
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    local asg_name="$(aws-ec2-asg-ls "$1")"
     local desired_size="$2"
     aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --desired-capacity "$desired_size"
+    echo "$asg_name desired size set to $desired_size" >&2
 }
 
 function aws-ec2-asg-set-max() {
-    local asg_name="$1"
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    local asg_name="$(aws-ec2-asg-ls "$1")"
     local max_size="$2"
     aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$asg_name" --max-size "$max_size"
+    echo "$asg_name max size set to $desired_size" >&2
 }
 
 function aws-ec2-asg-instances-ls() {
-    if [[ -n "$1" ]]; then
-        local asg_name="$1"
-    elif [ ! -t 0 ]; then
-        local asg_name="$(cat)"
-    fi
-
-    if [[ -z "$asg_name" ]]; then
-        pre_force_interactive="$force_interactive"
+    if ! [[ -t 1 ]]; then
         force_interactive="1"
-        local asg_name="$(aws-ec2-asg-ls)"
-        force_interactive="$pre_force_interactive"
     fi
-
+    local asg_name="$(aws-ec2-asg-ls "$1")"
     aws autoscaling describe-auto-scaling-groups \
         --auto-scaling-group-name "$asg_name" \
         --query 'AutoScalingGroups[0].Instances[*].InstanceId' \
         --output text | sed -e 's/\t/\n/g' \
-    | xargs -n 1 -I % aws ec2 describe-instances --instance-ids % \
-    | _jq_instance_output_tsv \
-    | columns
+        | xargs -n 1 -I % aws ec2 describe-instances --instance-ids % \
+        | _jq_instance_output_tsv \
+        | columns
 }
 
 function aws-ec2-unhealthy() {
@@ -128,9 +140,8 @@ function aws-ec2-lt-select() {
     aws-ec2-lt-ls | fzf --header-lines 1 | awk '{ print $2 }'
 }
 
-
 # Set the AMI-ID on a launch template
-function aws-ec2-lt-set-ami () {
+function aws-ec2-lt-set-ami() {
     local lt_id=$1
     local ami_id=$2
     aws ec2 create-launch-template-version --launch-template-id "$lt_id" --source-version '$Latest' --launch-template-data '{"ImageId": "'"$ami_id"'"}'
@@ -139,9 +150,9 @@ function aws-ec2-lt-set-ami () {
 function aws-ssm-param-ls() {
     local search_term="$1"
     if [[ -z "$search_term" ]]; then
-        results="$(aws ssm describe-parameters)"
+        results="$(aws ssm describe-parameters --page-size 10)"
     else
-        results="$(aws ssm get-parameters-by-path --recursive --path $search_term)"
+        results="$(aws ssm get-parameters-by-path --page-size 10 --recursive --path $search_term)"
     fi
 
     echo "$results" \
@@ -210,20 +221,59 @@ function aws-ssm-param-decrypt() {
 }
 
 function aws-s3-cat() {
-    if [[ -n "$1" ]]; then
-        local s3_path="$1"
-    elif [ ! -t 0 ]; then
-        local s3_path="$(cat)"
-    fi
-
-    tmpfile=$(mktemp /tmp/aws-s3-cat.XXXXXX)
-    aws s3 cp "$s3_path" "$tmpfile" 2>&1 >/dev/null || exit 1;
-    cat "$tmpfile"
-    rm "$tmpfile"
+    aws s3 cp --quiet "$1" /dev/stdout
 }
 
-function aws-efs-fs-ls {
+function aws-s3-edit() {
+    set -x
+    TMP_FILE="$(mktemp /tmp/edit-pipe.XXXXXXXX)"
+    trap "rm \"$TMP_FILE\"" EXIT
+    aws s3 cp "$1" "${TMP_FILE}"
+    if [[ $? != 0 ]]; then
+        echo "No $1 file found on S3" >&2
+        rm "${TMP_FILE}"
+    fi
+
+    $EDITOR "${TMP_FILE}" </dev/tty >/dev/tty
+    if [[ $? == 0 ]]; then
+        aws s3 cp "${TMP_FILE}" "$1"
+    fi
+}
+
+function aws-efs-fs-ls() {
     aws efs describe-file-systems | jq -r '.FileSystems[] | [.Name,.SizeInBytes.Value,.FileSystemId] | @tsv' | awk '{print $1, $2/1024/1024/1024 "GB", $3}' | column -t | sort
+}
+
+function aws-cloud-front-lambda-at-edge-logs-ls() {
+    local function_name="$1"
+    if [[ -z "$function_name" ]]; then
+        echo "Supply function name as first argument" >&2
+        return 1
+    fi
+    for region in $(aws --output text ec2 describe-regions | awk '{print $4}'); do
+        for loggroup in $(aws --output text logs describe-log-groups --log-group-name "/aws/lambda/us-east-1.$function_name" --region $region --query 'logGroups[].logGroupName'); do
+            echo $region $loggroup
+        done
+    done
+}
+
+function aws-lambda-ls() {
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    local search_term="$1"
+    aws lambda list-functions --query 'Functions[*].FunctionName' --output text \
+        | sed -e 's/\t/\n/g' \
+        | sort \
+        | search-output "$search_term"
+}
+
+function aws-lambda-logs() {
+    function_name="$1"
+    if [[ -z "$function_name" ]]; then
+        function_name="$(aws-lambda-ls)"
+    fi
+    aws logs tail --since 1d --follow "/aws/lambda/${function_name}"
 }
 
 # AerisWeather
@@ -236,10 +286,9 @@ function goes-updated-times() {
         file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
         echo "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" >&2
         if [[ "$?" != "0" ]]; then
-            hour=$((hour-1))
+            hour=$((hour - 1))
             file_list="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/${day}/${hour}/" | tail -n 1)"
         fi
-    echo "$sat updated at $(echo "$file_list" | sed -E 's/.*c([0-9]{4})([0-9]{3})([0-9]{2})([0-9]{2})([0-9]{2}).*/\1 d\2 @ \3:\4:\5Z/')"
+        echo "$sat updated at $(echo "$file_list" | sed -E 's/.*c([0-9]{4})([0-9]{3})([0-9]{2})([0-9]{2})([0-9]{2}).*/\1 d\2 @ \3:\4:\5Z/')"
     done
 }
-
