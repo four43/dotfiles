@@ -240,6 +240,19 @@ function aws-s3-edit() {
     fi
 }
 
+function aws-s3-cp-latest() {
+    local bucket_and_prefix="$1"
+    if [[ -z $bucket_and_prefix ]]; then
+        echo "Needs s3 bucket/prefix as first arg. s3://bucket/prefix/" >&2
+    fi
+    local destination="$2"
+    if [[ -z $bucket_and_prefix ]]; then
+        echo "Needs destination as second arg." >&2
+    fi
+    local count="${3:-5}"
+    aws s3 ls "${bucket_and_prefix}" | tail -n "${count}" | awk '{ print $4 }' | xargs -n 1 -I % aws s3 cp "${bucket_and_prefix}%" "${destination}"
+}
+
 function aws-efs-fs-ls() {
     aws efs describe-file-systems | jq -r '.FileSystems[] | [.Name,.SizeInBytes.Value,.FileSystemId] | @tsv' | awk '{print $1, $2/1024/1024/1024 "GB", $3}' | column -t | sort
 }
