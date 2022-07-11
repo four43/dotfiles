@@ -19,6 +19,7 @@
     ~/.inputrc: inputrc
     ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
     ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
+    ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
