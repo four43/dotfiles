@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-import logging
-import os
-import sys
-import urllib.parse
-import urllib.request
 import base64
 import json
+import logging
 import math
+import os
 import subprocess
-
-from itertools import islice
-
+import sys
 import time
+import urllib.parse
+import urllib.request
+from itertools import islice
 from typing import Generator, Dict
 from urllib.error import HTTPError
 
-from sty import fg, bg, ef, rs
-
 logger = logging.getLogger("pipelines")
+
+
+class colors:
+    FG_RED = "\033[31m"
+    FG_GREEN = "\033[32m"
+    FG_YELLOW = "\033[33m"
+    FG_BLUE = "\033[34m"
+    RESET = "\033[0m"
 
 
 class PipelinesClient:
@@ -143,13 +147,13 @@ def get_project_root() -> str:
 def output_build(build):
     if build["state"]["name"] == "COMPLETED":
         if build["state"]["result"]["name"] == "SUCCESSFUL":
-            build_icon = fg.green + "✔️ " + fg.rs
+            build_icon = colors.FG_GREEN + "✔️ " + colors.RESET
         elif build["state"]["result"]["name"] == "STOPPED":
-            build_icon = fg.yellow + "➖️ " + fg.rs
+            build_icon = colors.FG_YELLOW + "➖️ " + colors.RESET
         else:
-            build_icon = fg.red + "✖️ " + fg.rs
+            build_icon = colors.FG_RED + "✖️ " + colors.RESET
     else:
-        build_icon = fg.blue + "🔄 " + fg.rs
+        build_icon = colors.FG_BLUE + "🔄 " + colors.RESET
 
     print(
         "\t"
@@ -174,11 +178,11 @@ def output_step(step):
 
     if step["state"]["name"] == "COMPLETED":
         if step["state"]["result"]["name"] == "SUCCESSFUL":
-            step_icon = fg.green + "✔️ " + fg.rs
+            step_icon = colors.FG_GREEN + "✔️ " + colors.RESET
         else:
-            step_icon = fg.red + "✖️ " + fg.rs
+            step_icon = colors.FG_RED + "✖️ " + colors.RESET
     else:
-        step_icon = fg.blue + "🔄 " + fg.rs
+        step_icon = colors.FG_BLUE + "🔄 " + colors.RESET
 
     print(
         "\t\t"
@@ -197,7 +201,7 @@ def main(pipelines_client: PipelinesClient):
         )
     )
 
-    print(fg.green + "⚙️ " + project_title + fg.rs)
+    print(colors.FG_GREEN + "⚙️ " + project_title + colors.RESET)
 
     builds = pipelines_client.get_builds()
     try:
