@@ -140,13 +140,13 @@ def get_project_root() -> str:
 def output_build(build):
     if build["state"]["name"] == "COMPLETED":
         if build["state"]["result"]["name"] == "SUCCESSFUL":
-            build_icon = fg.green + "âœ”ï¸ " + fg.rs
+            build_icon = fg.green + "✔️ " + fg.rs
         elif build["state"]["result"]["name"] == "STOPPED":
-            build_icon = fg.yellow + "âž–ï¸ " + fg.rs
+            build_icon = fg.yellow + "➖️ " + fg.rs
         else:
-            build_icon = fg.red + "âœ–ï¸ " + fg.rs
+            build_icon = fg.red + "✖️ " + fg.rs
     else:
-        build_icon = fg.blue + "ðŸ”„ " + fg.rs
+        build_icon = fg.blue + "🔄 " + fg.rs
 
     print(
         "\t"
@@ -171,11 +171,11 @@ def output_step(step):
 
     if step["state"]["name"] == "COMPLETED":
         if step["state"]["result"]["name"] == "SUCCESSFUL":
-            step_icon = fg.green + "âœ”ï¸ " + fg.rs
+            step_icon = fg.green + "✔️ " + fg.rs
         else:
-            step_icon = fg.red + "âœ–ï¸ " + fg.rs
+            step_icon = fg.red + "✖️ " + fg.rs
     else:
-        step_icon = fg.blue + "ðŸ”„ " + fg.rs
+        step_icon = fg.blue + "🔄 " + fg.rs
 
     print(
         "\t\t"
@@ -194,7 +194,7 @@ def main(pipelines_client: PipelinesClient):
         )
     )
 
-    print(fg.green + "âš™ï¸ " + project_title + fg.rs)
+    print(fg.green + "⚙️ " + project_title + fg.rs)
 
     builds = pipelines_client.get_builds()
     try:
@@ -269,9 +269,7 @@ if __name__ == "__main__":
     project_name = os.path.split(get_project_root())[1]
 
     if len(project_name):
-        user_pipelines_client = PipelinesClient(
-            bb_username, bb_password, project_name
-        )
+        user_pipelines_client = PipelinesClient(bb_username, bb_password, project_name)
 
         if len(sys.argv) > 1 and sys.argv[1] == "stop":
             print("Stopping your most recent running build...")
