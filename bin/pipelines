@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import os
 import sys
 import urllib.parse
@@ -15,6 +16,8 @@ from typing import Generator, Dict
 from urllib.error import HTTPError
 
 from sty import fg, bg, ef, rs
+
+logger = logging.getLogger("pipelines")
 
 
 class PipelinesClient:
@@ -257,14 +260,15 @@ def main(pipelines_client: PipelinesClient):
 
 
 if __name__ == "__main__":
-    if "BITBUCKET_USERNAME" not in os.environ or "BITBUCKET_PASSWORD" not in os.environ:
-        print(
-            "Must set Bitbucket credentials in environment variables BITBUCKET_USERNAME and BITBUCKET_PASSWORD"
+    try:
+        bb_username = os.environ["BITBUCKET_APP_USERNAME"]
+        bb_password = os.environ["BITBUCKET_APP_PASSWORD"]
+    except KeyError as err:
+        logger.exception(
+            f"You must provide Bitbucket App credentials as environment variables: {err}\n"
+            f"See: https://bitbucket.org/account/settings/app-passwords/"
         )
         sys.exit(1)
-
-    bb_username = os.environ["BITBUCKET_APP_USERNAME"]
-    bb_password = os.environ["BITBUCKET_APP_PASSWORD"]
 
     project_name = os.path.split(get_project_root())[1]
 
