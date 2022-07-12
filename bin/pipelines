@@ -1,0 +1,291 @@
+#!/usr/bin/env python3
+import os
+import sys
+import urllib.parse
+import urllib.request
+import base64
+import json
+import math
+import subprocess
+
+from itertools import islice
+
+import time
+from typing import Generator, Dict
+from urllib.error import HTTPError
+
+from sty import fg, bg, ef, rs
+
+
+class PipelinesClient:
+    """
+    A "pipelines client" that's logged in and ready to use for a project.
+    """
+
+    def __init__(self, username: str, password: str, project_name: str):
+        self.username = username
+        self.password = password
+        self.project_name = project_name
+
+    def fetch(
+        self,
+        endpoint="",
+        page_number: int = None,
+        byte_offset: int = None,
+        method: str = "GET",
+    ):
+        base_url = (
+            "https://api.bitbucket.org/2.0/repositories/hamweather/"
+            + project_name
+            + "/pipelines/"
+            + endpoint
+        )
+
+        query = {}
+        if page_number is not None:
+            query["page"] = page_number
+
+        req = urllib.request.Request(base_url + "?" + urllib.parse.urlencode(query))
+
+        credentials = "%s:%s" % (self.username, self.password)
+        encoded_credentials = base64.b64encode(credentials.encode("ascii"))
+        req.add_header(
+            "Authorization", "Basic %s" % encoded_credentials.decode("ascii")
+        )
+        req.method = method
+
+        if byte_offset is not None:
+            req.add_header("Range", "bytes=" + str(byte_offset) + "-")
+
+        response = urllib.request.urlopen(req)
+        content_length = response.length
+        return response.read(), content_length
+
+    def fetch_json(self, endpoint="", page_number: int = None, method="GET") -> Dict:
+        (body, _) = self.fetch(
+            endpoint=endpoint, page_number=page_number, method=method
+        )
+        return json.loads(body.decode("utf-8"))
+
+    def get_username(self) -> str:
+        url = "https://api.bitbucket.org/2.0/user"
+
+        req = urllib.request.Request(url)
+
+        credentials = "%s:%s" % (self.username, self.password)
+        encoded_credentials = base64.b64encode(credentials.encode("ascii"))
+        req.add_header(
+            "Authorization", "Basic %s" % encoded_credentials.decode("ascii")
+        )
+
+        response_body = urllib.request.urlopen(req).read().decode("utf-8")
+        user_data = json.loads(response_body)
+        return user_data["username"]
+
+    def get_builds(self) -> Generator[Dict, None, None]:
+        """
+        Returns the builds in reverse order (newest build first)
+        """
+        first_page = self.fetch_json(page_number=1)
+        builds = first_page["size"]
+        page_size = first_page["pagelen"]
+        if page_size > 0:
+            page_number = int(math.ceil(builds / page_size))
+        else:
+            return
+
+        while page_number > 0:
+            page = self.fetch_json(page_number=page_number)
+            for build in reversed(page["values"]):
+                yield build
+            page_number -= 1
+
+    def get_steps(self, build_uuid: str):
+        steps = self.fetch_json(endpoint=build_uuid + "/steps/")["values"]
+        for idx, step in enumerate(steps):
+            step["step_number"] = idx + 1
+        return steps
+
+    def get_step_log(self, build_uuid: str, step_uuid: str, byte_offset=0):
+        try:
+            return self.fetch(
+                endpoint=build_uuid + "/steps/" + step_uuid + "/log",
+                byte_offset=byte_offset,
+            )
+        except HTTPError as err:
+            if err.code >= 404:
+                return b"", 0
+            raise err
+
+    def stop(self, build_uuid):
+        try:
+            return self.fetch(endpoint=build_uuid + "/stopPipeline", method="POST")
+        except HTTPError as err:
+            if err.code == 409:
+                time.sleep(3)
+                return self.fetch(endpoint=build_uuid + "/stopPipeline", method="POST")
+            raise err
+
+
+def get_project_root() -> str:
+    git_parse = subprocess.run(
+        args=["/bin/bash", "-c", "git rev-parse --show-toplevel"],
+        cwd=os.getcwd(),
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    return git_parse.stdout.decode().strip()
+
+
+def output_build(build):
+    if build["state"]["name"] == "COMPLETED":
+        if build["state"]["result"]["name"] == "SUCCESSFUL":
+            build_icon = fg.green + "âœ”ï¸ " + fg.rs
+        elif build["state"]["result"]["name"] == "STOPPED":
+            build_icon = fg.yellow + "âž–ï¸ " + fg.rs
+        else:
+            build_icon = fg.red + "âœ–ï¸ " + fg.rs
+    else:
+        build_icon = fg.blue + "ðŸ”„ " + fg.rs
+
+    print(
+        "\t"
+        + build_icon
+        + " #{build_number} [{branch}@{commit_hash}] by {author} {created_on} ({url})".format(
+            build_number=build["build_number"],
+            branch=build["target"]["ref_name"],
+            commit_hash=build["target"]["commit"]["hash"][-7:],
+            author=build["creator"]["display_name"],
+            created_on=build["created_on"],
+            url=build["repository"]["links"]["html"]["href"]
+            + "/addon/pipelines/home#!/results/"
+            + str(build["build_number"]),
+        )
+    )
+
+
+def output_step(step):
+    step_name = "Step"
+    if "name" in step:
+        step_name = step["name"]
+
+    if step["state"]["name"] == "COMPLETED":
+        if step["state"]["result"]["name"] == "SUCCESSFUL":
+            step_icon = fg.green + "âœ”ï¸ " + fg.rs
+        else:
+            step_icon = fg.red + "âœ–ï¸ " + fg.rs
+    else:
+        step_icon = fg.blue + "ðŸ”„ " + fg.rs
+
+    print(
+        "\t\t"
+        + step_icon
+        + " {step_number}) {name}".format(
+            step_number=step["step_number"], name=step_name
+        )
+    )
+
+
+def main(pipelines_client: PipelinesClient):
+    project_title = (
+        "Bitbucket Pipelines for {project_slug} "
+        "(https://bitbucket.org/hamweather/{project_slug}/addon/pipelines/home)".format(
+            project_slug=pipelines_client.project_name
+        )
+    )
+
+    print(fg.green + "âš™ï¸ " + project_title + fg.rs)
+
+    builds = pipelines_client.get_builds()
+    try:
+        latest_build = next(builds)
+    except StopIteration:
+        print("[No Pipelines builds have run in this repo]")
+        return
+
+    output_build(latest_build)
+    for build in islice(builds, 0, 4):
+        output_build(build)
+
+    if (
+        latest_build["state"]["name"] == "IN_PROGRESS"
+        or latest_build["state"]["name"] == "PENDING"
+    ):
+        print("Pipelines is running...")
+        user_choice = input("Watch current build?[y] ")
+        if user_choice not in ["n", "N", "no", "No"]:
+            print("")
+            output_build(latest_build)
+            step_data = pipelines_client.get_steps(latest_build["uuid"])
+            for idx, step in enumerate(step_data):
+                output_step(step)
+
+                step_name = "Step {}".format(idx + 1)
+                if "name" in step:
+                    step_name = step["name"]
+
+                log_size = 0
+                while (
+                    step["state"]["name"] == "IN_PROGRESS"
+                    or step["state"]["name"] == "PENDING"
+                ):
+                    (log, new_log_size) = pipelines_client.get_step_log(
+                        build_uuid=latest_build["uuid"],
+                        step_uuid=step["uuid"],
+                        byte_offset=log_size,
+                    )
+                    log_size += new_log_size
+                    for line in log.decode("utf-8").splitlines():
+                        print(
+                            "#{step_number} {step_name}| {line}".format(
+                                step_number=step["step_number"],
+                                step_name=step_name,
+                                line=line,
+                            )
+                        )
+
+                    if new_log_size == 0:
+                        # No update from our log, are we still running?
+                        step_data = pipelines_client.get_steps(latest_build["uuid"])
+                        step = step_data[idx]
+
+                    time.sleep(3)
+
+                if log_size > 0:
+                    # Print summary of our step
+                    output_step(step)
+
+
+if __name__ == "__main__":
+    if "BITBUCKET_USERNAME" not in os.environ or "BITBUCKET_PASSWORD" not in os.environ:
+        print(
+            "Must set Bitbucket credentials in environment variables BITBUCKET_USERNAME and BITBUCKET_PASSWORD"
+        )
+        sys.exit(1)
+
+    bb_username = os.environ["BITBUCKET_APP_USERNAME"]
+    bb_password = os.environ["BITBUCKET_APP_PASSWORD"]
+
+    project_name = os.path.split(get_project_root())[1]
+
+    if len(project_name):
+        user_pipelines_client = PipelinesClient(
+            bb_username, bb_password, project_name
+        )
+
+        if len(sys.argv) > 1 and sys.argv[1] == "stop":
+            print("Stopping your most recent running build...")
+            username = user_pipelines_client.get_username()
+            for build in user_pipelines_client.get_builds():
+                if build["state"]["name"] == "COMPLETED":
+                    print("Couldn't find build to stop, did nothing.")
+                    break
+                if build["creator"]["username"] == username:
+                    print("Stopping build #" + str(build["build_number"]) + "...")
+                    user_pipelines_client.stop(build["uuid"])
+                    print("Stopped build.")
+                    break
+
+        main(pipelines_client=user_pipelines_client)
+    else:
+        raise Exception("Couldn't find project from your current working directory")
