@@ -286,7 +286,7 @@ function aws-lambda-logs() {
     if [[ -z "$function_name" ]]; then
         function_name="$(aws-lambda-ls)"
     fi
-    aws logs tail --since 1d --follow "/aws/lambda/${function_name}"
+    aws logs tail --since 1h --follow "/aws/lambda/${function_name}"
 }
 
 # AerisWeather
