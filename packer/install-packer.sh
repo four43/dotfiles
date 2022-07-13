@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xeo pipefail
 
-latest_url="$(curl -s 'https://packer.io/downloads.html' | grep -oE 'https://releases.hashicorp.com/packer/1\.[0-9]+\.[0-9]+/packer_1\.[0-9]+\.[0-9]+_linux_amd64\.zip')"
+latest_url="$(curl -sL 'https://packer.io/downloads.html' | grep -oE 'https://releases.hashicorp.com/packer/1\.[0-9]+\.[0-9]+/packer_1\.[0-9]+\.[0-9]+_linux_amd64\.zip' | head -n 1)"
 
 mkdir -p ~/opt
 cd ~/opt
