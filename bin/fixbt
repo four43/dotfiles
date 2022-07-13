@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# This script is intended to give Bluetooth a kick in the face
+# to make it behave a little better - specifically for Bluetooth
+# audio devices.
+#
+# I find that sometimes my headphones have "laggy" output or stop
+# working entirely, and this seems to help.
+
+sudo sh <<EOF
+    systemctl stop bluetooth
+    rmmod btusb
+    sleep 10
+    modprobe btusb
+    systemctl start bluetooth
+    sleep 5
+EOF
+pulseaudio -k
