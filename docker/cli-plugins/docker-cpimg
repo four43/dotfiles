@@ -22,7 +22,7 @@ docker_cpimg() {
 
     echo "Copying from ${image_name} $remote_path -> $local_path" >&2
 
-    container_id="$(docker create "${image_name}")"
+    container_id="$(docker create "${image_name}" /bin/sh)"
     trap "docker rm -v \"$container_id\"" EXIT
     docker cp "${container_id}:${remote_path}" "${local_path}"
 }
