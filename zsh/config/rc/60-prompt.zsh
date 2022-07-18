@@ -134,7 +134,7 @@ function terraform_ws_indicator() {
         # Get workspace
         local tf_ws=$(cat "$(pwd)/.terraform/environment" 2>/dev/null)
         if [[ "$?" == 0 ]]; then
-            echo "%F{purple}$tf_ws%f"
+            echo " %F{purple}$tf_ws%f"
         fi
     fi
 }
