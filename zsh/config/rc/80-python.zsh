@@ -2,7 +2,7 @@
 setopt nullglob
 
 # Conda is used for base python installs (manually activate, theirs is big and complicated)
-conda_env="aw-geo-v1"
+conda_env="base"
 conda_startup_script=(/opt/*conda*/etc/profile.d/conda.sh)
 if [[ -f "$conda_startup_script" ]]; then
   . "$conda_startup_script"
