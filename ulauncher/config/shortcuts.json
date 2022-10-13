@@ -53,7 +53,7 @@
         "id": "cfdb2dce-d735-4652-95c4-b443e45de0c8",
         "name": "Notes in Pycharm",
         "keyword": "notes",
-        "cmd": "#!/bin/bash\nexec pycharm /home/seth/Documents/notes",
+        "cmd": "#!/bin/bash\nexec pycharm /home/smiller/projects/four43/notes",
         "icon": "~/Pictures/notes-icon.jpg",
         "is_default_search": false,
         "run_without_argument": true,
