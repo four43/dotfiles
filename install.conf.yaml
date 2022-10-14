@@ -7,6 +7,7 @@
 - link:
     ~/.dotfiles: ''
 
+    ~/.config/alacritty: alacritty
     ~/.config/i3/config: i3/config
     ~/.config/neofetch/config.conf: neofetch/config.conf
     ~/.config/rofi/config.rasi: themes/current/rofi.rasi
