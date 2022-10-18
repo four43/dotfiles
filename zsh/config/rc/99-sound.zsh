@@ -1,4 +1,9 @@
 #!/bin/zsh
+
+# Bluetooth Audio Devices
+export BT_BOSE_QC35_MAC="4C:87:5D:77:80:78"
+export BT_APPLE_AIRPOD_PRO_MAC="A8:51:AB:DA:31:F0"
+
 function sound-set-output() {
     set -o pipefail
 
@@ -36,15 +41,19 @@ function sound-mic-down() {
 }
 
 function headphones-up() {
-    echo "Connecting to BT MAC: $BT_HEADPHONES_MAC" >&2
+    device="$(printenv | grep '^BT_' | sed -E 's/^BT_(.+)_MAC=(.+)$/\1 \2/' | fzf)"
+    device_name="$(echo "$device" | awk '{ print $1 }')"
+    device_mac="$(echo "$device" | awk '{ print $2 }')"
+    echo "Connecting to ${device_name} BT MAC: $device_mac" >&2
     echo '!!! Put headphones in pairing mode !!!' >&2
     sudo rfkill unblock bluetooth
     bluetoothctl agent on
-    bluetoothctl remove $BT_HEADPHONES_MAC
+    sleep 3
+    bluetoothctl remove $device_mac
     timeout 3s bluetoothctl scan on
-    bluetoothctl trust $BT_HEADPHONES_MAC
-    bluetoothctl pair $BT_HEADPHONES_MAC
-    bluetoothctl connect $BT_HEADPHONES_MAC 
+    bluetoothctl trust $device_mac
+    bluetoothctl pair $device_mac
+    bluetoothctl connect $device_mac
 }
 
 function headphones-down() {
