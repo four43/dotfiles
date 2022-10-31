@@ -1,6 +1,6 @@
 # Always set environment vars
 DOTFILE_DIR="$HOME/.dotfiles"
-TERMINAL="urxvt"
+TERMINAL="alacritty"
 
 VIM_RUNTIME_DIR="$DOTFILE_DIR/vim/config"
 

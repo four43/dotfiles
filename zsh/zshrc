@@ -4,4 +4,3 @@ done
 
 # Clear status code from anything else that may have executed previously
 return 0
-
