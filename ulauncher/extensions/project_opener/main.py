@@ -52,7 +52,10 @@ class KeywordQueryEventListener(EventListener):
 
     @lru_cache
     def _get_project_type(self, proj_path: Path) -> Optional[str]:
-        project_files = {str(x.name) for x in proj_path.glob("*")}
+        project_files = {
+            *{str(x.name) for x in proj_path.glob("./*")},
+            *{str(x.name) for x in proj_path.glob("./*/*")},
+        }
         if {"package.json"} & project_files:
             return "js"
         elif {
@@ -65,6 +68,9 @@ class KeywordQueryEventListener(EventListener):
             return "py"
         elif {"composer.json"} & project_files:
             return "php"
+        elif {"index.html"} & project_files:
+            # More vague, has an index.html
+            return "js"
 
     @lru_cache
     def _get_icon(self, editor_name: str) -> str:
