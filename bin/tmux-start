@@ -15,9 +15,6 @@ if [[ "${TERM}" =~ "screen".* ]]; then
     exit 1
 fi
 
-# Work around for remote servers not having tmux-256color yet
-export TERM="screen-256color"
-
 SESSION_STATUS=$(tmux list-sessions | grep "${TMUX_MAIN_SESSION}")
 if [[ ! -z "${SESSION_STATUS}" ]]; then
     MAIN_ATTACHED=$(echo "${SESSION_STATUS}" | grep "attached")
