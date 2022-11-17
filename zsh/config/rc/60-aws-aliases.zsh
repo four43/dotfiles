@@ -125,19 +125,15 @@ function aws-ec2-ami-select() {
     } | columns | fzf --header-lines 1 | awk '{ print $2 }'
 }
 
-function _aws-ec2-lt-ls() {
-    aws ec2 describe-launch-templates | jq -r '.LaunchTemplates[] | [.LaunchTemplateName, .LaunchTemplateId, .LatestVersionNumber] | join("\t")'
-}
-
 function aws-ec2-lt-ls() {
+    local search_term="$1"
+
     {
         echo -e 'Launch Template Name\tLaunch Template ID\tLatest Version'
-        _aws-ec2-lt-ls
-    } | columns
-}
-
-function aws-ec2-lt-select() {
-    aws-ec2-lt-ls | fzf --header-lines 1 | awk '{ print $2 }'
+        aws ec2 describe-launch-templates  \
+            |jq -r '.LaunchTemplates[] | [.LaunchTemplateName, .LaunchTemplateId, .LatestVersionNumber] | join("\t")'
+    } | columns \
+            | fzf --header-lines 1
 }
 
 # Set the AMI-ID on a launch template
@@ -288,6 +284,23 @@ function aws-lambda-logs() {
     fi
     aws logs tail --since 1h --follow "/aws/lambda/${function_name}"
 }
+
+function aws-ec2-logs() {
+    log_name="$1"
+    if [[ -z "$function_name" ]]; then
+        log_name="$(aws logs describe-log-groups --log-group-name-prefix "/aeris/ec2" \
+                | jq -r '.logGroups[].logGroupName' \
+                | fzf)"
+    fi
+    aws logs tail \
+        "${log_name}" \
+        --since 1h \
+        --format short \
+        --follow \
+        | sed -E 's/^([0-9\:T-]+) \{/{ "__logTime__": "\1",/' \
+        | jq -r '"\(.__logTime__) \u001b[93m[\(.syslog.ident)]\u001b[0m \(.message)"'
+}
+
 
 # AerisWeather
 function goes-updated-times() {
