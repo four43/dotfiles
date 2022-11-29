@@ -17,3 +17,19 @@ function ssh-ec2() {
         ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" $(echo $ec2_data | awk '{ print $4 }')
     fi
 }
+
+function wget-mirror() {
+    # Thanks to: https://stackoverflow.com/a/46820751/387851
+    url="$1"
+    NSLASH="$(echo "${url}" | perl -pe 's|.*://[^/]+(.*?)/?$|\1|' | grep -o / | wc -l)"
+    NCUT=$((NSLASH > 0 ? NSLASH-1 : 0))
+    wget \
+        --recursive \
+        --no-host-directories \
+        --no-parent \
+        --cut-dirs="$NCUT" \
+        --execute robots=off \
+        --user-agent='Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' \
+        --reject="index.html*" \
+         "${url}"
+}
