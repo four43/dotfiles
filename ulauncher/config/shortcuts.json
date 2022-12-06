@@ -54,7 +54,7 @@
         "name": "Notes in Pycharm",
         "keyword": "notes",
         "cmd": "#!/bin/bash\nexec pycharm /home/smiller/projects/four43/notes",
-        "icon": "~/Pictures/notes-icon.jpg",
+        "icon": "~/projects/four43/dotfiles/ulauncher/config/notes-icon.jpg",
         "is_default_search": false,
         "run_without_argument": true,
         "added": 1657668450.6000655
