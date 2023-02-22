@@ -4,6 +4,8 @@ export PATH="${PATH}:$HOME/projects/aerisweather/devtools/aws"
 alias vpn-up="TMUX_WINDOW_PREV_NAME=\"\$(tmux display-message -p '#W')\"; tmux rename-window '旅AW-VPN'; sudo ~/projects/aerisweather/infra-mgmt/util/vpn/openvpn-connect ~/Documents/AerisWeather/smiller.conf; tmux rename-window \$TMUX_WINDOW_PREV_NAME"
 alias project-coverage-open="xdg-open ./.tests-output/test-results/html/index.html"
 
+alias tmp-chown="sudo chown -R smiller:admin /tmp/*std* /tmp/*raw* /tmp/funnel*"
+
 alias devops-container='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:5 /bin/bash'
 alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:5 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
 
