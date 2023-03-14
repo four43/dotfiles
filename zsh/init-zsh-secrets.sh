@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function get-ssm() {
     aws ssm get-parameter --name "$1" --with-decryption --output text --query 'Parameter.Value'
@@ -23,3 +24,8 @@ write-line "export AW_BITBUCKET_PASSWORD='$(get-ssm "/personal/prod/creds/aerisw
 
 write-line "export AW_CONFLUENCE_USERNAME='$(get-ssm "/personal/prod/creds/aerisweather-confluence/username")'"
 write-line "export AW_CONFLUENCE_PASSWORD='$(get-ssm "/personal/prod/creds/aerisweather-confluence/password")'"
+
+write-line "export OPENAI_API_KEY='$(get-ssm "/personal/prod/creds/openai-chatgpt-api/password")'"
+
+write-line "export AERIS_CLIENT_ID='$(get-ssm "/personal/prod/creds/aerisweather-api-creds/username")'"
+write-line "export AERIS_CLIENT_SECRET='$(get-ssm "/personal/prod/creds/aerisweather-api-creds/password")'"
