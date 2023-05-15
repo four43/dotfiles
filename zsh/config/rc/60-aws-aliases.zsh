@@ -93,6 +93,11 @@ function aws-ec2-asg-instances-ls() {
         | columns
 }
 
+function aws-ec2-asg-stuck() {
+    aws autoscaling describe-auto-scaling-groups \
+    | jq -r '.AutoScalingGroups[] | {AutoScalingGroupName,SuspendedProcesses} | select(.SuspendedProcesses[].ProcessName == "Launch") | .AutoScalingGroupName'
+}
+
 function aws-ec2-unhealthy() {
     if [[ -z "$1" ]]; then
         echo "Must provide an instance id." >&2
