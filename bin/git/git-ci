@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Opens a web browser with the origin remote as https://[origin] to the CI runner page
 # This works with bitbucket and github
 
@@ -10,8 +9,19 @@ if [[ -z "$origin_url" ]]; then
 fi
 
 origin_web_url=$(echo "$origin_url" | cut -d '@' -f2 | sed 's/:/\//g' | sed 's/\.git$//')
+
 if echo $origin_web_url | grep 'bitbucket'; then
-    xdg-open "https://${origin_web_url}/addon/pipelines/home" >&2 2> /dev/null
-else
+    # Simply open the pipelines list: xdg-open "https://${origin_web_url}/addon/pipelines/home" >&2 2> /dev/null
+    # Use the bitbucket pipelines api to get the latest pipeline and open that
+    # https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/#get
+    bitbucket_workspace=$(echo $origin_web_url | cut -d '/' -f2)
+    bitbucket_repo_slug=$(echo $origin_web_url | cut -d '/' -f3)
+    bitbucket_pipeline=$(curl -s -u $AW_BITBUCKET_USERNAME:$AW_BITBUCKET_PASSWORD "https://api.bitbucket.org/2.0/repositories/${bitbucket_workspace}/${bitbucket_repo_slug}/pipelines/?sort=-created_on" | jq -r '.values[0].uuid')
+    if [[ -z "$bitbucket_pipeline" ]]; then
+        echo "No pipelines found for ${origin_web_url}" >&2
+        exit 1
+    fi
+    xdg-open "https://${origin_web_url}/addon/pipelines/home#!/results/${bitbucket_pipeline}"  >&2 2> /dev/null
+elif echo $origin_web_url | grep 'github'; then
     xdg-open "https://${origin_web_url}/actions"  >&2 2> /dev/null
 fi
