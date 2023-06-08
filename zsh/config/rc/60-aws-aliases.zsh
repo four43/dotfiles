@@ -221,6 +221,15 @@ function aws-ssm-param-decrypt() {
     aws ssm get-parameter --name "$name" --with-decryption | jq -r '.Parameter.Value'
 }
 
+function aws-s3-prefix-sizes() {
+    local bucket="$1"
+    for product in $(aws s3 ls "$bucket" | grep \/ | awk '{print $2}'); do
+        echo ${product};
+        aws s3 ls "$bucket/${product}" --recursive --summarize --human | grep Total;
+        echo "";
+    done
+}
+
 function aws-s3-cat() {
     aws s3 cp --quiet "$1" /dev/stdout
 }
