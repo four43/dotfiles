@@ -3,6 +3,10 @@ alias chatgpt="docker run --rm -it -e TERM='$TERM' -e OPENAI_API_KEY='$OPENAI_AP
 function mbtileify() {
     input_file="$1"
     output_file="${input_file%.*}.mbtiles"
-    tippecanoe -zg -f -o "$output_file" --drop-densest-as-needed "$input_file"
+    set -x
+    tippecanoe -f -o "$output_file" ${@:2} \
+      -z0 -z12 \
+      "$input_file"
+    set +x
     du -h "$output_file"
 }

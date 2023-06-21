@@ -6,8 +6,8 @@ alias project-coverage-open="xdg-open ./.tests-output/test-results/html/index.ht
 
 alias tmp-chown="sudo chown -R smiller:admin /tmp/*std* /tmp/*raw* /tmp/funnel*"
 
-alias devops-container='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:5 /bin/bash'
-alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:5 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
+alias devops-container='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /bin/bash'
+alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
 
 function goes-updated-times() {
     sats=("goes16" "goes17" "goes18")
@@ -25,10 +25,46 @@ function goes-updated-times() {
     done
 }
 
-function is_goes_18() {
-    if curl -s 'https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/' | grep -q 'GOES18'; then
-        echo 'Yup!'
-    else
-        echo 'Nope.'
-    fi
+function aeris-api-query-all() {
+    endpoint="$1"
+    filter_extras="$2"
+
+    page="1"
+    page_size="1000"
+
+    tmp_dir=$(mktemp -d -t "$(basename "$0")-XXX")
+    # trap 'rm -rf ${tmp_dir}' EXIT
+    echo "tmp_dir: ${tmp_dir}" >&2
+    while true; do
+        skip=$(((page - 1) * page_size))
+        output_file="${tmp_dir}/output.${page}.geojson"
+        echo "Querying page ${page}..." >&2
+        url="https://api.aerisapi.com/${endpoint}/search?limit=${page_size}&skip=${skip}&filter=geo,${filter_extras}&format=geojson&client_id=${AERIS_CLIENT_ID}&client_secret=${AERIS_CLIENT_SECRET}"
+        if [[ $page == "1" ]]; then
+            echo "$url" >&2
+        fi
+        curl -s "$url" >"${output_file}"
+        records="$(cat "${output_file}" | jq -r '.features | length')"
+        if [[ "$records" -gt "0" ]]; then
+            page=$((page + 1))
+        else
+            rm -rf "${output_file}"
+            break
+        fi
+    done
+    echo "Saving data to ${endpoint}.geojson" >&2
+    jq_query=$(
+        cat <<-EOM
+    {
+        "type": "FeatureCollection",
+        "features": [.[] | .features[] | {
+            "id": .id,
+            "type": .type,
+            "geometry": .geometry,
+            "properties": .properties | [leaf_paths as \$path | {"key": \$path | join("."), "value": getpath(\$path)}] | from_entries }
+        ]
+    }
+EOM
+    )
+    jq "$jq_query" --slurp "${tmp_dir}"/*.geojson >"$endpoint".geojson
 }
