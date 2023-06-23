@@ -59,6 +59,7 @@ class KeywordQueryEventListener(EventListener):
         if {"package.json"} & project_files:
             return "js"
         elif {
+            "pyproject.toml",
             "Pipfile",
             "requirements.txt",
             "setup.py",
