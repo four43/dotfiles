@@ -4,7 +4,7 @@ export AWS_PAGER=""
 tab="$(printf '\t')"
 
 function _jq_instance_output_tsv() {
-    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (.Tags[] | select(.Key == "Name").Value), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
+    cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (if has("Tags") then .Tags[] | select(.Key == "Name").Value else "None" end), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
 }
 
 function aws-profile-switch() {
@@ -12,7 +12,10 @@ function aws-profile-switch() {
     if [[ -t 1 ]]; then
         force_interactive="1"
     fi
-    profile_id="$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials | search-output "$search_term")"
+    profiles="$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials; pcregrep -o3 '(\[)(profile )?([^\]]+)' ~/.aws/config)"
+
+    profile_id="$(echo "$profiles" | search-output "$search_term")"
+
     if [[ $? == 0 ]]; then
         export AWS_PROFILE="$profile_id"
     else
