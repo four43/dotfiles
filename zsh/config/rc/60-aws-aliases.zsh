@@ -7,6 +7,10 @@ function _jq_instance_output_tsv() {
     cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (if has("Tags") then .Tags[] | select(.Key == "Name").Value else "None" end), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
 }
 
+function aws-profiles() {
+    grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials; pcregrep -o3 '(\[)(profile )?([^\]]+)' ~/.aws/config
+}
+
 function aws-profile-switch() {
     local search_term="$1"
     if [[ -t 1 ]]; then

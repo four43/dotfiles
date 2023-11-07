@@ -3,6 +3,7 @@ setopt PROMPT_SUBST
 precmd_functions=(record_lastrc "${precmd_functions[@]}")
 
 VIMODE='insert'
+AUTO_SWITCH_AWS='1'
 
 function cwd_indicator() {
     echo -n '%F{blue} %5~%f'
@@ -121,6 +122,24 @@ function python_env_indicator() {
     fi
 }
 
+function aws_auto_switch() {
+    # Auto-switch aws env based on project namespace
+    if [[ $AUTO_SWITCH_AWS == "1" ]]; then
+        local project_dir="$HOME/projects"
+        if [[ $PWD =~ ^$project_dir ]]; then
+            project_namespace="$(echo "${PWD#$project_dir}" | awk -F'/' '{print $2}')"
+            if [[ -z "$AWS_PROFILE" ]] || [[ "$AWS_PROFILE" != "$project_namespace" ]]; then
+                set -o pipefail
+                if aws-profiles | grep -s "$project_namespace" >/dev/null; then
+                    echo "changing profile to $project_namespace"
+                    export AWS_PROFILE="$project_namespace"
+                fi
+                set +o pipefail
+            fi
+        fi
+    fi
+}
+
 function aws_profile_indicator() {
     [[ -n "$AWS_PROFILE" ]] && [[ "$AWS_PROFILE" != "default" ]] && echo -n "%F{yellow} $AWS_PROFILE "
 }
@@ -138,6 +157,8 @@ function terraform_ws_indicator() {
         fi
     fi
 }
+
+chpwd_functions+=(aws_auto_switch)
 
 PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator) '
 zle -N zle-keymap-select
