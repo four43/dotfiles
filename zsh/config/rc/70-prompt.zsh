@@ -131,7 +131,6 @@ function aws_auto_switch() {
             if [[ -z "$AWS_PROFILE" ]] || [[ "$AWS_PROFILE" != "$project_namespace" ]]; then
                 set -o pipefail
                 if aws-profiles | grep -s "$project_namespace" >/dev/null; then
-                    echo "changing profile to $project_namespace"
                     export AWS_PROFILE="$project_namespace"
                 fi
                 set +o pipefail
@@ -158,6 +157,7 @@ function terraform_ws_indicator() {
     fi
 }
 
+aws_auto_switch
 chpwd_functions+=(aws_auto_switch)
 
 PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator) '
