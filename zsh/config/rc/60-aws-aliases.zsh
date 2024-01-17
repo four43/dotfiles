@@ -232,7 +232,7 @@ function aws-s3-prefix-sizes() {
     local bucket="$1"
     for product in $(aws s3 ls "$bucket" | grep \/ | awk '{print $2}'); do
         echo ${product};
-        aws s3 ls "$bucket/${product}" --recursive --summarize --human | grep Total;
+        aws s3 ls "$bucket${product}" --recursive --summarize --human-readable | grep Total;
         echo "";
     done
 }
