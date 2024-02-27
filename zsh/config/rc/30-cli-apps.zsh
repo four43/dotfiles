@@ -34,4 +34,6 @@ function zip-size-analysis() {
     du -hs "${1}"
 }
 
+alias chown-me='sudo chown -R $(whoami):$(id -gn) .'
+
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
