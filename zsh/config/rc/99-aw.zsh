@@ -6,8 +6,8 @@ alias project-coverage-open="xdg-open ./.tests-output/test-results/html/index.ht
 
 alias tmp-chown="sudo chown -R smiller:admin /tmp/*std* /tmp/*raw* /tmp/funnel*"
 
-alias devops-container='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /bin/bash'
-alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
+alias devops-container='docker run --rm -it -e AWS_PROFILE=aerisweather -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /bin/bash'
+alias amp-refresh-asg='docker run --rm -it -e AWS_PROFILE=aerisweather -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
 
 function goes-updated-times() {
     sats=("goes16" "goes17" "goes18")
@@ -67,4 +67,12 @@ function aeris-api-query-all() {
 EOM
     )
     jq "$jq_query" --slurp "${tmp_dir}"/*.geojson >"$endpoint".geojson
+}
+
+function xwx-jira-projects () {
+
+    xdg-open 'https://medialogicgroup.atlassian.net/jira/software/c/projects/FNNL/issues/?filter=allissues&jql=ORDER%20BY%20created%20DESC'
+    xdg-open 'https://medialogicgroup.atlassian.net/jira/software/c/projects/FNNL/boards/61/timeline'
+    xdg-open 'https://medialogicgroup.atlassian.net/jira/software/c/projects/AERISAPI/boards/74/timeline'
+    xdg-open 'https://medialogicgroup.atlassian.net/jira/software/c/projects/MAPSGLAPI/boards/63/timeline'
 }
