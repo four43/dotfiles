@@ -33,3 +33,14 @@ function wget-mirror() {
         --reject="index.html*" \
          "${url}"
 }
+
+function find-desktop() {
+    DATA_DIRS="$XDG_DATA_DIRS:$HOME/.local/share"
+    for p in ${DATA_DIRS//:/ }; do
+        find $p/applications -name '*.desktop' 2>/dev/null | grep -i -e "$1"
+    done
+}
+
+function which-desktop() {
+    find-desktop "$1" | head -n 1 | xargs cat | grep '^Exec' | cut -d '=' -f 2
+}
