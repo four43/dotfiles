@@ -10,3 +10,5 @@ function mbtileify() {
     set +x
     du -h "$output_file"
 }
+
+alias phone-home="sshuttle --dns -r smiller@home.four43.com:289 0/0"
