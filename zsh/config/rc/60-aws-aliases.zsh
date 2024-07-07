@@ -321,3 +321,17 @@ function aws-ec2-logs() {
         | sed -E 's/^([0-9\:T-]+) \{/{ "__logTime__": "\1",/' \
         | jq -r '"\(.__logTime__) \u001b[93m[\(.syslog.ident)]\u001b[0m \(.message)"'
 }
+
+function aws-sqs-ls() {
+    if ! [[ -t 1 ]]; then
+        force_interactive="1"
+    fi
+    local search_term="$1"
+    aws sqs list-queues | jq -r '.QueueUrls[]' | cut -d / -f 5 \
+        | sort \
+        | search-output "$search_term"
+}
+
+function aws-sqs-info() {
+
+}
