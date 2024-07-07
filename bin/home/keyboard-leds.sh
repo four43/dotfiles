@@ -1,5 +1,5 @@
 #!/bin/bash
-
+g815-led -gkm 1
 g815-led -a d8dee9
 g815-led -k logo 81a1c1
 g815-led -g keys cccccc
