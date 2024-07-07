@@ -33,7 +33,7 @@
         "id": "9ca78e39-4d52-4d70-8620-8c808eb47a84",
         "name": "Terraform",
         "keyword": "tf",
-        "cmd": "https://www.google.com/search?q=terraform+%s",
+        "cmd": "https://duckduckgo.com/?q=!ducky+terraform+%s\n",
         "icon": null,
         "is_default_search": false,
         "run_without_argument": false,
@@ -58,5 +58,15 @@
         "is_default_search": false,
         "run_without_argument": true,
         "added": 1657668450.6000655
+    },
+    "a9282119-d05e-4762-b650-4172546c2e26": {
+        "id": "a9282119-d05e-4762-b650-4172546c2e26",
+        "name": "Email - Vaisala",
+        "keyword": "@@",
+        "cmd": "#!/bin/bash\nif [[ \"$1\" == \"v\" ]]; then\necho 'seth.miller@vaisala.com';\nfi",
+        "icon": null,
+        "is_default_search": false,
+        "run_without_argument": false,
+        "added": 1698668167.1005394
     }
 }
