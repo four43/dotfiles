@@ -21,7 +21,15 @@ if echo $origin_web_url | grep 'bitbucket'; then
         echo "No pipelines found for ${origin_web_url}" >&2
         exit 1
     fi
-    xdg-open "https://${origin_web_url}/addon/pipelines/home#!/results/${bitbucket_pipeline}"  >&2 2> /dev/null
+    if command -v xdg-open &> /dev/null; then
+        xdg-open "https://${origin_web_url}/addon/pipelines/home#!/results/${bitbucket_pipeline}" >&2 2> /dev/null
+    else
+        echo "https://${origin_web_url}/addon/pipelines/home#!/results/${bitbucket_pipeline}"
+    fi
 elif echo $origin_web_url | grep 'github'; then
-    xdg-open "https://${origin_web_url}/actions"  >&2 2> /dev/null
+    if command -v xdg-open &> /dev/null; then
+        xdg-open "https://${origin_web_url}/actions"  >&2 2> /dev/null
+    else
+        echo "https://${origin_web_url}/addon/pipelines/home#!/results/${bitbucket_pipeline}"
+    fi
 fi
