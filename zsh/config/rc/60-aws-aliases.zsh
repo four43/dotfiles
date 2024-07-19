@@ -47,6 +47,7 @@ function aws-ssm-ec2-session() {
     if [[ $? == 0 ]]; then
         instance_id=$(echo $ec2_data | awk '{ print $1 }')
         echo "Using SSM to connect to $(echo $ec2_data | awk '{ print $2,"(",$1," ",$3,")" }')..." >&2
+        echo "aws ssm start-session --document-name linux-zsh-ssh --target \"$instance_id\"" >&2
         aws ssm start-session --document-name linux-zsh-ssh --target "$instance_id"
     fi
 }
