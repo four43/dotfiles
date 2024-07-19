@@ -4,9 +4,11 @@ function ls-details() {
     find -mindepth 1 $1 | sort | while read f; do { du -h "$f"; md5sum "$f"; } | sed 'N;s/\n/ /'; done | gawk '{print $1, $3, $4}' OFS='\t'
 }
 
+# Creates a password of the specified length (uses base64 characters without problematic ones like / or +)
+# For machine use, will use visually similar characters.
 function password() {
     local length="${1:-16}"
-    base64 /dev/urandom | head -c "${length}" | awk '{print $1}'
+    base64 /dev/urandom | sed 's/[+\/=\n]//g' | tr -d '\n' | head -c "${length}" | awk '{print $1}'
 }
 
 function ssh-ec2() {
