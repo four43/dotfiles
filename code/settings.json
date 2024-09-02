@@ -1,0 +1,71 @@
+{
+    "cSpell.ignoreWords": [
+        "toolsai"
+    ],
+    "cSpell.userWords": [
+        "Aeris",
+        "aerisweather",
+        "Bookmarkable",
+        "dbus",
+        "geospatial",
+        "Mapbox",
+        "Vaisala",
+        "Xweather"
+    ],
+    "debug.toolBarLocation": "docked",
+    "dev.containers.dockerComposePath": "docker compose",
+    "editor.renderWhitespace": "boundary",
+    "eslint.codeActionsOnSave.rules": null,
+    "files.autoSave": "onFocusChange",
+    "files.exclude": {
+        "**/.pytest_cache": true,
+        "**/__pycache__": true,
+        ".idea": true
+    },
+    "files.trimTrailingWhitespace": true,
+    "git.autofetch": true,
+    "git.autoStash": true,
+    "git.commandsToLog": [
+        "stash",
+        "commit",
+        "push",
+        "branch",
+        "pull"
+    ],
+    "git.confirmSync": false,
+    "git.defaultBranchName": "master",
+    "git.fetchOnPull": true,
+    "git.inputValidation": "warn",
+    "git.rebaseWhenSync": true,
+    "js/ts.implicitProjectConfig.checkJs": true,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "markdown.extension.italic.indicator": "_",
+    "markdown.updateLinksOnFileMove.enabled": "always",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "remote.autoForwardPortsSource": "hybrid",
+    "terminal.integrated.fontFamily": "'DejaVuSansMono Nerd Font'",
+    "terminal.integrated.fontSize": 15,
+    "terminal.integrated.fontWeight": "normal",
+    "terminal.integrated.mouseWheelZoom": true,
+    "terminal.integrated.tabs.location": "left",
+    "window.newWindowDimensions": "maximized",
+    "window.openFoldersInNewWindow": "on",
+    "window.restoreFullscreen": true,
+    "window.title": "${rootName}${separator}${dirty}${activeEditorShort}${separator}${separator}${profileName}${separator}${appName}",
+    "workbench.colorCustomizations": {
+        "editorWhitespace.foreground": "#FFFFFF0F",
+        "[Nord Native]": {
+            "editorBracketHighlight.foreground1": "#5e81ac",
+            "editorBracketHighlight.foreground2": "#88c0d0",
+            "editorBracketHighlight.foreground3": "#a3be8c",
+            "editorBracketHighlight.foreground4": "#ebcb8b",
+            "editorBracketHighlight.foreground5": "#bf616a",
+        }
+    },
+    "workbench.colorTheme": "Nord Native",
+    "workbench.tree.indent": 16,
+    "yaml.schemas": {
+        "file:///home/smiller/.vscode/extensions/atlassian.atlascode-3.0.10/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
+    }
+}
