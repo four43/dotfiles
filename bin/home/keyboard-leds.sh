@@ -10,5 +10,5 @@ g815-led -g fkeys ebcb8b
 g815-led -k esc a3be8c
 g815-led -g numeric a3be8c
 g815-led -g indicators ffffff
-g815-led -g capslock b48ead
+g815-led -k capslock ffffff
 g815-led -c
