@@ -8,7 +8,7 @@ function _jq_instance_output_tsv() {
 }
 
 function aws-profiles() {
-    grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials; pcregrep -o3 '(\[)(profile )?([^\]]+)' ~/.aws/config
+    aws configure list-profiles
 }
 
 function aws-profile-switch() {
@@ -16,7 +16,7 @@ function aws-profile-switch() {
     if [[ -t 1 ]]; then
         force_interactive="1"
     fi
-    profiles="$(grep -oP '(?<=\[)([^\]]+)' ~/.aws/credentials; pcregrep -o3 '(\[)(profile )?([^\]]+)' ~/.aws/config)"
+    profiles="$(aws-profiles)"
 
     profile_id="$(echo "$profiles" | search-output "$search_term")"
 

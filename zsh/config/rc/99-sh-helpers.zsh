@@ -11,6 +11,55 @@ function password() {
     base64 /dev/urandom | sed 's/[+\/=\n]//g' | tr -d '\n' | head -c "${length}" | awk '{print $1}'
 }
 
+function ec2-connect() {
+    echo "Connecting via SSM..." >&2
+
+    local tags
+    case "$env" in
+        dev)
+            tags="Name=tag:xwx:engineering-environment,Values=dev"
+            ;;
+        staging)
+            tags="Name=tag:xwx:engineering-environment,Values=staging"
+            ;;
+        prod)
+            tags="Name=tag:xwx:engineering-environment,Values=prod"
+            ;;
+        *)
+            echo "No environment filter being used!" >&2
+            tags="Name=tag:xwx:engineering-environment,Values=*"
+            sleep 1
+            ;;
+    esac
+
+    set -x
+    selected=$(
+        aws ec2 describe-instances \
+            --filters "Name=instance-state-name,Values=running" "$tags" \
+            | jq -r \
+                '.Reservations[].Instances[]
+                | [(if has("Tags") then .Tags[]
+                | select(.Key == "Name").Value else "None" end), .InstanceId]
+                | @tsv' \
+            | fzf
+    )
+    if [ -z "$selected" ]; then
+        echo "No instance selected!" >&2
+        return 1
+    fi
+
+    echo "Connecting to server: ${selected}..." >&2
+
+    if [ -n "$selected" ]; then
+
+        instance_id=$(echo "$selected" | cut -f2)
+        aws ssm start-session \
+        --document-name linux-zsh-ssh \
+        --target "$instance_id"
+    fi
+    set +x
+}
+
 function ssh-ec2() {
     force_interactive="1"
     local ec2_data="$(aws-ec2-ls $1)"
