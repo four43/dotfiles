@@ -32,7 +32,6 @@ function ec2-connect() {
             ;;
     esac
 
-    set -x
     selected=$(
         aws ec2 describe-instances \
             --filters "Name=instance-state-name,Values=running" "$tags" \
@@ -57,7 +56,6 @@ function ec2-connect() {
         --document-name linux-zsh-ssh \
         --target "$instance_id"
     fi
-    set +x
 }
 
 function ssh-ec2() {
