@@ -1,5 +1,5 @@
 # BUILDX removes in between containers that makes it really difficult to debug failing builds
-
+export BUILDX_NO_DEFAULT_ATTESTATIONS=1 # via https://stackoverflow.com/questions/75131872/error-failed-to-solve-failed-commit-on-ref-unexpected-status-400-bad-reques#comment137924263_75317155
 alias docker-compose="docker compose"
 alias docker-exec="docker ps --format '{{.Names}}' | fzf | xargs -o -n 1 -I % docker exec -it % /bin/bash"
 alias docker-run-shell="docker images --format '{{.Repository}}:{{.Tag}}' | fzf | xargs -o -I % docker run --rm -it --entrypoint /bin/bash %"
