@@ -3,6 +3,9 @@
 export AWS_PAGER=""
 tab="$(printf '\t')"
 
+# Dump SSO temporary credentials into the current shell's env vars
+alias aws-sso-env='eval "$(aws configure export-credentials --format env)"'
+
 function _jq_instance_output_tsv() {
     cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (if has("Tags") then .Tags[] | select(.Key == "Name").Value else "None" end), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
 }
