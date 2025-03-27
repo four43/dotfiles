@@ -4,6 +4,7 @@ precmd_functions=(record_lastrc "${precmd_functions[@]}")
 
 VIMODE='insert'
 AUTO_SWITCH_AWS='1'
+AUTO_SWITCH_GIT='1'
 
 function cwd_indicator() {
     echo -n '%F{blue} %5~%f'
@@ -139,6 +140,19 @@ function aws_auto_switch() {
     fi
 }
 
+function git_auto_switch() {
+    # Auto-switch aws env based on project namespace
+    if [[ $AUTO_SWITCH_GIT == "1" ]]; then
+        local project_dir="$HOME/projects"
+        if [[ $PWD =~ ^$project_dir ]]; then
+            project_namespace="$(echo "${PWD#$project_dir}" | awk -F'/' '{print $2}')"
+            if [[ $project_namespace == "VaisalaCorp" ]]; then
+                export GIT_SSH_COMMAND="ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa_vaisala"
+            fi
+        fi
+    fi
+}
+
 function aws_profile_indicator() {
     [[ -n "$AWS_PROFILE" ]] && [[ "$AWS_PROFILE" != "default" ]] && echo -n "%F{yellow} $AWS_PROFILE "
 }
@@ -158,7 +172,7 @@ function terraform_ws_indicator() {
 }
 
 aws_auto_switch
-chpwd_functions+=(aws_auto_switch)
+chpwd_functions+=(aws_auto_switch git_auto_switch)
 
 PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator) '
 zle -N zle-keymap-select
