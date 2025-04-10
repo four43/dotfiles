@@ -13,7 +13,7 @@ alias vpn-xwe-full-up="sudo gpclient --ignore-tls-errors connect dal-gp-vpn.vais
 alias proxy-ltg-grafana="ssh -L 3000:10.20.250.100:3000 sethm@199.33.75.246 -p 52022"
 
 function goes-updated-times() {
-    sats=("goes16" "goes17" "goes18")
+    sats=("goes16" "goes17" "goes18" "goes19")
     for sat in "${sats[@]}"; do
         year="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
         day="$(aws s3 ls "s3://noaa-${sat}/ABI-L2-CMIPF/${year}/" | tail -n 1 | awk '{print $2}' | grep -o -E '[0-9]+')"
