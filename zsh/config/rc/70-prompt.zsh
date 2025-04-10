@@ -148,6 +148,8 @@ function git_auto_switch() {
             project_namespace="$(echo "${PWD#$project_dir}" | awk -F'/' '{print $2}')"
             if [[ $project_namespace == "VaisalaCorp" ]]; then
                 export GIT_SSH_COMMAND="ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa_vaisala"
+            else
+                export GIT_SSH_COMMAND="ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa"
             fi
         fi
     fi
