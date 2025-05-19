@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# DEPRECATED: This doesn't work super well with UIs and things. It's better to
+# just set up a host like `github.com-OrgName` in your SSH config and use that.
+
+
 # Tries each SSH key in the agent until one works
 # Usage: git-ssh-key-rotation.sh <ssh command>
 # Set GIT_SSH=[this script] in your environment
