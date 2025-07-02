@@ -15,7 +15,13 @@ version() {
 }
 
 docker_rmiold() {
-    docker images | awk 'seen[$1]++' | awk '{ print $1 ":" $2}' | xargs docker rmi
+    local images
+    images=$(docker images | awk 'seen[$1]++' | awk '{ print $1 ":" $2}')
+    if [[ -n $images ]]; then
+        echo "$images" | xargs docker rmi
+    else
+        echo "No old images to remove."
+    fi
 }
 
 case "$1" in
