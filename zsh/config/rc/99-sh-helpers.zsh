@@ -14,21 +14,21 @@ function password() {
 
 function ec2-connect() {
     echo "Connecting via SSM..." >&2
-
+    local env="$1"
     local tags
     case "$env" in
         dev)
-            tags="Name=tag:xwx:engineering-environment,Values=dev"
+            tags="Name=tag:vai:xwe:engineering-environment,Values=dev"
             ;;
         staging)
-            tags="Name=tag:xwx:engineering-environment,Values=staging"
+            tags="Name=tag:vai:xwe:engineering-environment,Values=staging"
             ;;
         prod)
-            tags="Name=tag:xwx:engineering-environment,Values=prod"
+            tags="Name=tag:vai:xwe:engineering-environment,Values=prod"
             ;;
         *)
             echo "No environment filter being used!" >&2
-            tags="Name=tag:xwx:engineering-environment,Values=*"
+            tags="Name=tag:vai:xwe:engineering-environment,Values=*"
             sleep 1
             ;;
     esac
