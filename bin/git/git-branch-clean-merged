@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Cleans up merged branches in a Git repository.
+
+# Find merged branches (excluding current, master, main, and dev)
+merged_branches=$(git branch --merged | grep -Ev "(^\*|^\+|master|main|dev)")
+
+# Check if there are any merged branches to clean up
+if [ -z "$merged_branches" ]; then
+    echo "No merged branches found to clean up."
+    exit 0
+fi
+
+# Display the branches that would be deleted
+echo "The following merged branches will be deleted:"
+echo "$merged_branches"
+echo
+
+# Ask for confirmation
+read -p "Do you want to delete these branches? (y/N): " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Deleting merged branches..."
+    echo "$merged_branches" | xargs --no-run-if-empty git branch -d
+    echo "Done!"
+else
+    echo "Cancelled. No branches were deleted."
+fi
