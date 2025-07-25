@@ -7,8 +7,8 @@ alias project-coverage-open="xdg-open ./.tests-output/test-results/html/index.ht
 alias tmp-chown="sudo chown -R smiller:admin /tmp/*std* /tmp/*raw* /tmp/funnel*"
 
 alias devtools="docker run -v "\$PWD:/app" -u "$(id -u):$(id -g)" -v "$HOME/.gitconfig:$HOME/.gitconfig:ro" vaisala-xweather/daas-devtools:latest"
-alias devops-container='docker run --rm -it -e AWS_PROFILE=aerisweather -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /bin/bash'
-alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -e AWS_PROFILE=aerisweather -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:6 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
+alias devops-container='docker run --rm -it -e AWS_PROFILE=aerisweather -v ~/.aws:/root/.aws -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:8 /bin/bash'
+alias amp-refresh-asg='docker run --rm -it -v ~/.aws:/root/.aws -e AWS_PROFILE=aerisweather -v "$PWD:$PWD" -v /var/run/docker.sock:/var/run/docker.sock -w "$PWD" aerisweather/cicd-basics:8 /scripts/ec2-refresh.py refresh "$(aws-ec2-asg-ls amp-)"'
 
 alias vpn-xwe-full-up="sudo gpclient --ignore-tls-errors connect dal-gp-vpn.vaisala.com"
 alias proxy-ltg-grafana="ssh -L 3000:10.20.250.100:3000 sethm@199.33.75.246 -p 52022"
