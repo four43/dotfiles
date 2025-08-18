@@ -1,0 +1,27 @@
+[core]
+    excludesfile = /home/smiller/.gitignore_global
+[user]
+    name = Seth Miller
+    email = seth@four43.com
+[pull]
+    rebase = True
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+[init]
+    defaultBranch = master
+[safe]
+    directory = *
+
+[includeIf "gitdir:~/projects/aerisweather/"]
+    path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/VaisalaCorp/"]
+    path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/VaisalaDigital/"]
+    path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/vaisala-ds/"]
+    path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/vaisala-xweather/"]
+    path = ~/.gitconfig-work

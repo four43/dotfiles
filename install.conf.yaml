@@ -16,6 +16,8 @@
         relative: true
         force: true
     ~/.docker/cli-plugins: docker/cli-plugins
+    ~/.gitconfig: git/gitconfig
+    ~/.gitconfig-work: git/gitconfig-work
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
