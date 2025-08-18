@@ -24,7 +24,9 @@
     ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
     ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
     ~/.local/share/ulauncher/extensions/four43-confluence-search: ulauncher/extensions/confluence_search
-    ~/.ssh/config: ssh/ssh-config
+    ~/.ssh/config:
+        path: ssh/ssh-config
+        type: hardlink
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/vim
