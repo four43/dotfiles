@@ -1,0 +1,58 @@
+# Home Network
+Host orion
+    Hostname orion.four43.com
+    User smiller
+    Port 289
+
+Host ursa-minor
+    Hostname ursa-minor.four43.com
+    User smiller
+    Port 289
+
+# Git Hosts
+Host github.com
+    Hostname github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa
+
+Host github.com-four43
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa
+
+Host github.com-VaisalaCorp
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa_vaisala
+
+Host bitbucket.org-VaisalaDigital
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_rsa_vaisala
+
+# Vaisala Xweather
+Host geotiff
+    Hostname ec2-35-168-223-12.compute-1.amazonaws.com
+    User core
+    IdentityFile ~/.ssh/aerisweather/amp-import.pem
+
+Host geotiff-staging
+    Hostname ec2-34-238-87-43.compute-1.amazonaws.com
+    User core
+    IdentityFile ~/.ssh/aerisweather/amp-import.pem
+
+Host geotiff-dev
+    Hostname ec2-34-235-172-46.compute-1.amazonaws.com
+    User core
+    IdentityFile ~/.ssh/aerisweather/amp-import.pem
+
+Host aeris-obs-summary-importer
+    Hostname 10.0.35.140
+    User ec2-user
+    IdentityFile ~/.ssh/aerisweather/aeris-forecast.pem
+
+# Defaults
+Host *
+    User smiller
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
