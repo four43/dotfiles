@@ -25,3 +25,6 @@
     path = ~/.gitconfig-work
 [includeIf "gitdir:~/projects/vaisala-xweather/"]
     path = ~/.gitconfig-work
+
+[url "git@github.com-VaisalaCorp:VaisalaCorp/"]
+    insteadOf = git@github.com:VaisalaCorp/
