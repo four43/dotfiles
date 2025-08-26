@@ -349,3 +349,15 @@ function aws-sqs-ls() {
 function aws-sqs-info() {
 
 }
+
+function aws-ecr-login() {
+    local region="us-east-1"
+    local account_id
+    account_id="$(aws sts get-caller-identity --query Account --output text)"
+    if [[ -z "$account_id" ]]; then
+        echo "Could not retrieve AWS account ID." >&2
+        return 1
+    fi
+    aws ecr get-login-password --region "$region" | \
+        docker login --username AWS --password-stdin "${account_id}.dkr.ecr.${region}.amazonaws.com"
+}
