@@ -15,9 +15,10 @@
         path: ulauncher/config
         relative: true
         force: true
-    ~/.config/Code/User/prompts/: 
-        path: vscode/prompts/
+    ~/.config/Code/User/prompts/Python.chatmode.md: 
+        path: vscode/prompts/Python.chatmode.md
         type: hardlink
+        create: true
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work
