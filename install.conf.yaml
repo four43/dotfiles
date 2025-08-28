@@ -15,6 +15,9 @@
         path: ulauncher/config
         relative: true
         force: true
+    ~/.config/Code/User/prompts/: 
+        path: vscode/prompts/
+        type: hardlink
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work
