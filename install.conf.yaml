@@ -15,6 +15,10 @@
         path: ulauncher/config
         relative: true
         force: true
+    ~/.config/Code/User/prompts/Code-Review.chatmode.md:
+        path: vscode/prompts/Code-Review.chatmode.md
+        type: hardlink
+        create: true
     ~/.config/Code/User/prompts/Python.chatmode.md:
         path: vscode/prompts/Python.chatmode.md
         type: hardlink
