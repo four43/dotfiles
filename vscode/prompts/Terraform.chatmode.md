@@ -16,3 +16,11 @@ We use environment merging to share common configuration between environments. T
 a `local.env` variable.
 
 Existing modules should be used where possible. They exist in $PROJECT_ROOT/terraform/modules-v2. The README.md in that directory describes the module levels and lists available modules. The modules are separated out by provider, and then by resource level.
+
+Different deployed environments are configured using Terraform workspaces. They are typically dev, staging, prod, and sometimes proj1 for one off projects.
+
+Resources that are "persistent" are deployed as a separate stack. They have the "-persistent" suffix. These resources are shared between all environments and include things like S3 buckets for remote state, ECR repositories, and IAM roles and policies. They should never be deleted.
+
+Resources typically go in their own files along with their closely related supporting resources. Like `s3.tf` and `lambda.tf`.
+
+Don't go overboard on comments. The code should be self explanatory. Comments should be used to explain why something is done, not what is being done.
