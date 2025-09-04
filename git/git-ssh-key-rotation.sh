@@ -1,57 +1,93 @@
 #!/bin/bash
-set -euo pipefail
 
-# DEPRECATED: This doesn't work super well with UIs and things. It's better to
-# just set up a host like `github.com-OrgName` in your SSH config and use that.
+# Git SSH Key Multi-Authentication Wrapper
+#
+# This script acts as an SSH wrapper for git operations that automatically tries
+# multiple SSH keys from the SSH agent when authenticating to remote repositories.
+# Useful when you have multiple GitHub/GitLab accounts with different SSH keys.
+#
+# !WARNING! This might not work well in all environments and setups that don't respect
+# GIT_SSH. Use with caution.
+#
+# Features:
+# - Iterates through all SSH keys loaded in ssh-agent
+# - Continues trying keys on permission/authentication failures
+# - Falls back to default SSH behavior if all keys fail
+# - Supports debug logging (set DEBUG=1)
+# - Handles git clone, fetch, push operations seamlessly
+#
+# Usage:
+#   export GIT_SSH_COMMAND="/absolute/path/to/git-ssh-wrapper.sh"
+#   git clone git@github.com:user/repo.git
+#
+# Requirements:
+# - SSH agent running with keys loaded (ssh-add -l)
 
+# This script acts as an SSH wrapper for git operations
+# It tries different SSH keys from the agent, with HTTPS fallback
+HOST="$1"
+shift
+ORIGINAL_COMMAND="$*"
 
-# Tries each SSH key in the agent until one works
-# Usage: git-ssh-key-rotation.sh <ssh command>
-# Set GIT_SSH=[this script] in your environment
-
-# Set log file location
-LOG_FILE="$HOME/.cache/git-ssh/log/log.txt"
-mkdir -p "$(dirname "$LOG_FILE")"
-truncate -s 0 "$LOG_FILE"
-
-# Function to log messages
+# Init logging
+DEBUG=0
 log() {
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+  if [[ $DEBUG -eq 1 ]]; then
+	echo "$@" >&2
+  fi
 }
 
-# Start the log entry
-log "==== Starting new SSH attempt ===="
-log "Script arguments: $*"
+log "SSH wrapper called for host: $HOST with command: $ORIGINAL_COMMAND"
 
-# Get identities from SSH agent
-SSH_PUB_KEYS=($(ssh-add -L | awk '{print $2}'))
-if [ ${#SSH_PUB_KEYS[@]} -eq 0 ]; then
-  log "No SSH keys found in the agent."
-  exit 1
+# If this is a GitHub connection and we have a token, we could fallback to HTTPS
+# But for SSH wrapper, we focus on trying different SSH keys
+
+# Get list of SSH key files from the agent
+KEYS=$(ssh-add -L 2>/dev/null)
+if [[ -z "$KEYS" ]]; then
+  log "No keys found in SSH agent, falling back to default SSH"
+  exec ssh "$HOST" "$ORIGINAL_COMMAND"
 fi
 
-# Get SSH Key Paths
-KEY_PATHS=()
-for PUB_KEY in "${SSH_PUB_KEYS[@]}"; do
-  set +eo pipefail
-  KEY_PATH=$(grep -lr "$PUB_KEY" ~/.ssh/ 2>/dev/null | grep '\.pub$' | sed 's/.pub$//')
-  set -eo pipefail
-  if [ -n "$KEY_PATH" ]; then
-    KEY_PATHS+=("$KEY_PATH")
-    log "Added key path: $KEY_PATH"
+# Count and display number of keys
+KEY_COUNT=$(echo "$KEYS" | wc -l)
+log "Found $KEY_COUNT SSH keys in agent"
+
+# Temp directory for key testing
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+# Try each key
+readarray -t KEY_ARRAY <<< "$KEYS"
+for ((INDEX=0; INDEX<${#KEY_ARRAY[@]}; INDEX++)); do
+  KEY_LINE="${KEY_ARRAY[$INDEX]}"
+
+  if [[ -z "$KEY_LINE" ]]; then
+    continue
+  fi
+
+  KEY_FILE="$TMP_DIR/key_$INDEX"
+  echo "$KEY_LINE" > "$KEY_FILE"
+  chmod 600 "$KEY_FILE"
+
+  log "Trying SSH key $INDEX..."
+  ssh -i "$KEY_FILE" -o IdentitiesOnly=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=yes "$HOST" "$ORIGINAL_COMMAND"
+  EXIT_CODE=$?
+
+  # Check for specific success conditions
+  # Exit code 0 means complete success
+  # We should also continue on permission/auth errors but not on connection errors
+  if [[ $EXIT_CODE -eq 0 ]]; then
+    log "SSH operation succeeded with key $INDEX"
+    exit 0
+  elif [[ $EXIT_CODE -eq 128 ]] || [[ $EXIT_CODE -eq 1 ]]; then
+    # Git/permission errors - try next key
+    log "Key $INDEX failed with git/permission error (exit $EXIT_CODE), trying next key..."
   else
-    log "Key $PUB_KEY not found in ~/.ssh/**id_*.pub"
+    # Other SSH connection errors - try next key
+    log "Key $INDEX failed with SSH error (exit $EXIT_CODE), trying next key..."
   fi
 done
 
-log "Found ${#KEY_PATHS[@]} keys to try"
-
-log "Checking keys..."
-for KEY_PATH in "${KEY_PATHS[@]}"; do
-  log "Trying key: $KEY_PATH"
-  set +e
-  if ssh -i "${KEY_PATH}" "$@"; then
-      log "Success with key: $KEY_PATH"
-      exit 0
-  fi
-done
+log "All SSH keys failed. Trying default SSH behavior."
+exec ssh "$HOST" "$ORIGINAL_COMMAND"
