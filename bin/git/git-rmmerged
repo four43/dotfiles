@@ -1,0 +1,8 @@
+#!/bin/bash
+set -ex
+
+current_branch="$(git branch --show-current)"
+git fetch --all --prune
+git checkout master
+git branch --merged | egrep -v "(^\*|main|master|dev)" | xargs git branch -d
+git checkout "$current_branch"

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -ex
+git stash
+git fetch
+git rebase origin/master
+git stash pop
