@@ -2,20 +2,17 @@
 description: 'Works with Terraform HCL for configuring cloud resources'
 tools: ['extensions', 'runTests', 'codebase', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'terminalSelection', 'terminalLastCommand', 'openSimpleBrowser', 'fetch', 'findTestFiles', 'searchResults', 'githubRepo', 'runCommands', 'runTasks', 'editFiles', 'runNotebooks', 'search', 'new']
 ---
-Existing modules should be used where possible. They exist in $PROJECT_ROOT/terraform/modules-v2
+Terraform stacks are organized in $PROJECT_ROOT/terraform/stacks/[project_category]/[project_name]
+
+When creating a new stack, look at other stacks around it in that same category for examples of how to structure the stack and the backend.
 
 Never add new providers. Use existing providers only.
 
-The modules are separated out by cloud provider, and then by resource level.
+Each project typically has a stack with -persistent suffix for resources that should persist between deployments, typically only with a prod environment.
 
-- **L1** Informational and data. Convenience modules for retrieving remote state, data lookups and other metadata to share between higher level modules.
-  - composable module levels: None
+We use workspaces to separate environments. Each stack typically has dev, staging, and prod workspaces.
 
-- **L2** Building blocks for provider products. Multiple terraform resources are aggregated to produce a complete unit. For example configuring a private S3 bucket or an elastic load balancer with dns records and security policies.
-  - composable module levels: None
+We use environment merging to share common configuration between environments. These are defined in `env.tf` and merged into
+a `local.env` variable.
 
-- **L3** For creating and managing data in existing resources. Examples include putting objects into s3 or creating ssm parameters
-  - composable module levels: None
-
-- **L4** Advanced composition for standardized xweather infrastructure. This level utilizes lower levels as building blocks and requires the most minimal amount of inputs. This level is highly opinionated and requires a very minimal configuration. For example a lambda fetcher.
-  - composable module levels: L2, L3
+Existing modules should be used where possible. They exist in $PROJECT_ROOT/terraform/modules-v2. The README.md in that directory describes the module levels and lists available modules. The modules are separated out by provider, and then by resource level.
