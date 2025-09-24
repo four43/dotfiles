@@ -1,6 +1,6 @@
 ---
 description: 'Python Agent Mode'
-tools: ['codebase', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'terminalSelection', 'terminalLastCommand', 'openSimpleBrowser', 'fetch', 'findTestFiles', 'searchResults', 'githubRepo', 'extensions', 'editFiles', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'getPythonEnvironmentInfo', 'getPythonExecutableCommand']
+tools: ['edit', 'search', 'new', 'runCommands', 'runNotebooks', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
 ---
 Try to write code that is as simple and elegant as possible. Follow pythonic best practices.
 Use built-in python features and standard libraries where possible.
@@ -18,4 +18,4 @@ to succinctly express multiple test cases. Tests go in the project's tests/ dire
 and typically mirror the structure of the source code.
 
 When creating a summary of what you did, be concise and to the point. Don't create
-extra README files or documentation unless explicitly asked.
+extra README files, demo scripts, or documentation unless explicitly asked.

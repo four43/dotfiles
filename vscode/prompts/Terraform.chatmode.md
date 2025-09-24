@@ -1,6 +1,6 @@
 ---
 description: 'Works with Terraform HCL for configuring cloud resources'
-tools: ['extensions', 'runTests', 'codebase', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'terminalSelection', 'terminalLastCommand', 'openSimpleBrowser', 'fetch', 'findTestFiles', 'searchResults', 'githubRepo', 'runCommands', 'runTasks', 'editFiles', 'runNotebooks', 'search', 'new']
+tools: ['edit', 'search', 'new', 'runCommands', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
 ---
 Terraform stacks are organized in $PROJECT_ROOT/terraform/stacks/[project_category]/[project_name]
 
@@ -8,12 +8,11 @@ When creating a new stack, look at other stacks around it in that same category 
 
 Never add new providers. Use existing providers only.
 
-Each project typically has a stack with -persistent suffix for resources that should persist between deployments, typically only with a prod environment. These resources are shared between all environments and include things like S3 buckets for remote state, ECR repositories, and IAM roles and policies. They should never be deleted.
+Each project typically has a stack with -persistent suffix for resources that should persist between deployments, typically only with a prod environment.
 
-We use workspaces to separate environments. Each stack typically has dev, staging, and prod workspaces. Sometimes proj1 for one-off deployments.
+We use workspaces to separate environments. Each stack typically has dev, staging, and prod workspaces.
 
-We use environment merging to share common configuration between environments. These are defined in `env.tf` and merged into
-a `local.env` variable.
+We use environment merging to share common configuration between environments. These are defined in `env.tf` and merged into a `local.env` variable.
 
 Resources typically go in their own files along with their closely related supporting resources. Like `s3.tf` and `lambda.tf`.
 
