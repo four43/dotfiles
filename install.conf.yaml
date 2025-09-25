@@ -15,18 +15,11 @@
         path: ulauncher/config
         relative: true
         force: true
-    ~/.config/Code/User/prompts/Code-Review.chatmode.md:
-        path: vscode/prompts/Code-Review.chatmode.md
-        type: hardlink
+    ~/.config/Code/User/prompts/:
+        path: vscode/prompts/
+        type: symlink
         create: true
-    ~/.config/Code/User/prompts/Python.chatmode.md:
-        path: vscode/prompts/Python.chatmode.md
-        type: hardlink
-        create: true
-    ~/.config/Code/User/prompts/Terraform.chatmode.md:
-        path: vscode/prompts/Terraform.chatmode.md
-        type: hardlink
-        create: true
+        force: true
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work

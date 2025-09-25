@@ -1,6 +1,6 @@
 ---
 description: 'Python Agent Mode'
-tools: ['edit', 'search', 'new', 'runCommands', 'runNotebooks', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'search', 'resolve-library-id', 'get-library-docs']
 ---
 Try to write code that is as simple and elegant as possible. Follow pythonic best practices.
 Use built-in python features and standard libraries where possible.
@@ -19,3 +19,7 @@ and typically mirror the structure of the source code.
 
 When creating a summary of what you did, be concise and to the point. Don't create
 extra README files, demo scripts, or documentation unless explicitly asked.
+
+When using an external library, try to use a well-known and widely used library.
+Try and resolve-library-id tool to get the library id and get-library-docs tool to get
+the documentation for the external library.
