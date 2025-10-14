@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+docker_cli_plugin_metadata() {
+	local vendor="four43"
+	local version="v1.0.0"
+	local url="https://www.github.com/four43/dotfiles"
+	local description="Mirrors container images to repositories across multiple architectures"
+	cat <<-EOF
+		{"SchemaVersion":"0.1.0","Vendor":"${vendor}","Version":"${version}","ShortDescription":"${description}","URL":"${url}"}
+	EOF
+}
+
+docker_repomirror() {
+	if [ $# -ne 2 ]; then
+		echo "Usage: docker repomirror SOURCE_IMAGE DEST_REPO"
+		echo "Example: docker repomirror nginx:latest myregistry.io/nginx"
+		exit 1
+	fi
+
+	set -euo pipefail
+
+	SOURCE_IMAGE="$1"
+	DEST_REPO="$2"
+	VERSION_TAG="${SOURCE_IMAGE##*:}"
+	PLATFORMS=("linux/amd64" "linux/arm64")
+
+	echo "Mirroring $SOURCE_IMAGE to $DEST_REPO:$VERSION_TAG across platforms: ${PLATFORMS[*]}"
+
+	# Create platform list for buildx imagetools
+	PLATFORM_LIST=$(IFS=,; echo "${PLATFORMS[*]}")
+	set -x
+	docker buildx imagetools create --tag "$DEST_REPO:$VERSION_TAG" "$SOURCE_IMAGE" --platform "$PLATFORM_LIST"
+	set +x
+	echo "Mirror complete: $DEST_REPO:$VERSION_TAG"
+}
+
+case "$1" in
+docker-cli-plugin-metadata)
+	docker_cli_plugin_metadata
+	;;
+*)
+	shift
+	docker_repomirror "$@"
+	;;
+esac
