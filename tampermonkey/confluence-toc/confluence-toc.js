@@ -1,15 +1,17 @@
 // ==UserScript==
-// @name         Confluence Floating ToC
-// @namespace    http://tampermonkey.net/
-// @version      1.3
+// @name         Atlassian Confluence Floating ToC
+// @namespace    https://gist.github.com/four43/31c68a090142032968c8a2f9a58862c3
+// @version      1.0
 // @description  Adds a floating, hierarchical table of contents to Confluence pages.
-// @author       Gemini
+// @author       Seth Miller<seth@four43.com>
+// @license      MIT
 // @match        https://*.atlassian.net/wiki/spaces/*
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
 
+// Published originally to: https://greasyfork.org/en/scripts/554770-atlassian-confluence-floating-toc
 (function() {
     'use strict';
 
@@ -17,6 +19,10 @@
     const TOC_BUTTON_ID = 'gemini-floating-toc-button';
     const TOC_LINKS_CONTAINER_ID = 'gemini-toc-links-container';
     const STORAGE_KEY = 'gemini-toc-visible';
+    const WIDTH_STORAGE_KEY = 'gemini-toc-width';
+    const DEFAULT_WIDTH = 280;
+    const MIN_WIDTH = 200;
+    const MAX_WIDTH = 600;
 
     // --- Global variables to hold our created elements and observer ---
     // We create these once and re-attach them if they get removed.
@@ -53,6 +59,32 @@
             font-size: 13px;
             box-sizing: border-box;
             opacity: 1;
+        }
+
+        /* Resize handle */
+        #${TOC_PANEL_ID}::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            cursor: ew-resize;
+            background: transparent;
+            transition: background-color 0.2s ease;
+        }
+
+        #${TOC_PANEL_ID}:hover::after {
+            /* background: var(--ds-border, rgba(11, 18, 14, 0.14)); */
+        }
+
+        #${TOC_PANEL_ID}.resizing {
+            transition: none;
+            user-select: none;
+        }
+
+        #${TOC_PANEL_ID}.resizing::after {
+            background: var(--ds-border-selected, #2e2e2eff);
         }
 
         /* 3. Hidden State for ToC */
@@ -153,8 +185,64 @@
             tocPanel = document.createElement('div');
             tocPanel.id = TOC_PANEL_ID;
             tocPanel.innerHTML = `<h4>Table of Contents</h4><div id="${TOC_LINKS_CONTAINER_ID}"></div>`;
+
+            // Apply saved width
+            const savedWidth = GM_getValue(WIDTH_STORAGE_KEY, DEFAULT_WIDTH);
+            tocPanel.style.width = `${savedWidth}px`;
+
+            // Add resize functionality
+            setupResize(tocPanel);
         }
         return tocPanel;
+    }
+
+    // --- Helper function to setup resize functionality ---
+    function setupResize(panel) {
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        const onMouseDown = (e) => {
+            const rect = panel.getBoundingClientRect();
+            const handleArea = 8; // Match the ::after width
+
+            // Check if click is in the resize handle area (left side)
+            if (e.clientX >= rect.left && e.clientX <= rect.left + handleArea) {
+                e.preventDefault();
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = panel.offsetWidth;
+                panel.classList.add('resizing');
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+        };
+
+        const onMouseMove = (e) => {
+            if (!isResizing) return;
+
+            const delta = startX - e.clientX; // Reversed: moving left increases width
+            const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + delta));
+            panel.style.width = `${newWidth}px`;
+        };
+
+        const onMouseUp = () => {
+            if (!isResizing) return;
+
+            isResizing = false;
+            panel.classList.remove('resizing');
+
+            // Save the new width
+            const currentWidth = panel.offsetWidth;
+            GM_setValue(WIDTH_STORAGE_KEY, currentWidth);
+            console.log('Floating ToC: Saved width:', currentWidth);
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        panel.addEventListener('mousedown', onMouseDown);
     }
 
     // --- 3. Create/Get Button Element ---
@@ -253,7 +341,7 @@
     // --- 6. Highlight Active Link on Scroll ---
     let scrollTimeout;
     function onScroll() {
-        console.log('Floating ToC (Scroll): onScroll triggered');
+        console.debug('Floating ToC (Scroll): onScroll triggered');
 
         if (scrollTimeout) {
             cancelAnimationFrame(scrollTimeout);
@@ -263,7 +351,7 @@
             const headings = document.querySelectorAll('#main-content.wiki-content h1[id], #main-content.wiki-content h2[id], #main-content.wiki-content h3[id], #main-content.wiki-content h4[id]');
             const tocLinks = document.querySelectorAll(`#${TOC_LINKS_CONTAINER_ID} a`);
 
-            console.log('Floating ToC (Scroll): Found', headings.length, 'headings and', tocLinks.length, 'links');
+            console.debug('Floating ToC (Scroll): Found', headings.length, 'headings and', tocLinks.length, 'links');
 
             const scrollOffset = 70; // 60px header height + 10px buffer
             let activeHeadingId = null;
@@ -272,11 +360,11 @@
                 const heading = headings[i];
                 const rect = heading.getBoundingClientRect();
 
-                console.log(`Floating ToC (Scroll): Heading "${heading.textContent.substring(0, 20)}..." - top: ${rect.top}, scrollOffset: ${scrollOffset}`);
+                console.debug(`Floating ToC (Scroll): Heading "${heading.textContent.substring(0, 20)}..." - top: ${rect.top}, scrollOffset: ${scrollOffset}`);
 
                 if (rect.top <= scrollOffset) {
                     activeHeadingId = heading.id;
-                    console.log('Floating ToC (Scroll): Active heading ID:', activeHeadingId);
+                    console.debug('Floating ToC (Scroll): Active heading ID:', activeHeadingId);
                     break;
                 }
             }
@@ -287,7 +375,7 @@
                 link.classList.toggle('active', shouldBeActive);
 
                 if (shouldBeActive && !wasActive) {
-                    console.log('Floating ToC (Scroll): Activated link:', link.textContent);
+                    console.debug('Floating ToC (Scroll): Activated link:', link.textContent);
                 }
             });
         });
@@ -345,6 +433,11 @@
             if (isCurrentlyVisible !== savedState) {
                 console.log('Floating ToC (Ensurer): Syncing panel state to saved state:', savedState);
                 toggleTOC(panel, null, savedState);
+            }
+            // Ensure width is applied (in case panel was recreated by Confluence)
+            const savedWidth = GM_getValue(WIDTH_STORAGE_KEY, DEFAULT_WIDTH);
+            if (panel.style.width !== `${savedWidth}px`) {
+                panel.style.width = `${savedWidth}px`;
             }
         }
 
@@ -410,5 +503,4 @@
     setInterval(ensureElements, 1000); // Check every second
 
 })();
-
 
