@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Atlassian Confluence Floating ToC
 // @namespace    https://gist.github.com/four43/31c68a090142032968c8a2f9a58862c3
-// @version      1.0
+// @version      1.0.1
 // @description  Adds a floating, hierarchical table of contents to Confluence pages.
 // @author       Seth Miller<seth@four43.com>
 // @license      MIT
@@ -9,9 +9,10 @@
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @downloadURL https://update.greasyfork.org/scripts/554770/Atlassian%20Confluence%20Floating%20ToC.user.js
+// @updateURL https://update.greasyfork.org/scripts/554770/Atlassian%20Confluence%20Floating%20ToC.meta.js
 // ==/UserScript==
 
-// Published originally to: https://greasyfork.org/en/scripts/554770-atlassian-confluence-floating-toc
 (function() {
     'use strict';
 
@@ -153,7 +154,7 @@
             justify-content: center;
             padding: 0;
             /* Match the fill color of other icons */
-            color: var(--ds-icon, #FFF);
+            color: var(--ds-text-subtle, #FFF);
         }
 
         #${TOC_BUTTON_ID} svg path {
@@ -503,4 +504,3 @@
     setInterval(ensureElements, 1000); // Check every second
 
 })();
-
