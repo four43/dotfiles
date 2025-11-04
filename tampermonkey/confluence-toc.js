@@ -40,7 +40,7 @@
         #${TOC_PANEL_ID} {
             width: 280px;
             flex-shrink: 0;
-            height: calc(100vh - 55px); /* Adjust 60px for your header height */
+            height: calc(100vh - 100px);
             position: sticky;
             top: 55px; /* Match header height */
             overflow-y: auto;
@@ -49,7 +49,7 @@
             background: var(--ds-surface-overlay, #FFFFFF);
             border-radius: 0px;
             border: 1px solid var(--ds-border, #0B120E24);
-            transition: all 0.3s ease-in-out;
+            transition: all 0.1s ease-in-out;
             font-size: 13px;
             box-sizing: border-box;
             opacity: 1;
@@ -165,8 +165,9 @@
             tocButton = document.createElement('button');
             tocButton.id = TOC_BUTTON_ID;
             tocButton.title = 'Toggle Table of Contents';
+            // Start with closed state icon
             tocButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="#fdfdfd" d="M11.5 14.8V9.2q0-.35-.3-.475t-.55.125L8.2 11.3q-.3.3-.3.7t.3.7l2.45 2.45q.25.25.55.125t.3-.475M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm9-2V5H5v14z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="#fdfdfd" d="M11.5 16V8l-4 4zm4.5 3h3V5h-3zM5 19h9V5H5zm11 0h3zM3 21V3h18v18z"/></svg>
             `;
 
             // Add click listener ONCE
@@ -226,8 +227,27 @@
         }
         if (button) {
             button.classList.toggle('active', isVisible);
+            // Update button icon based on state
+            updateButtonIcon(button, isVisible);
         }
         GM_setValue(STORAGE_KEY, isVisible);
+    }
+
+    // --- Helper function to update button icon ---
+    function updateButtonIcon(button, isOpen) {
+        if (!button) return;
+
+        if (isOpen) {
+            // Open state icon
+            button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="#fdfdfd" d="M11.5 16V8l-4 4zM5 19h9V5H5zm-2 2V3h18v18z"/></svg>
+            `;
+        } else {
+            // Closed state icon
+            button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="#fdfdfd" d="M11.5 16V8l-4 4zm4.5 3h3V5h-3zM5 19h9V5H5zm11 0h3zM3 21V3h18v18z"/></svg>
+            `;
+        }
     }
 
     // --- 6. Highlight Active Link on Scroll ---
@@ -309,14 +329,23 @@
             return;
         }
 
+        // Get saved state early so we can use it for both new and existing elements
+        const savedState = GM_getValue(STORAGE_KEY, true);
+
         // --- Ensure Panel ---
         let panel = document.getElementById(TOC_PANEL_ID);
         if (!panel) {
             console.log('Floating ToC (Ensurer): Panel not found. Injecting...');
             panel = getTocPanel(); // Get or create
             mainWrapper.appendChild(panel);
-            const savedState = GM_getValue(STORAGE_KEY, true);
-            toggleTOC(panel, getTocButton(), savedState); // Toggle will update both
+            toggleTOC(panel, null, savedState);
+        } else {
+            // Panel exists, ensure it matches saved state
+            const isCurrentlyVisible = !panel.classList.contains('hidden');
+            if (isCurrentlyVisible !== savedState) {
+                console.log('Floating ToC (Ensurer): Syncing panel state to saved state:', savedState);
+                toggleTOC(panel, null, savedState);
+            }
         }
 
         // --- Ensure Button ---
@@ -328,10 +357,16 @@
                 const buttonContainer = shareButtonContainer.parentElement;
                 button = getTocButton(); // Get or create
                 buttonContainer.insertBefore(button, shareButtonContainer);
-                const savedState = GM_getValue(STORAGE_KEY, true);
-                toggleTOC(getTocPanel(), button, savedState); // Toggle will update both
+                toggleTOC(null, button, savedState);
             } else {
                  console.log('Floating ToC (Ensurer): Could not find share button parent.');
+            }
+        } else {
+            // Button exists, ensure it matches saved state
+            const isCurrentlyActive = button.classList.contains('active');
+            if (isCurrentlyActive !== savedState) {
+                console.log('Floating ToC (Ensurer): Syncing button state to saved state:', savedState);
+                toggleTOC(null, button, savedState);
             }
         }
 
