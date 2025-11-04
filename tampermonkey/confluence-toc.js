@@ -17,7 +17,7 @@
     const TOC_BUTTON_ID = 'gemini-floating-toc-button';
     const TOC_LINKS_CONTAINER_ID = 'gemini-toc-links-container';
     const STORAGE_KEY = 'gemini-toc-visible';
-    
+
     // --- Global variables to hold our created elements and observer ---
     // We create these once and re-attach them if they get removed.
     let tocPanel = null;
@@ -40,9 +40,9 @@
         #${TOC_PANEL_ID} {
             width: 280px;
             flex-shrink: 0;
-            height: calc(100vh - 60px); /* Adjust 60px for your header height */
+            height: calc(100vh - 55px); /* Adjust 60px for your header height */
             position: sticky;
-            top: 60px; /* Match header height */
+            top: 55px; /* Match header height */
             overflow-y: auto;
             padding: 20px 15px;
             margin-left: 24px;
@@ -123,7 +123,7 @@
             /* Match the fill color of other icons */
             color: var(--ds-icon, #FFF);
         }
-        
+
         #${TOC_BUTTON_ID} svg path {
              /* Use 'currentColor' to inherit the white from the button's color style */
             fill: currentColor !important;
@@ -166,9 +166,7 @@
             tocButton.id = TOC_BUTTON_ID;
             tocButton.title = 'Toggle Table of Contents';
             tocButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M11.5 14.8V9.2q0-.35-.3-.475t-.55.125L8.2 11.3q-.3.3-.3.7t.3.7l2.45 2.45q.25.25.55.125t.3-.475M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm9-2V5H5v14z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="#fdfdfd" d="M11.5 14.8V9.2q0-.35-.3-.475t-.55.125L8.2 11.3q-.3.3-.3.7t.3.7l2.45 2.45q.25.25.55.125t.3-.475M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm9-2V5H5v14z"/></svg>
             `;
 
             // Add click listener ONCE
@@ -189,7 +187,7 @@
 
         linksContainer.innerHTML = '';
         const headings = document.querySelectorAll('#main-content.wiki-content h1, #main-content.wiki-content h2, #main-content.wiki-content h3, #main-content.wiki-content h4');
-        
+
         if (headings.length === 0) {
             linksContainer.innerHTML = 'No headings found on this page.';
             return;
@@ -199,13 +197,13 @@
             if (!heading.id) {
                 return; // Skip headings without IDs
             }
-            
+
             const link = document.createElement('a');
             link.href = '#' + heading.id;
             link.textContent = heading.textContent;
             const level = heading.tagName.toLowerCase();
             link.className = 'toc-' + level;
-            
+
             // Smooth scroll
             link.onclick = (e) => {
                 e.preventDefault();
@@ -216,7 +214,7 @@
                     location.hash = '#' + heading.id;
                 }
             };
-            
+
             linksContainer.appendChild(link);
         });
     }
@@ -235,6 +233,8 @@
     // --- 6. Highlight Active Link on Scroll ---
     let scrollTimeout;
     function onScroll() {
+        console.log('Floating ToC (Scroll): onScroll triggered');
+
         if (scrollTimeout) {
             cancelAnimationFrame(scrollTimeout);
         }
@@ -242,26 +242,59 @@
         scrollTimeout = requestAnimationFrame(() => {
             const headings = document.querySelectorAll('#main-content.wiki-content h1[id], #main-content.wiki-content h2[id], #main-content.wiki-content h3[id], #main-content.wiki-content h4[id]');
             const tocLinks = document.querySelectorAll(`#${TOC_LINKS_CONTAINER_ID} a`);
-            
+
+            console.log('Floating ToC (Scroll): Found', headings.length, 'headings and', tocLinks.length, 'links');
+
             const scrollOffset = 70; // 60px header height + 10px buffer
             let activeHeadingId = null;
 
             for (let i = headings.length - 1; i >= 0; i--) {
                 const heading = headings[i];
                 const rect = heading.getBoundingClientRect();
-                
+
+                console.log(`Floating ToC (Scroll): Heading "${heading.textContent.substring(0, 20)}..." - top: ${rect.top}, scrollOffset: ${scrollOffset}`);
+
                 if (rect.top <= scrollOffset) {
                     activeHeadingId = heading.id;
+                    console.log('Floating ToC (Scroll): Active heading ID:', activeHeadingId);
                     break;
                 }
             }
 
             tocLinks.forEach(link => {
-                link.classList.toggle('active', link.getAttribute('href') === '#' + activeHeadingId);
+                const wasActive = link.classList.contains('active');
+                const shouldBeActive = link.getAttribute('href') === '#' + activeHeadingId;
+                link.classList.toggle('active', shouldBeActive);
+
+                if (shouldBeActive && !wasActive) {
+                    console.log('Floating ToC (Scroll): Activated link:', link.textContent);
+                }
             });
         });
     }
 
+    // --- Helper function to find the actual scrollable container ---
+    function findScrollContainer() {
+        // Try common Confluence scroll containers
+        const candidates = [
+            document.querySelector('#AkMainContent'), // Primary scroll container in Confluence
+            document.querySelector('#ak-main-content'),
+            document.querySelector('[data-test-id="content-body"]'),
+            document.querySelector('.wiki-page-content'),
+            document.documentElement,
+            document.body
+        ];
+
+        for (const element of candidates) {
+            if (element && element.scrollHeight > element.clientHeight) {
+                console.log('Floating ToC (Init): Found scroll container:', element.id || element.className || element.tagName);
+                return element;
+            }
+        }
+
+        console.log('Floating ToC (Init): Using window as scroll container');
+        return window;
+    }
 
     // --- 7. Main "Ensurer" Loop ---
     // This runs periodically to make sure our elements haven't been wiped out by SPA re-renders
@@ -301,12 +334,12 @@
                  console.log('Floating ToC (Ensurer): Could not find share button parent.');
             }
         }
-        
+
         // --- Ensure Observer & Content ---
         // Only attach observer if it's not attached or if the content element has changed
         if (!contentObserver || lastObserverTarget !== contentContainer) {
             console.log('Floating ToC (Ensurer): Attaching observer and populating ToC.');
-            
+
             // Disconnect old one if it exists
             if (contentObserver) {
                 contentObserver.disconnect();
@@ -322,12 +355,16 @@
             });
             contentObserver.observe(contentContainer, { childList: true, subtree: true });
             lastObserverTarget = contentContainer;
-            
+
             // Add scroll listener (only needs to be done once)
             if (!isScrollListenerAttached) {
                 console.log('Floating ToC (Ensurer): Attaching scroll listener.');
-                window.addEventListener('scroll', onScroll, { passive: true });
+                const scrollContainer = findScrollContainer();
+                scrollContainer.addEventListener('scroll', onScroll, { passive: true });
                 isScrollListenerAttached = true;
+
+                // Trigger once to set initial state
+                onScroll();
             }
         }
     }
