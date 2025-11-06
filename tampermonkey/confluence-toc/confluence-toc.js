@@ -6,6 +6,7 @@
 // @author       Seth Miller<seth@four43.com>
 // @license      MIT
 // @match        https://*.atlassian.net/wiki/spaces/*
+// @exclude      https://*.atlassian.net/wiki/spaces/*/pages/edit-v2/*
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue

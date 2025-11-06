@@ -10,3 +10,17 @@ A Tampermonkey userscript that adds a floating table of contents panel to Atlass
 - **Persistent Settings** - Remembers your width preference and visibility state
 - **Native Styling** - Matches Atlassian's Confluence design system
 - **Active Section Highlighting** - Automatically highlights the current section as you scroll
+
+## Changelog
+
+### v1.0.2
+
+- fix: Don't run in edit (v2) mode
+
+### v1.0.1
+
+- fix: toggle button color
+
+### v1.0.0
+
+- Initial Release!
