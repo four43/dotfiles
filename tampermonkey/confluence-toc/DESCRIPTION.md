@@ -13,6 +13,10 @@ A Tampermonkey userscript that adds a floating table of contents panel to Atlass
 
 ## Changelog
 
+### v1.0.3
+
+- fix: Don't run in edit (v2) mode (again). Previous fix didn't work. Confluence doesn't actually reload the page on edit.
+
 ### v1.0.2
 
 - fix: Don't run in edit (v2) mode

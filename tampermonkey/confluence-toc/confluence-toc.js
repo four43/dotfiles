@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         Atlassian Confluence Floating ToC
 // @namespace    https://gist.github.com/four43/31c68a090142032968c8a2f9a58862c3
-// @version      1.0.1
+// @version      1.0.3
 // @description  Adds a floating, hierarchical table of contents to Confluence pages.
 // @author       Seth Miller<seth@four43.com>
 // @license      MIT
 // @match        https://*.atlassian.net/wiki/spaces/*
-// @exclude      https://*.atlassian.net/wiki/spaces/*/pages/edit-v2/*
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -33,6 +32,8 @@
     let contentObserver = null;
     let lastObserverTarget = null;
     let isScrollListenerAttached = false;
+    let lastUrl = location.href;
+    let ensureInterval = null;
 
     // --- 1. Add All CSS Styles ---
     // (This only needs to run once at the start)
@@ -406,7 +407,43 @@
         return window;
     }
 
-    // --- 7. Main "Ensurer" Loop ---
+    // --- 7. Check if on Edit Page ---
+    function isEditPage() {
+        return location.href.includes('/pages/edit-v2/');
+    }
+
+    // --- 8. Remove All Elements ---
+    function removeElements() {
+        console.log('Floating ToC: Removing elements (edit page detected)');
+
+        // Remove panel
+        const panel = document.getElementById(TOC_PANEL_ID);
+        if (panel) {
+            panel.remove();
+        }
+
+        // Remove button
+        const button = document.getElementById(TOC_BUTTON_ID);
+        if (button) {
+            button.remove();
+        }
+
+        // Disconnect observer
+        if (contentObserver) {
+            contentObserver.disconnect();
+            contentObserver = null;
+            lastObserverTarget = null;
+        }
+
+        // Remove scroll listener
+        if (isScrollListenerAttached) {
+            const scrollContainer = findScrollContainer();
+            scrollContainer.removeEventListener('scroll', onScroll);
+            isScrollListenerAttached = false;
+        }
+    }
+
+    // --- 9. Main "Ensurer" Loop ---
     // This runs periodically to make sure our elements haven't been wiped out by SPA re-renders
     function ensureElements() {
         const mainWrapper = document.querySelector('#layout-main-wrapper');
@@ -499,9 +536,42 @@
         }
     }
 
-    // --- 8. Start Everything ---
+    // --- 10. Monitor URL Changes ---
+    function checkUrlChange() {
+        const currentUrl = location.href;
+        if (currentUrl !== lastUrl) {
+            console.log('Floating ToC: URL changed from', lastUrl, 'to', currentUrl);
+            lastUrl = currentUrl;
+
+            if (isEditPage()) {
+                // Stop the ensurer and remove elements
+                if (ensureInterval) {
+                    clearInterval(ensureInterval);
+                    ensureInterval = null;
+                }
+                removeElements();
+            } else {
+                // Start the ensurer if not already running
+                if (!ensureInterval) {
+                    console.log('Floating ToC: Starting ensurer (view page detected)');
+                    ensureInterval = setInterval(ensureElements, 1000);
+                }
+            }
+        }
+    }
+
+    // --- 11. Start Everything ---
     console.log('Floating ToC: Starting script...');
-    // addGlobalStyles(); // <-- This was the error. Removed it, as styles are added in section 1.
-    setInterval(ensureElements, 1000); // Check every second
+
+    // Check URL changes frequently
+    setInterval(checkUrlChange, 500);
+
+    // Only start ensurer if not on edit page
+    if (!isEditPage()) {
+        console.log('Floating ToC: Initial load - starting ensurer');
+        ensureInterval = setInterval(ensureElements, 1000);
+    } else {
+        console.log('Floating ToC: Initial load - edit page detected, not starting');
+    }
 
 })();
