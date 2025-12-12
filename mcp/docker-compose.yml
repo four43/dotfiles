@@ -1,0 +1,95 @@
+services:
+  # Context7 MCP Server (Documentation lookup)
+  context7:
+    image: node:22-alpine
+    container_name: mcp-context7
+    working_dir: /app
+    command: sh -c "npm install -g @upstash/context7-mcp@latest && context7-mcp --transport http --port 3000"
+    restart: unless-stopped
+    ports:
+      - "11001:3000"
+    networks:
+      - mcp-network
+
+  # Terraform MCP Server
+  terraform:
+    image: hashicorp/terraform-mcp-server:0.3.3
+    container_name: mcp-terraform
+    command: /bin/terraform-mcp-server streamable-http --transport-host 0.0.0.0 --transport-port 8080
+    restart: unless-stopped
+    ports:
+      - "11002:8080"
+    networks:
+      - mcp-network
+
+  # AWS Terraform MCP Server
+  terraform-aws:
+    image: python:3.10-slim
+    container_name: mcp-terraform-aws
+    working_dir: /app
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y socat &&
+      pip install --root-user-action=ignore uv &&
+      echo 'Installing AWS Documentation MCP Server...' &&
+      uv tool install awslabs.terraform-mcp-server@latest &&
+      export PATH=/root/.local/bin:\$PATH &&
+      echo 'Starting socat bridge...' &&
+      socat UNIX-LISTEN:/sockets/terraform-aws.sock,fork,reuseaddr,unlink-early,mode=777 EXEC:'/root/.local/bin/awslabs.terraform-mcp-server'
+      "
+    restart: unless-stopped
+    volumes:
+      - /tmp/mcp-sockets:/sockets
+
+  # AWS Diagram MCP Server
+  aws-diagram:
+    image: python:3.10-slim
+    container_name: mcp-aws-diagram
+    working_dir: /app
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y socat graphviz &&
+      pip install --root-user-action=ignore uv &&
+      echo 'Installing AWS Diagram MCP Server...' &&
+      uv tool install awslabs.aws-diagram-mcp-server@latest &&
+      export PATH=/root/.local/bin:\$PATH &&
+      echo 'Starting socat bridge...' &&
+      socat UNIX-LISTEN:/sockets/aws-diagram.sock,fork,reuseaddr,unlink-early,mode=777 EXEC:'/root/.local/bin/awslabs.aws-diagram-mcp-server'
+      "
+    restart: unless-stopped
+    volumes:
+      - /tmp/mcp-sockets:/sockets
+      - /tmp/generated-diagrams:/tmp/generated-diagrams
+    environment:
+      - FASTMCP_LOG_LEVEL=INFO
+      - AWS_DOCUMENTATION_PARTITION=aws
+
+  # AWS Documentation MCP Server
+  aws-documentation:
+    image: python:3.10-slim
+    container_name: mcp-aws-documentation
+    working_dir: /app
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y socat &&
+      pip install --root-user-action=ignore uv &&
+      echo 'Installing AWS Documentation MCP Server...' &&
+      uv tool install awslabs.aws-documentation-mcp-server@latest &&
+      export PATH=/root/.local/bin:\$PATH &&
+      echo 'Starting socat bridge...' &&
+      socat UNIX-LISTEN:/sockets/aws-documentation.sock,fork,reuseaddr,unlink-early,mode=777 EXEC:'/root/.local/bin/awslabs.aws-documentation-mcp-server'
+      "
+    restart: unless-stopped
+    volumes:
+      - /tmp/mcp-sockets:/sockets
+    environment:
+      - FASTMCP_LOG_LEVEL=INFO
+      - AWS_DOCUMENTATION_PARTITION=aws
+
+networks:
+  mcp-network:
+    name: mcp-network
+    driver: bridge

@@ -1,0 +1,43 @@
+{
+	"servers": {
+		// General Dev & Tooling
+		"context7": {
+			"url": "http://0.0.0.0:11001/mcp/",
+			"type": "http"
+		},
+		"terraform": {
+			"url": "http://0.0.0.0:11002/mcp/",
+			"type": "http"
+		},
+		// AWS
+		"aws-knowledge-mcp-server": {
+			"url": "https://knowledge-mcp.global.api.aws",
+			"type": "http",
+		},
+		"aws-diagram": {
+			"command": "socat",
+			"args": [
+				"-",
+				"UNIX-CONNECT:/tmp/mcp-sockets/aws-diagram.sock"
+			],
+			"type": "stdio",
+		},
+		"aws-documentation": {
+			"command": "socat",
+			"args": [
+				"-",
+				"UNIX-CONNECT:/tmp/mcp-sockets/aws-documentation.sock"
+			],
+			"type": "stdio",
+		},
+		"terraform-aws": {
+			"command": "socat",
+			"args": [
+				"-",
+				"UNIX-CONNECT:/tmp/mcp-sockets/terraform-aws.sock"
+			],
+			"type": "stdio",
+		},
+	},
+	"inputs": []
+}
