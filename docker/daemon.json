@@ -1,0 +1,18 @@
+{
+  "bip": "10.50.0.1/16",
+  "default-address-pools": [
+    {
+      "base": "10.50.0.0/16",
+      "size": 24
+    }
+  ],
+  "features": {
+    "containerd-snapshotter": true
+  },
+  "runtimes": {
+    "nvidia": {
+      "args": [],
+      "path": "nvidia-container-runtime"
+    }
+  }
+}
