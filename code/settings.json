@@ -1,27 +1,274 @@
 {
+    "[dockercompose]": {
+        "editor.autoIndent": "advanced",
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+        "editor.insertSpaces": true,
+        "editor.quickSuggestions": {
+            "comments": false,
+            "other": true,
+            "strings": true
+        },
+        "editor.tabSize": 2
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[json]": {
+        "editor.tabSize": 2
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
+    "[svg]": {
+        "editor.defaultFormatter": "jock.svg"
+    },
+    "black-formatter.importStrategy": "fromEnvironment",
+    "chat.agent.maxRequests": 50,
+    "chat.tools.terminal.autoApprove": {
+        "/\\(.+\\)/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "/\\{.+\\}/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "/`.+`/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "/^column\\b.*-c\\s+[0-9]{4,}/": false,
+        "/^Compare-[a-z0-9]/i": true,
+        "/^date\\b.*(-s|--set)\\b/": false,
+        "/^find\\b.*-(delete|exec|execdir|fprint|fprintf|fls|ok|okdir)\\b/": false,
+        "/^Format-[a-z0-9]/i": true,
+        "/^grep\\b.*-(f|P)\\b/": false,
+        "/^Measure-[a-z0-9]/i": true,
+        "/^Select-[a-z0-9]/i": true,
+        "/^Sort-[a-z0-9]/i": true,
+        "/^sort\\b.*-(o|S)\\b/": false,
+        "/^tree\\b.*-o\\b/": false,
+        "basename": true,
+        "cat": true,
+        "cat": true,
+        "cd": true,
+        "chmod": false,
+        "chown": false,
+        "cmp": true,
+        "column": true,
+        "curl": false,
+        "cut": true,
+        "date": true,
+        "dd": false,
+        "del": false,
+        "df": true,
+        "dirname": true,
+        "du": true,
+        "echo": true,
+        "erase": false,
+        "eval": false,
+        "file": true,
+        "find": true,
+        "findstr": true,
+        "Get-ChildItem": true,
+        "Get-Content": true,
+        "Get-Date": true,
+        "Get-Location": true,
+        "Get-Random": true,
+        "git diff": true,
+        "git log": true,
+        "git show": true,
+        "git status": true,
+        "grep": true,
+        "head": true,
+        "iex": false,
+        "Invoke-Expression": false,
+        "Invoke-RestMethod": false,
+        "Invoke-WebRequest": false,
+        "irm": false,
+        "iwr": false,
+        "Join-Path": true,
+        "jq": false,
+        "kill": false,
+        "ls": true,
+        "ps": false,
+        "pwd": true,
+        "python -m pytest": true,
+        "rd": false,
+        "readlink": true,
+        "realpath": true,
+        "Remove-Item": false,
+        "ri": false,
+        "rm": false,
+        "rmdir": false,
+        "Set-Acl": false,
+        "Set-ItemProperty": false,
+        "sleep": true,
+        "sort": true,
+        "sp": false,
+        "Split-Path": true,
+        "spps": false,
+        "Start-Sleep": true,
+        "stat": true,
+        "Stop-Process": false,
+        "tail": true,
+        "taskkill": false,
+        "taskkill.exe": false,
+        "top": false,
+        "tr": true,
+        "tree": true,
+        "wc": true,
+        "wget": false,
+        "Where-Object": true,
+        "which": true,
+        "Write-Host": true,
+        "Write-Output": true,
+        "xargs": false
+    },
+    "chat.viewSessions.orientation": "stacked",
+    "containers.commands.build": "${containerCommand} buildx --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
     "cSpell.ignoreWords": [
+        "FLDK",
+        "azuretools",
+        "davidanson",
+        "fsspec",
+        "isort",
+        "iterrows",
+        "jpma",
+        "lightningessentail",
+        "medialogicgroup",
+        "pycache",
+        "pylance",
+        "pytest",
+        "randomfractalsinc",
+        "roadweatheranalyitics",
+        "tamasfe",
         "toolsai"
     ],
     "cSpell.userWords": [
+        "Activatable",
         "Aeris",
+        "AERISAPI",
         "aerisweather",
+        "BLOCKXSIZE",
+        "BLOCKYSIZE",
         "Bookmarkable",
+        "boto",
+        "botocore",
+        "dateutil",
         "dbus",
+        "dedupe",
+        "devcontainer",
+        "dockerhub",
+        "dtype",
+        "gdalwarp",
         "geospatial",
+        "geotiff",
+        "Grib",
+        "Himawari",
+        "lightningessentail",
         "Mapbox",
+        "mbtiles",
+        "noaa",
+        "ogrinfo",
+        "PGID",
+        "pmtiles",
+        "PUID",
+        "pymongo",
+        "rasterio",
+        "roadweatheranalyitics",
+        "satpy",
+        "ualf",
         "Vaisala",
+        "Vintra",
         "Xweather"
     ],
     "debug.toolBarLocation": "docked",
+    "dev.containers.defaultExtensions": [
+        // "charliermarsh.ruff",
+        "coolbear.systemd-unit-file",
+        "donjayamanne.githistory",
+        "mongodb.mongodb-vscode",
+        "ms-toolsai.jupyter",
+        "reduckted.vscode-gitweblinks",
+        "ritwickdey.liveserver",
+        "samuelcolvin.jinjahtml",
+        "timonwong.shellcheck",
+        "vivaxy.vscode-conventional-commits",
+    ],
     "dev.containers.dockerComposePath": "docker compose",
+    "dev.containers.dockerCredentialHelper": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "docker.commands.build": "${containerCommand} buildx --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
+    "docker.extension.dockerEngineAvailabilityPrompt": false,
+    "docker.extension.enableComposeLanguageServer": false,
+    "dotfiles.installCommand": "install",
+    "dotfiles.repository": "git@github.com:four43/dotfiles-aw.git",
+    "editor.fontSize": 15,
+    "editor.lineHeight": 25,
     "editor.renderWhitespace": "boundary",
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "editor.tokenColorCustomizations": {
+        "[Nord Native]": {
+            "textMateRules": [
+                {
+                    "scope": "entity.name.type.class",
+                    "settings": {
+                        "foreground": "#e9b696"
+                    }
+                },
+                {
+                    "scope": "entity.name.namespace",
+                    "settings": {
+                        "foreground": "#e9b696"
+                    }
+                },
+                {
+                    "scope": "variable.parameter.function.language.special.self.python",
+                    "settings": {
+                        "foreground": "#af8ede"
+                    }
+                },
+                {
+                    "scope": "variable.parameter.function.language.special.cls.python",
+                    "settings": {
+                        "foreground": "#af8ede"
+                    }
+                }
+            ]
+        }
+    },
     "eslint.codeActionsOnSave.rules": null,
+    "explorer.autoReveal": "focusNoScroll",
+    "explorer.compactFolders": false,
+    "explorer.confirmPasteNative": false,
+    "explorer.fileNesting.patterns": {
+        "*.db": "${capture}.${extname}-*",
+        "*.db3": "${capture}.${extname}-*",
+        "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+        "*.jsx": "${capture}.js",
+        "*.s3db": "${capture}.${extname}-*",
+        "*.sdb": "${capture}.${extname}-*",
+        "*.sqlite": "${capture}.${extname}-*",
+        "*.sqlite3": "${capture}.${extname}-*",
+        "*.ts": "${capture}.js",
+        "*.tsx": "${capture}.ts",
+        "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
+        "tsconfig.json": "tsconfig.*.json"
+    },
+    "files.associations": {
+        "docker-compose.yml.*": "dockercompose"
+    },
     "files.autoSave": "onFocusChange",
     "files.exclude": {
-        "**/.pytest_cache": true,
+        ".idea": true,
         "**/__pycache__": true,
-        ".idea": true
+        "**/.pytest_cache": true
     },
+    "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
     "git.autofetch": true,
     "git.autoStash": true,
@@ -35,37 +282,165 @@
     "git.confirmSync": false,
     "git.defaultBranchName": "master",
     "git.fetchOnPull": true,
-    "git.inputValidation": "warn",
+    "git.inputValidation": true,
+    "git.openRepositoryInParentFolders": "never",
     "git.rebaseWhenSync": true,
+    "github.copilot.chat.editor.temporalContext.enabled": true,
+    "github.copilot.editor.enableAutoCompletions": true,
+    "github.copilot.enable": {
+        "*": true,
+        "markdown": true,
+        "plaintext": true,
+        "scminput": false
+    },
+    "github.copilot.nextEditSuggestions.enabled": false,
+    "github.gitProtocol": "ssh",
+    "githubPullRequests.pullBranch": "never",
     "js/ts.implicitProjectConfig.checkJs": true,
     "liveServer.settings.donotShowInfoMsg": true,
+    "makefile.configureOnOpen": true,
     "markdown.extension.italic.indicator": "_",
+    "markdown.extension.list.indentationSize": "inherit",
+    "markdown.extension.orderedList.marker": "one",
     "markdown.updateLinksOnFileMove.enabled": "always",
+    "markdownlint.config": {
+        "MD010": false,
+        "MD012": false,
+        "MD033": false,
+        "MD041": false
+    },
+    "pymakr.devices.configs": {
+        "0001": {
+            "adapterOptions": {},
+            "autoConnect": "onLostConnection",
+            "hidden": false,
+            "name": "sump-pump-meter",
+            "password": "python",
+            "rootPath": "/",
+            "username": "micro"
+        },
+        "serial:///dev/ttyS0": {
+            "adapterOptions": {},
+            "autoConnect": "onLostConnection",
+            "hidden": false,
+            "name": "",
+            "password": "python",
+            "rootPath": null,
+            "username": "micro"
+        },
+        "serial:///dev/ttyS1": {
+            "adapterOptions": {},
+            "autoConnect": "onLostConnection",
+            "hidden": false,
+            "name": "",
+            "password": "python",
+            "rootPath": null,
+            "username": "micro"
+        },
+        "serial:///dev/ttyS2": {
+            "adapterOptions": {},
+            "autoConnect": "onLostConnection",
+            "hidden": false,
+            "name": "",
+            "password": "python",
+            "rootPath": null,
+            "username": "micro"
+        },
+        "serial:///dev/ttyS3": {
+            "adapterOptions": {},
+            "autoConnect": "onLostConnection",
+            "hidden": false,
+            "name": "",
+            "password": "python",
+            "rootPath": null,
+            "username": "micro"
+        }
+    },
+    "pymakr.devices.include": [
+        "manufacturer=Pycom.*",
+        "manufacturer=FTDI",
+        "manufacturer=Microsoft",
+        "manufacturer=Microchip Technology.*",
+        "friendlyName=.*CH34[01].*",
+        "friendlyName=.*CP21.*",
+        "manufacturer=(?!undefined)",
+        "friendlyName=.*ESP32.*"
+    ],
+    "python.analysis.autoFormatStrings": true,
     "python.analysis.autoImportCompletions": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnusedVariable": "warning"
+    },
+    "python.analysis.inlayHints.callArgumentNames": "partial",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.packageIndexDepths": [
+        {
+            "depth": 10,
+            "includeAllSymbols": true,
+            "name": ""
+        }
+    ],
     "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.userFileIndexingLimit": -1,
+    "python.createEnvironment.trigger": "off",
+    "python.defaultInterpreterPath": "python3",
+    "python.experiments.enabled": false,
+    "python.languageServer": "Pylance",
+    "python.REPL.sendToNativeREPL": true,
+    "python.terminal.activateEnvInCurrentTerminal": false,
+    "python.testing.pytestEnabled": true,
+    "rainbow_csv.virtual_alignment_mode": "manual",
+    "redhat.telemetry.enabled": false,
     "remote.autoForwardPortsSource": "hybrid",
+    "remote.SSH.permitPtyAllocation": true,
+    "security.workspace.trust.untrustedFiles": "open",
+    "sqltools.useNodeRuntime": true,
+    "terminal.external.linuxExec": "alacritty",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
     "terminal.integrated.fontFamily": "'DejaVuSansMono Nerd Font'",
-    "terminal.integrated.fontSize": 15,
+    "terminal.integrated.fontLigatures.enabled": false,
     "terminal.integrated.fontWeight": "normal",
     "terminal.integrated.mouseWheelZoom": true,
+    "terminal.integrated.rescaleOverlappingGlyphs": false,
     "terminal.integrated.tabs.location": "left",
+    "terraform.codelens.referenceCount": true,
+    "terraform.experimentalFeatures.validateOnSave": true,
+    "window.customTitleBarVisibility": "auto",
     "window.newWindowDimensions": "maximized",
     "window.openFoldersInNewWindow": "on",
     "window.restoreFullscreen": true,
-    "window.title": "${rootName}${separator}${dirty}${activeEditorShort}${separator}${separator}${profileName}${separator}${appName}",
+    "window.restoreWindows": "none",
+    "window.title": "${activeRepositoryName}${separator}${remoteName}${separator}${activeEditorShort}${dirty}",
     "workbench.colorCustomizations": {
-        "editorWhitespace.foreground": "#FFFFFF0F",
         "[Nord Native]": {
             "editorBracketHighlight.foreground1": "#5e81ac",
             "editorBracketHighlight.foreground2": "#88c0d0",
             "editorBracketHighlight.foreground3": "#a3be8c",
             "editorBracketHighlight.foreground4": "#ebcb8b",
             "editorBracketHighlight.foreground5": "#bf616a",
-        }
+            "editorInlayHint.background": "#ffffff08",
+            "editorInlayHint.foreground": "#ffffff2d",
+            "gitDecoration.ignoredResourceForeground": "#909090"
+        },
+        "editorWhitespace.foreground": "#FFFFFF0F"
     },
     "workbench.colorTheme": "Nord Native",
+    "workbench.editor.empty.hint": "hidden",
+    "workbench.editor.enablePreview": false,
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "file:/**/*.csv": "jupyter-data-wrangler",
+        "file:/**/*.parquet": "jupyter-data-wrangler"
+    },
+    "workbench.list.openMode": "doubleClick",
     "workbench.tree.indent": 16,
+    "workbench.trustedDomains.promptInTrustedWorkspace": true,
     "yaml.schemas": {
-        "file:///home/smiller/.vscode/extensions/atlassian.atlascode-3.0.10/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-    }
+        "file:///root/.vscode-server/extensions/atlassian.atlascode-3.6.0/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml",
+        "file:///workspace/machine-images/aws/docker-base/v1/files/opt/xweather-init/schemas/server-config.schema.json": "server-config*.yml"
+    },
+    "zenMode.centerLayout": false,
+    "zenMode.hideLineNumbers": false,
+    "zenMode.hideStatusBar": false
 }
