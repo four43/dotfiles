@@ -1,0 +1,17 @@
+[Unit]
+Description=KRunner Project Searcher Plugin
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/smiller/projects/four43/dotfiles/kde/project-searcher.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

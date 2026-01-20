@@ -56,3 +56,5 @@ Host *
     User smiller
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
+    # Automatically add keys to ssh-agent on first use
+    AddKeysToAgent yes

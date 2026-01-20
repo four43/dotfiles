@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Project Searcher
+Comment=Search and open development projects in VSCode
+Icon=folder-code
+Type=Service
+X-KDE-ServiceTypes=Plasma/Runner
+X-KDE-PluginInfo-Name=projectsearcher
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Author=dotfiles
+X-KDE-PluginInfo-Email=
+X-KDE-PluginInfo-License=MIT
+X-Plasma-API=DBus
+X-Plasma-DBusRunner-Service=org.kde.runner.projectsearcher
+X-Plasma-DBusRunner-Path=/runner
+X-Plasma-Request-Actions-Once=false
+X-Plasma-Runner-Unique-Match=false
+X-Plasma-Runner-Trigger-Keywords=project,proj,p

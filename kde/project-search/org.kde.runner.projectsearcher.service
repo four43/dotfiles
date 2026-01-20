@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.kde.runner.projectsearcher
+Exec=/home/smiller/projects/four43/dotfiles/kde/project-searcher.py
