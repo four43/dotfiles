@@ -12,15 +12,19 @@ makepkg -si --noconfirm
 sudo pacman -S \
 	aws-cli-v2 \
 	base-devel \
+	coreutils \
 	docker \
 	docker-compose \
 	docker-buildx \
+	fzf \
 	git \
 	inetutils \
+	keychain \
 	openssh \
 	python \
 	shfmt \
-	timeshift &&
+	timeshift \
+	ttf-opensans &&
 	echo "Installed dev tools"
 
 systemctl --user enable ssh-agent.service
