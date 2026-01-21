@@ -95,9 +95,9 @@ y = 0
 # background = "#2E3440"
 # foreground = "#D8DEE9"
 
-[terminal.shell]
-args = ["-c", "/home/smiller/.dotfiles/bin/tmux-start"]
+[shell]
 program = "/bin/zsh"
+args = ["-c", "/home/smiller/.dotfiles/bin/tmux-start"]
 
 [scrolling]
 history = 100000
