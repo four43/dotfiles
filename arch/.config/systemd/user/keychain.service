@@ -1,0 +1,13 @@
+[Unit]
+Description=Keychain SSH Agent
+Documentation=man:keychain(1)
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/keychain --eval --quiet --noask id_rsa id_rsa_vaisala
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=default.target
