@@ -1,0 +1,185 @@
+{
+  "numStartups": 5,
+  "theme": "dark-ansi",
+  "tipsHistory": {
+    "new-user-warmup": 1,
+    "plan-mode-for-complex-tasks": 1,
+    "terminal-setup": 1,
+    "memory-command": 1,
+    "theme-command": 1,
+    "status-line": 1,
+    "prompt-queue": 1,
+    "enter-to-steer-in-relatime": 2,
+    "todo-list": 2,
+    "shift-enter": 4,
+    "install-github-app": 4,
+    "install-slack-app": 4,
+    "drag-and-drop-images": 5,
+    "double-esc-code-restore": 5,
+    "continue": 5
+  },
+  "cachedGrowthBookFeatures": {
+    "tengu_1p_event_batch_config": {
+      "scheduledDelayMillis": 5000,
+      "maxExportBatchSize": 200,
+      "maxQueueSize": 8192
+    },
+    "tengu_mcp_tool_search": true,
+    "tengu_scratch": false,
+    "tengu_disable_bypass_permissions_mode": false,
+    "tengu_claudeai_mcp_connectors": false,
+    "tengu_log_segment_events": false,
+    "tengu_log_datadog_events": true,
+    "tengu_pid_based_version_locking": true,
+    "tengu_event_sampling_config": {},
+    "tengu_tool_pear": false,
+    "tengu_keybinding_customization": false,
+    "tengu_thinkback": false,
+    "tengu_attribution_header": true,
+    "enhanced_telemetry_beta": false,
+    "tengu_tool_search_unsupported_models": [
+      "haiku"
+    ],
+    "tengu_c4w_usage_limit_notifications_enabled": true,
+    "tengu_vscode_review_upsell": false,
+    "tengu_vscode_onboarding": false,
+    "tengu_streaming_tool_execution2": false,
+    "tengu_bash_haiku_prefetch": false,
+    "tengu-top-of-feed-tip": {
+      "tip": "",
+      "color": ""
+    },
+    "tengu_react_vulnerability_warning": false,
+    "tengu_code_diff_cli": true,
+    "tengu_post_compact_survey": false,
+    "tengu_session_memory": false,
+    "tengu_plank_river_frost": "user_intent"
+  },
+  "userID": "eb63b4dd215ddb1ae47bb4bd3b5d5c460f45974d8dff39a6a7ec7ac9be956161",
+  "firstStartTime": "2026-01-22T14:07:30.639Z",
+  "sonnet45MigrationComplete": true,
+  "opus45MigrationComplete": true,
+  "opusProMigrationComplete": true,
+  "thinkingMigrationComplete": true,
+  "s1mAccessCache": {
+    "94c0de74-e020-46a5-9c53-db244ef6cec6": {
+      "hasAccess": false,
+      "hasAccessNotAsDefault": true,
+      "timestamp": 1769113642008
+    }
+  },
+  "cachedChromeExtensionInstalled": false,
+  "changelogLastFetched": 1769116017696,
+  "oauthAccount": {
+    "accountUuid": "ffeb57b9-95bb-45db-a2b0-cbcf46bd5fad",
+    "emailAddress": "seth.miller@vaisala.com",
+    "organizationUuid": "94c0de74-e020-46a5-9c53-db244ef6cec6",
+    "hasExtraUsageEnabled": true,
+    "displayName": "Seth",
+    "organizationRole": "user",
+    "workspaceRole": null,
+    "organizationName": "Vaisala"
+  },
+  "claudeCodeFirstTokenDate": "2026-01-21T14:08:16.353698Z",
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "2.1.15",
+  "lastReleaseNotesSeen": "2.1.15",
+  "projects": {
+    "/home/smiller": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {
+        "context7": {
+          "type": "http",
+          "url": "http://0.0.0.0:11001/mcp/"
+        },
+        "terraform": {
+          "type": "http",
+          "url": "http://0.0.0.0:11002/mcp/"
+        },
+        "aws-knowledge-mcp-server": {
+          "type": "http",
+          "url": "https://knowledge-mcp.global.api.aws"
+        },
+        "aws-diagram": {
+          "type": "stdio",
+          "command": "socat",
+          "args": [
+            "-",
+            "UNIX-CONNECT:/tmp/mcp-sockets/aws-diagram.sock"
+          ]
+        },
+        "aws-documentation": {
+          "type": "stdio",
+          "command": "socat",
+          "args": [
+            "-",
+            "UNIX-CONNECT:/tmp/mcp-sockets/aws-documentation.sock"
+          ]
+        },
+        "terraform-aws": {
+          "type": "stdio",
+          "command": "socat",
+          "args": [
+            "-",
+            "UNIX-CONNECT:/tmp/mcp-sockets/terraform-aws.sock"
+          ]
+        }
+      },
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 1,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [],
+      "reactVulnerabilityCache": {
+        "detected": false,
+        "package": null,
+        "packageName": null,
+        "version": null,
+        "packageManager": null
+      },
+      "lastCost": 0.13722475,
+      "lastAPIDuration": 36652,
+      "lastAPIDurationWithoutRetries": 36647,
+      "lastToolDuration": 1027,
+      "lastDuration": 155448,
+      "lastLinesAdded": 29,
+      "lastLinesRemoved": 1,
+      "lastTotalInputTokens": 543,
+      "lastTotalOutputTokens": 1692,
+      "lastTotalCacheCreationInputTokens": 5487,
+      "lastTotalCacheReadInputTokens": 121344,
+      "lastTotalWebSearchRequests": 0,
+      "lastModelUsage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 464,
+          "outputTokens": 45,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.0006889999999999999
+        },
+        "claude-opus-4-5-20251101": {
+          "inputTokens": 79,
+          "outputTokens": 1647,
+          "cacheReadInputTokens": 121344,
+          "cacheCreationInputTokens": 5487,
+          "webSearchRequests": 0,
+          "costUSD": 0.13653575
+        }
+      },
+      "lastSessionId": "f750e3c9-3350-4229-8df8-f97cd2a6f19e"
+    }
+  },
+  "hasShownS1MWelcomeV2": {
+    "94c0de74-e020-46a5-9c53-db244ef6cec6": true
+  },
+  "hasShownOpus45Notice": {
+    "94c0de74-e020-46a5-9c53-db244ef6cec6": true
+  },
+  "officialMarketplaceAutoInstallAttempted": true,
+  "officialMarketplaceAutoInstalled": true,
+  "shiftEnterKeyBindingInstalled": true
+}

@@ -7,6 +7,7 @@
 - link:
     ~/.dotfiles: ''
 
+    ~/.claude.json : claude/claude.json
     ~/.config/alacritty: alacritty
     ~/.config/i3/config: i3/config
     ~/.config/neofetch/config.conf: neofetch/config.conf
