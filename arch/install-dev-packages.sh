@@ -18,6 +18,7 @@ sudo pacman -S \
 	docker-buildx \
 	fzf \
 	git \
+	git-lfs \
 	inetutils \
 	jq \
 	keychain \
