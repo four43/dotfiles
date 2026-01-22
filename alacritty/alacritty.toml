@@ -97,7 +97,7 @@ y = 0
 
 [terminal.shell]
 program = "/bin/zsh"
-args = ["-c", "/home/smiller/.dotfiles/bin/tmux-start"]
+args = ["-c", "/home/smiller/.dotfiles/bin/tmux-start; /bin/zsh"]
 
 [scrolling]
 history = 100000
@@ -108,3 +108,8 @@ x = 10
 y = 10
 
 [terminal]
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001b\r"
