@@ -1,10 +1,11 @@
 # Always set environment vars
 DOTFILE_DIR="$HOME/.dotfiles"
 TERMINAL="alacritty"
+EDITOR="vim"
 
 VIM_RUNTIME_DIR="$DOTFILE_DIR/vim/config"
 
-export DOTFILE_DIR TERMINAL VIM_RUNTIME_DIR
+export DOTFILE_DIR TERMINAL EDITOR VIM_RUNTIME_DIR
 
 # Configure a basic path if there is not one. Should be fine for most use cases.
 [[ -z "$PATH" ]] && PATH="/usr/bin:/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/local/sbin"
