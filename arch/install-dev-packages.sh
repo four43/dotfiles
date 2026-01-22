@@ -19,6 +19,7 @@ sudo pacman -S \
 	fzf \
 	git \
 	inetutils \
+	jq \
 	keychain \
 	openssh \
 	python \
@@ -27,6 +28,12 @@ sudo pacman -S \
 	ttf-opensans &&
 	echo "Installed dev tools"
 
-systemctl --user enable ssh-agent.service
+# Copy keychain systemd service
+mkdir -p ~/.config/systemd/user
+cp -f ~/projects/four43/dotfiles/arch/.config/systemd/user/keychain.service ~/.config/systemd/user/
+
+# Enable keychain service to start on login
+systemctl --user enable keychain.service
+systemctl --user daemon-reload
 
 yay -S visual-studio-code-bin
