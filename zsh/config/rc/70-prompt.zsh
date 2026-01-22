@@ -1,5 +1,15 @@
 setopt PROMPT_SUBST
 
+# Colors (zsh prompt escapes)
+RED='%F{red}'
+GREEN='%F{green}'
+YELLOW='%F{yellow}'
+BLUE='%F{blue}'
+PURPLE='%F{magenta}'
+WHITE='%F{white}'
+BOLD='%B'
+CLEAR='%f%b'
+
 precmd_functions=(record_lastrc "${precmd_functions[@]}")
 
 VIMODE='insert'
@@ -7,17 +17,16 @@ AUTO_SWITCH_AWS='1'
 AUTO_SWITCH_GIT='1'
 
 function cwd_indicator() {
-	echo -n '%F{blue} %5~%f'
+	echo -n "${BLUE} %5~${CLEAR}"
 }
 
 function host_indicator() {
-	[[ -n "$SSH_CONNECTION" ]] && echo -n '%F{white} %m%f '
+	[[ -n "$SSH_CONNECTION" ]] && echo -n "${WHITE}󰣀 %m${CLEAR} "
 }
 
 function rc_indicator() {
 	if [[ "$last_rc" != '0' ]]; then
-		color='red'
-		echo -n "%F{red}✖️%f"
+		echo -n "${RED}${BOLD} ⛌${CLEAR}"
 	fi
 }
 
@@ -26,27 +35,20 @@ function record_lastrc() {
 }
 
 function user_indicator() {
-	local color='green'
 	if [[ "$EUID" == '0' ]]; then
-		color='red'
+		echo -n "${RED}>${CLEAR}"
+	else
+		echo -n "${GREEN}>${CLEAR}"
 	fi
-	echo -n "%F{$color}>%f"
 }
 
 function vimode_indicator() {
-	local color=''
-	local char=''
 	if [[ "$VIMODE" == 'normal' ]]; then
-		color='yellow'
-		char='⊙'
-		echo -n "%F{$color}$char%f "
+		echo -n "${YELLOW}⊙${CLEAR} "
 	elif [[ "$VIMODE" == 'insert' ]]; then
-		# color='green'
-		# char='⏺'
+		: # no indicator for insert mode
 	else
-		color='red'
-		char='?'
-		echo -n "%F{$color}$char%f "
+		echo -n "${RED}?${CLEAR} "
 	fi
 }
 
@@ -77,10 +79,10 @@ function in_git_repo() {
 # Displays an indicator if the current git repo is dirty (any untracked files, any staged files that aren't committed yet)
 function git_indicator() {
 	if in_git_repo; then
-		echo -n " %F{green} $(git_branch)%f"
+		echo -n " ${GREEN} $(git_branch)${CLEAR}"
 		local unpublished=$(git_unpushed_commits_indicator)
 		if [[ $(git status --porcelain) != '' ]]; then
-			echo -n '%F{green}ˣ%f'
+			echo -n "${GREEN}ˣ${CLEAR}"
 		fi
 		if [[ -n "$unpublished" ]]; then
 			echo -n " $unpublished"
@@ -93,10 +95,10 @@ function git_unpushed_commits_indicator() {
 	if git rev-list @{u}..HEAD >/dev/null 2>&1; then
 		local num=$(git rev-list @{u}..HEAD 2>/dev/null | wc -l)
 		if [[ "$num" -gt 0 ]]; then
-			echo "%F{yellow}$num%f"
+			echo "${YELLOW}$num${CLEAR}"
 		fi
 	else
-		echo "%F{yellow}(new)%f"
+		echo "${YELLOW}(new)${CLEAR}"
 	fi
 }
 
@@ -117,10 +119,10 @@ function python_env_indicator() {
 			# Virtual env in virtualenvs folder [project-name]-[random]
 			env_name="$(echo "$VIRTUAL_ENV" | sed -E 's/^.*\/([^\/]+)-[^\-]+$/\1/')"
 		fi
-		echo "%F{yellow}$env_name%f"
+		echo "${YELLOW}$env_name${CLEAR}"
 	elif [[ -n "$CONDA_DEFAULT_ENV" ]] && [[ "$CONDA_DEFAULT_ENV" != "base" ]]; then
 		# Else conda (anything but base)
-		echo "%F{yellow}%B%b${CONDA_DEFAULT_ENV}%f"
+		echo "${YELLOW}${BOLD}${CONDA_DEFAULT_ENV}${CLEAR}"
 	fi
 }
 
@@ -142,7 +144,7 @@ function aws_auto_switch() {
 }
 
 function aws_profile_indicator() {
-	[[ -n "$AWS_PROFILE" ]] && [[ "$AWS_PROFILE" != "default" ]] && echo -n "%F{yellow} $AWS_PROFILE "
+	[[ -n "$AWS_PROFILE" ]] && [[ "$AWS_PROFILE" != "default" ]] && echo -n "${YELLOW} $AWS_PROFILE${CLEAR}"
 }
 
 function in_terraform_dir() {
@@ -181,6 +183,6 @@ function terraform_region_indicator() {
 aws_auto_switch
 chpwd_functions+=(aws_auto_switch)
 
-PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_marker)$(terraform_region_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator) '
+PS1='$(host_indicator)$(cwd_indicator)$(git_indicator) $(aws_profile_indicator)$(python_env_indicator)$(terraform_marker)$(terraform_region_indicator)$(terraform_ws_indicator)$(vimode_indicator)$(rc_indicator)  '
 zle -N zle-keymap-select
 zle -N accept-line
