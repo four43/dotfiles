@@ -6,8 +6,10 @@ After=graphical-session.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/keychain --eval --quiet --noask id_rsa id_rsa_vaisala
+ExecStart=/bin/bash -c 'eval $(/usr/bin/keychain --eval --quiet id_rsa id_rsa_vaisala) && systemctl --user import-environment SSH_AUTH_SOCK SSH_AGENT_PID'
 Environment=DISPLAY=:0
+Environment=SSH_ASKPASS=/usr/bin/ksshaskpass
+Environment=SSH_ASKPASS_REQUIRE=prefer
 
 [Install]
 WantedBy=default.target
