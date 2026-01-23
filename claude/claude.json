@@ -1,5 +1,5 @@
 {
-  "numStartups": 5,
+  "numStartups": 6,
   "theme": "dark-ansi",
   "tipsHistory": {
     "new-user-warmup": 1,
@@ -16,7 +16,9 @@
     "install-slack-app": 4,
     "drag-and-drop-images": 5,
     "double-esc-code-restore": 5,
-    "continue": 5
+    "continue": 5,
+    "shift-tab": 6,
+    "image-paste": 6
   },
   "cachedGrowthBookFeatures": {
     "tengu_1p_event_batch_config": {
@@ -65,7 +67,7 @@
     "94c0de74-e020-46a5-9c53-db244ef6cec6": {
       "hasAccess": false,
       "hasAccessNotAsDefault": true,
-      "timestamp": 1769113642008
+      "timestamp": 1769121860303
     }
   },
   "cachedChromeExtensionInstalled": false,
@@ -86,7 +88,12 @@
   "lastReleaseNotesSeen": "2.1.15",
   "projects": {
     "/home/smiller": {
-      "allowedTools": [],
+      "allowedTools": [
+        "Bash(tree:*)",
+        "Bash(python -m pytest:*)",
+        "Bash(ruff check:*)",
+        "Bash(mypy:*)"
+      ],
       "mcpContextUris": [],
       "mcpServers": {
         "context7": {
