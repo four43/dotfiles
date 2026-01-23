@@ -14,7 +14,7 @@ Managed by dotbot.
 
 Fun utilities to show off customizations
 
-  * neofetch - Outputs distro as ascii art, system information and color pallette
+  * fastfetch - Outputs distro as ascii art, system information and color pallette
   * gtop - System load history as cli charts. Uses node.js though :(
 
 
