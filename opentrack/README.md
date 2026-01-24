@@ -188,6 +188,20 @@ ONNX Runtime is downloaded from the [official Microsoft releases](https://github
 - X11 forwarding (`xhost +local:docker`) allows local Docker containers to access your display
 - Using `--privileged` flag gives the container elevated permissions and should be avoided in production
 
+## Using with Steam Proton Games (TrackIR/FreeTrack)
+
+If you want to use OpenTrack with Steam games that support **TrackIR** (like Nuclear Option, Arma 3, DCS, etc.), see the detailed guide:
+
+📖 **[TRACKIR-SETUP.md](TRACKIR-SETUP.md)** - Complete setup guide for FreeTrack/TrackIR protocol with Proton games
+
+**Quick Overview:**
+1. Configure Docker OpenTrack to output via **UDP** (port 4242)
+2. Install Windows OpenTrack in the game's Proton prefix
+3. Configure Windows OpenTrack: UDP input → FreeTrack output
+4. Launch both OpenTracks, then start your game
+
+The UDP bridge method allows your Linux Docker OpenTrack to communicate with Windows games running under Proton.
+
 ## References
 
 Based on research from:
