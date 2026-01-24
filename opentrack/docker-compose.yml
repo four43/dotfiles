@@ -1,0 +1,44 @@
+services:
+  opentrack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opentrack
+
+    # Enable webcam and input device access
+    devices:
+      - /dev/video0:/dev/video0
+      # Required for libevdev protocol (virtual joystick output)
+      - /dev/input:/dev/input
+      - /dev/uinput:/dev/uinput
+
+    # X11 display forwarding for GUI
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - QT_QPA_PLATFORM=xcb
+      - QT_DEBUG_PLUGINS=1
+      - QT_LOGGING_RULES="*.debug=true"
+
+    volumes:
+      # X11 socket for display
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      # Hardware information for proper device detection
+      - /run/udev:/run/udev:ro
+      # Optional: persist opentrack configuration (includes versioned subdirs like opentrack-2.3)
+      - opentrack-config:/home/opentrack/.config
+
+    # Network mode host allows easier X11 connection
+    network_mode: host
+
+    # Required for device access (video for webcam, input for /dev/input devices)
+    group_add:
+      - video
+      - input
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+volumes:
+  opentrack-config:
