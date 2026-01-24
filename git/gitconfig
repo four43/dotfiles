@@ -5,6 +5,8 @@
     email = seth@four43.com
 [pull]
     rebase = True
+[push]
+    autoSetupRemote = True
 [filter "lfs"]
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
