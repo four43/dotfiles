@@ -4,6 +4,7 @@ set -euo pipefail
 # In order to clone the repo you will probably need git and openssh
 
 sudo pacman -S \
+	alacritty \
 	aws-cli-v2 \
 	base-devel \
 	coreutils \
@@ -20,8 +21,11 @@ sudo pacman -S \
 	python \
 	shfmt \
 	timeshift \
-	ttf-opensans &&
-	echo "Installed dev tools"
+	tmux \
+	ttf-opensans \
+	unzip \
+	zsh \
+	&& echo "Installed dev tools"
 
 # Install yay
 mkdir -p ~/opt
