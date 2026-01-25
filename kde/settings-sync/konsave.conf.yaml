@@ -1,0 +1,22 @@
+save:
+  kde_configs:
+    location: "$CONFIG_DIR"
+    entries:
+      - kdeglobals         # Holds your active Icon/Theme names
+      - kglobalshortcutsrc # Shortcuts
+      - kwinrc             # Window manager settings
+      - plasmashellrc      # Shell settings
+      - plasma-org.kde.plasma.desktop-appletsrc # Panel/Widget locations
+      - kcminputrc         # Mouse/Keyboard settings
+      - kscreenlockerrc    # Lock screen
+      # find more: `ls ~/.config | grep -E 'rc$|^k'`
+
+# "export" entries are ONLY added when you run `konsave -e`
+# DO NOT add "icons" or "themes" here if you want to keep the file small.
+export:
+  share_folder:
+    location: "$SHARE_DIR"
+    entries:
+      - color-schemes
+      - konsole
+      # Leave 'icons' and 'aurorae' out of this list
