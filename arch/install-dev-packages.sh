@@ -16,7 +16,8 @@ sudo pacman -S \
 	git-lfs \
 	inetutils \
 	jq \
-	keychain \
+	kwallet \
+	kwallet-pam \
 	openssh \
 	python \
 	shfmt \
@@ -34,13 +35,5 @@ rm -rf ~/opt/yay || true
 git clone https://aur.archlinux.org/yay.git yay
 cd yay
 makepkg -si --noconfirm
-
-# Copy keychain systemd service
-mkdir -p ~/.config/systemd/user
-cp -f ~/projects/four43/dotfiles/arch/.config/systemd/user/keychain.service ~/.config/systemd/user/
-
-# Enable keychain service to start on login
-systemctl --user enable keychain.service
-systemctl --user daemon-reload
 
 yay -S visual-studio-code-bin

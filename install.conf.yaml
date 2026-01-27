@@ -10,6 +10,16 @@
     ~/.claude.json : claude/claude.json
     ~/.config/alacritty: alacritty
     ~/.config/i3/config: i3/config
+    ~/.config/environment.d/ssh_askpass.conf:
+        path: arch/.config/environment.d/ssh_askpass.conf
+        type: symlink
+        create: true
+        force: true
+    ~/.config/systemd/user/keychain.service:
+        path: arch/.config/systemd/user/keychain.service
+        type: symlink
+        create: true
+        force: true
     ~/.config/neofetch/config.conf: neofetch/config.conf
     ~/.config/rofi/config.rasi: themes/current/rofi.rasi
     ~/.config/ulauncher:
