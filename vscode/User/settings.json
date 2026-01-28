@@ -1,0 +1,454 @@
+{
+    "black-formatter.importStrategy": "fromEnvironment",
+    "cSpell.ignoreWords": [
+        "FLDK",
+        "azuretools",
+        "davidanson",
+        "fsspec",
+        "isort",
+        "iterrows",
+        "jpma",
+        "lightningessentail",
+        "medialogicgroup",
+        "pycache",
+        "pylance",
+        "pytest",
+        "randomfractalsinc",
+        "roadweatheranalyitics",
+        "tamasfe",
+        "toolsai"
+    ],
+    "cSpell.userWords": [
+        "Activatable",
+        "Aeris",
+        "AERISAPI",
+        "aerisweather",
+        "BLOCKXSIZE",
+        "BLOCKYSIZE",
+        "Bookmarkable",
+        "boto",
+        "botocore",
+        "dateutil",
+        "dbus",
+        "dedupe",
+        "devcontainer",
+        "dockerhub",
+        "dtype",
+        "gdalwarp",
+        "geospatial",
+        "geotiff",
+        "Grib",
+        "Himawari",
+        "lightningessentail",
+        "Mapbox",
+        "mbtiles",
+        "noaa",
+        "ogrinfo",
+        "PGID",
+        "pmtiles",
+        "PUID",
+        "pymongo",
+        "rasterio",
+        "roadweatheranalyitics",
+        "satpy",
+        "ualf",
+        "Vaisala",
+        "Vintra",
+        "Xweather"
+    ],
+    "debug.toolBarLocation": "docked",
+    "dev.containers.defaultExtensions": [
+        // "charliermarsh.ruff",
+        "anthropic.claude-code",
+        "coolbear.systemd-unit-file",
+        "donjayamanne.githistory",
+        "mongodb.mongodb-vscode",
+        "ms-toolsai.jupyter",
+        "reduckted.vscode-gitweblinks",
+        "ritwickdey.liveserver",
+        "samuelcolvin.jinjahtml",
+        "timonwong.shellcheck",
+        "vivaxy.vscode-conventional-commits",
+    ],
+    "dev.containers.dockerComposePath": "docker compose",
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.fontSize": 15,
+    "editor.lineHeight": 25,
+    "editor.renderWhitespace": "boundary",
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "editor.tokenColorCustomizations": {
+        "[Nord Native]": {
+            "textMateRules": [
+                {
+                    "scope": "entity.name.type.class",
+                    "settings": {
+                        "foreground": "#e9b696"
+                    }
+                },
+                {
+                    "scope": "entity.name.namespace",
+                    "settings": {
+                        "foreground": "#e9b696"
+                    }
+                },
+                {
+                    "scope": "variable.parameter.function.language.special.self.python",
+                    "settings": {
+                        "foreground": "#af8ede"
+                    }
+                },
+                {
+                    "scope": "variable.parameter.function.language.special.cls.python",
+                    "settings": {
+                        "foreground": "#af8ede"
+                    }
+                }
+            ]
+        }
+    },
+    "eslint.codeActionsOnSave.rules": null,
+    "explorer.compactFolders": false,
+    "files.autoSave": "onFocusChange",
+    "files.exclude": {
+        "**/.pytest_cache": true,
+        "**/__pycache__": true,
+        ".idea": true
+    },
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "git.autofetch": true,
+    "git.autoStash": true,
+    "git.commandsToLog": [
+        "stash",
+        "commit",
+        "push",
+        "branch",
+        "pull"
+    ],
+    "git.confirmSync": false,
+    "git.defaultBranchName": "master",
+    "git.fetchOnPull": true,
+    "git.inputValidation": true,
+    "git.openRepositoryInParentFolders": "never",
+    "git.rebaseWhenSync": true,
+    "github.copilot.editor.enableAutoCompletions": true,
+    "js/ts.implicitProjectConfig.checkJs": true,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "markdown.extension.italic.indicator": "_",
+    "markdown.extension.list.indentationSize": "inherit",
+    "markdown.extension.orderedList.marker": "one",
+    "markdown.updateLinksOnFileMove.enabled": "always",
+    "markdownlint.config": {
+        "MD010": false,
+        "MD012": false,
+        "MD033": false,
+        "MD041": false,
+    },
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnusedVariable": "warning"
+    },
+    "python.analysis.inlayHints.callArgumentNames": "partial",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.packageIndexDepths": [
+        {
+            "depth": 10,
+            "includeAllSymbols": true,
+            "name": ""
+        }
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.userFileIndexingLimit": -1,
+    "python.experiments.enabled": false,
+    "python.languageServer": "Pylance",
+    "python.REPL.sendToNativeREPL": true,
+    "redhat.telemetry.enabled": false,
+    "remote.autoForwardPortsSource": "hybrid",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "terminal.integrated.fontFamily": "'DejaVuSansM Nerd Font'",
+    "terminal.integrated.fontWeight": "normal",
+    "terminal.integrated.mouseWheelZoom": true,
+    "terminal.integrated.rescaleOverlappingGlyphs": false,
+    "terminal.integrated.tabs.location": "left",
+    "window.newWindowDimensions": "maximized",
+    "window.restoreFullscreen": true,
+    "window.restoreWindows": "none",
+    "window.title": "${activeRepositoryName}${separator}${remoteName}${separator}${activeEditorShort}${dirty}",
+    "workbench.colorCustomizations": {
+        "[Nord Native]": {
+            "editorBracketHighlight.foreground1": "#5e81ac",
+            "editorBracketHighlight.foreground2": "#88c0d0",
+            "editorBracketHighlight.foreground3": "#a3be8c",
+            "editorBracketHighlight.foreground4": "#ebcb8b",
+            "editorBracketHighlight.foreground5": "#bf616a",
+            "editorInlayHint.background": "#ffffff08",
+            "editorInlayHint.foreground": "#ffffff2d",
+            "gitDecoration.ignoredResourceForeground": "#909090"
+        },
+        "editorWhitespace.foreground": "#FFFFFF0F"
+    },
+    "workbench.editor.enablePreview": false,
+    "workbench.list.openMode": "doubleClick",
+    "workbench.tree.indent": 16,
+    "workbench.trustedDomains.promptInTrustedWorkspace": true,
+    "yaml.schemas": {
+        "file:///workspace/machine-images/aws/docker-base/v1/files/opt/xweather-init/schemas/server-config.schema.json": "server-config*.yml",
+        "file:///root/.vscode-server/extensions/atlassian.atlascode-3.6.0/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
+    },
+    "zenMode.centerLayout": false,
+    "zenMode.hideLineNumbers": false,
+    "zenMode.hideStatusBar": false,
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "file:/**/*.parquet": "jupyter-data-wrangler",
+        "file:/**/*.csv": "jupyter-data-wrangler"
+    },
+    "makefile.configureOnOpen": true,
+    "explorer.confirmPasteNative": false,
+    "[markdown]": {
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
+    "[svg]": {
+        "editor.defaultFormatter": "jock.svg"
+    },
+    "pymakr.devices.configs": {
+        "0001": {
+            "autoConnect": "onLostConnection",
+            "name": "sump-pump-meter",
+            "username": "micro",
+            "password": "python",
+            "hidden": false,
+            "rootPath": "/",
+            "adapterOptions": {}
+        },
+        "serial:///dev/ttyS0": {
+            "autoConnect": "onLostConnection",
+            "name": "",
+            "username": "micro",
+            "password": "python",
+            "hidden": false,
+            "rootPath": null,
+            "adapterOptions": {}
+        },
+        "serial:///dev/ttyS1": {
+            "autoConnect": "onLostConnection",
+            "name": "",
+            "username": "micro",
+            "password": "python",
+            "hidden": false,
+            "rootPath": null,
+            "adapterOptions": {}
+        },
+        "serial:///dev/ttyS2": {
+            "autoConnect": "onLostConnection",
+            "name": "",
+            "username": "micro",
+            "password": "python",
+            "hidden": false,
+            "rootPath": null,
+            "adapterOptions": {}
+        },
+        "serial:///dev/ttyS3": {
+            "autoConnect": "onLostConnection",
+            "name": "",
+            "username": "micro",
+            "password": "python",
+            "hidden": false,
+            "rootPath": null,
+            "adapterOptions": {}
+        }
+    },
+    "pymakr.devices.include": [
+        "manufacturer=Pycom.*",
+        "manufacturer=FTDI",
+        "manufacturer=Microsoft",
+        "manufacturer=Microchip Technology.*",
+        "friendlyName=.*CH34[01].*",
+        "friendlyName=.*CP21.*",
+        "manufacturer=(?!undefined)",
+        "friendlyName=.*ESP32.*"
+    ],
+    "sqltools.useNodeRuntime": true,
+    "terminal.integrated.fontLigatures.enabled": false,
+    "terraform.codelens.referenceCount": true,
+    "terraform.experimentalFeatures.validateOnSave": true,
+    "rainbow_csv.virtual_alignment_mode": "manual",
+    "files.associations": {
+        "docker-compose.yml.*": "dockercompose"
+    },
+    "terminal.external.linuxExec": "alacritty",
+    "window.customTitleBarVisibility": "auto",
+    "explorer.autoReveal": "focusNoScroll",
+    "security.workspace.trust.untrustedFiles": "open",
+    "github.gitProtocol": "ssh",
+    "remote.SSH.permitPtyAllocation": true,
+    "docker.commands.build": "${containerCommand} buildx --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
+    "docker.extension.dockerEngineAvailabilityPrompt": false,
+    "workbench.editor.empty.hint": "hidden",
+    "containers.commands.build": "${containerCommand} buildx --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
+    "github.copilot.nextEditSuggestions.enabled": false,
+    "docker.extension.enableComposeLanguageServer": false,
+    "github.copilot.chat.editor.temporalContext.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "*.ts": "${capture}.js",
+        "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+        "*.jsx": "${capture}.js",
+        "*.tsx": "${capture}.ts",
+        "tsconfig.json": "tsconfig.*.json",
+        "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
+        "*.sqlite": "${capture}.${extname}-*",
+        "*.db": "${capture}.${extname}-*",
+        "*.sqlite3": "${capture}.${extname}-*",
+        "*.db3": "${capture}.${extname}-*",
+        "*.sdb": "${capture}.${extname}-*",
+        "*.s3db": "${capture}.${extname}-*"
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false
+    },
+    "python.testing.pytestEnabled": true,
+    "chat.agent.maxRequests": 50,
+    "chat.tools.terminal.autoApprove": {
+        "cat": true,
+        "cd": true,
+        "echo": true,
+        "ls": true,
+        "pwd": true,
+        "head": true,
+        "tail": true,
+        "findstr": true,
+        "wc": true,
+        "tr": true,
+        "cut": true,
+        "cmp": true,
+        "which": true,
+        "basename": true,
+        "dirname": true,
+        "realpath": true,
+        "readlink": true,
+        "stat": true,
+        "file": true,
+        "du": true,
+        "df": true,
+        "sleep": true,
+        "git status": true,
+        "git log": true,
+        "git show": true,
+        "git diff": true,
+        "Get-ChildItem": true,
+        "Get-Content": true,
+        "Get-Date": true,
+        "Get-Random": true,
+        "Get-Location": true,
+        "python -m pytest": true,
+        "Write-Host": true,
+        "Write-Output": true,
+        "Split-Path": true,
+        "Join-Path": true,
+        "Start-Sleep": true,
+        "Where-Object": true,
+        "/^Select-[a-z0-9]/i": true,
+        "/^Measure-[a-z0-9]/i": true,
+        "/^Compare-[a-z0-9]/i": true,
+        "/^Format-[a-z0-9]/i": true,
+        "/^Sort-[a-z0-9]/i": true,
+        "column": true,
+        "/^column\\b.*-c\\s+[0-9]{4,}/": false,
+        "date": true,
+        "/^date\\b.*(-s|--set)\\b/": false,
+        "find": true,
+        "/^find\\b.*-(delete|exec|execdir|fprint|fprintf|fls|ok|okdir)\\b/": false,
+        "grep": true,
+        "/^grep\\b.*-(f|P)\\b/": false,
+        "sort": true,
+        "/^sort\\b.*-(o|S)\\b/": false,
+        "tree": true,
+        "/^tree\\b.*-o\\b/": false,
+        "/\\(.+\\)/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "/\\{.+\\}/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "/`.+`/": {
+            "approve": false,
+            "matchCommandLine": true
+        },
+        "rm": false,
+        "rmdir": false,
+        "del": false,
+        "Remove-Item": false,
+        "ri": false,
+        "rd": false,
+        "erase": false,
+        "dd": false,
+        "kill": false,
+        "ps": false,
+        "top": false,
+        "Stop-Process": false,
+        "spps": false,
+        "taskkill": false,
+        "taskkill.exe": false,
+        "curl": false,
+        "wget": false,
+        "Invoke-RestMethod": false,
+        "Invoke-WebRequest": false,
+        "irm": false,
+        "iwr": false,
+        "chmod": false,
+        "chown": false,
+        "Set-ItemProperty": false,
+        "sp": false,
+        "Set-Acl": false,
+        "jq": false,
+        "xargs": false,
+        "eval": false,
+        "Invoke-Expression": false,
+        "iex": false,
+        "./util/lint": true,
+        "black": true
+    },
+    "workbench.colorTheme": "Nord Native",
+    "githubPullRequests.pullBranch": "never",
+    "[dockercompose]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "python.terminal.activateEnvInCurrentTerminal": false,
+    "python.terminal.activateEnvironment": false,
+    "[json]": {
+        "editor.tabSize": 2
+    },
+    "chat.viewSessions.orientation": "stacked",
+    "azureTerraform.survey": {
+        "surveyPromptDate": "2026-01-29T02:30:29.893Z",
+        "surveyPromptIgnoredCount": 0
+    },
+    "scm.defaultViewMode": "tree",
+    "claudeCode.preferredLocation": "panel",
+    "editor.fontFamily": "'Noto Sans Mono', monospace",
+    "editor.allowVariableFonts": false,
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "dotfiles.installCommand": "install",
+    "dotfiles.repository": "git@github.com:four43/dotfiles-aw",
+}

@@ -8,8 +8,13 @@
     ~/.dotfiles: ''
 
     ~/.claude.json : claude/claude.json
+    ~/.claude/skills:
+        path: claude/skills
+        type: symlink
+        create: true
+        force: true
     ~/.config/alacritty: alacritty
-    ~/.config/i3/config: i3/config
+    # ~/.config/i3/config: i3/config
     ~/.config/environment.d/ssh_askpass.conf:
         path: arch/.config/environment.d/ssh_askpass.conf
         type: symlink
@@ -20,32 +25,53 @@
         type: symlink
         create: true
         force: true
-    ~/.config/neofetch/config.conf: neofetch/config.conf
-    ~/.config/rofi/config.rasi: themes/current/rofi.rasi
-    ~/.config/ulauncher:
-        path: ulauncher/config
-        relative: true
-        force: true
-    ~/.config/Code/User/prompts/:
-        path: vscode/prompts/
+    ~/.config/konsave/conf.yaml:
+        path: kde/settings-sync/konsave.conf.yaml
         type: symlink
         create: true
         force: true
+    # ~/.config/neofetch/config.conf: neofetch/config.conf
+    # ~/.config/rofi/config.rasi: themes/current/rofi.rasi
+    # ~/.config/ulauncher:
+    #     path: ulauncher/config
+    #     relative: true
+    #     force: true
+    ~/.config/Code/User/:
+        path: vscode/User/
+        type: symlink
+        create: true
+        force: true
+    ~/.config/autostart/ssh-add.desktop:
+        path: kde/autostart/ssh-add.desktop
+        type: symlink
+        create: true
+        force: true
+    ~/.config/plasma-workspace/env/ssh-agent.sh:
+        path: kde/plasma-workspace-env/ssh-agent.sh
+        type: symlink
+        create: true
+        force: true
+    # Using Plasma startup script instead of systemd service
+    # ~/.config/systemd/user/keychain.service:
+    #     path: arch/.config/systemd/user/keychain.service
+    #     type: symlink
+    #     create: true
+    #     force: true
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
-    ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
-    ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
-    ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
-    ~/.local/share/ulauncher/extensions/four43-confluence-search: ulauncher/extensions/confluence_search
+    # ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
+    # ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
+    # ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
+    # ~/.local/share/ulauncher/extensions/four43-confluence-search: ulauncher/extensions/confluence_search
     ~/.ssh/config:
         path: ssh/ssh-config
         type: hardlink
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
-    ~/.vim: vim/vim
+    ~/.vim: vim/config
     ~/.vimrc: vim/vimrc
     ~/.xinitrc: x11/xinitrc  # https://unix.stackexchange.com/questions/363276/xinitrc-not-loading-xresources
     ~/.xprofile: x11/xprofile
