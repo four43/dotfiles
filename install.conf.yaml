@@ -7,9 +7,9 @@
 - link:
     ~/.dotfiles: ''
 
-    ~/.claude.json : claude/claude.json
-    ~/.claude/skills:
-        path: claude/skills
+    ~/.claude.json : claude/.claude.json
+    ~/.claude:
+        path: claude
         type: symlink
         create: true
         force: true
@@ -36,8 +36,8 @@
     #     path: ulauncher/config
     #     relative: true
     #     force: true
-    ~/.config/Code/User/:
-        path: vscode/User/
+    ~/.config/Code/User:
+        path: vscode/User
         type: symlink
         create: true
         force: true

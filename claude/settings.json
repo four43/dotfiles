@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(pwd:*)",
+      "Bash(which:*)",
+      "Bash(whereis:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "Bash(df:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker images:*)",
+      "Bash(docker logs:*)",
+      "Bash(npm list:*)",
+      "Bash(npm outdated:*)",
+      "Bash(pip list:*)",
+      "Bash(pip show:*)",
+      "Bash(python --version:*)",
+      "Bash(node --version:*)",
+      "Bash(cargo --version:*)",
+      "Bash(rustc --version:*)",
+      "Bash(go version:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(ruff check:*)",
+      "Bash(mypy:*)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}
