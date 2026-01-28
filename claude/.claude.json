@@ -65,7 +65,9 @@
     "tengu_cork_m4q": false,
     "tengu_marble_anvil": false,
     "tengu_tst_kx7": false,
-    "tengu_coral_fern": false
+    "tengu_coral_fern": false,
+    "tengu_file_write_optimization": true,
+    "tengu_plum_vx3": false
   },
   "userID": "eb63b4dd215ddb1ae47bb4bd3b5d5c460f45974d8dff39a6a7ec7ac9be956161",
   "firstStartTime": "2026-01-22T14:07:30.639Z",
@@ -76,8 +78,7 @@
   "s1mAccessCache": {
     "94c0de74-e020-46a5-9c53-db244ef6cec6": {
       "hasAccess": false,
-      "hasAccessNotAsDefault": true,
-      "timestamp": 1769621425386
+      "timestamp": 1769628769928
     }
   },
   "cachedChromeExtensionInstalled": false,
@@ -134,7 +135,27 @@
       ]
     }
   },
-  "projects": {},
+  "projects": {
+    "/workspace": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "__main__.py",
+        "common_bands.py",
+        "test_product_config_manager.py",
+        "pyproject.toml",
+        "docker-compose.yml"
+      ],
+      "exampleFilesGeneratedAt": 1769624346509
+    }
+  },
   "hasShownS1MWelcomeV2": {
     "94c0de74-e020-46a5-9c53-db244ef6cec6": true
   },
@@ -143,5 +164,11 @@
   },
   "officialMarketplaceAutoInstallAttempted": true,
   "officialMarketplaceAutoInstalled": true,
-  "shiftEnterKeyBindingInstalled": true
+  "shiftEnterKeyBindingInstalled": true,
+  "skillUsage": {
+    "stac": {
+      "usageCount": 1,
+      "lastUsedAt": 1769623964114
+    }
+  }
 }

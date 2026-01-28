@@ -5,6 +5,7 @@ projects
 session-env
 shell-snapshots
 statsig
+telemetry
 todos
 .credentials.json
 stats-cache.json
