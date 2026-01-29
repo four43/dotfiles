@@ -31,9 +31,10 @@
       "Bash(python -m pytest:*)",
       "Bash(ruff check:*)",
       "Bash(mypy:*)",
+      "WebSearch",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:*.github.io)",
-      "WebFetch(domain:*.readthedocs.io)"
+      "WebFetch(domain:github.io)",
+      "WebFetch(domain:readthedocs.io)"
     ]
   }
 }
