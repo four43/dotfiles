@@ -315,6 +315,10 @@
         "scminput": false
     },
     "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "-n",
+        "auto"
+    ],
     "chat.agent.maxRequests": 50,
     "chat.tools.terminal.autoApprove": {
         "cat": true,
