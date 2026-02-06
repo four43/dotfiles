@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=SSH Key Loader
+Exec=/home/smiller/.dotfiles/arch/scripts/ssh-add-keys.sh
+X-KDE-autostart-phase=1
