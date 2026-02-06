@@ -1,12 +1,16 @@
+cache
 debug
 file-history
+history.jsonl
 ide
 plans
+plugins
 projects
 session-env
 shell-snapshots
 statsig
 telemetry
 todos
+.claude.json
 .credentials.json
 stats-cache.json

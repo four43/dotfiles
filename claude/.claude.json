@@ -1,5 +1,7 @@
 {
-  "numStartups": 6,
+  "numStartups": 3,
+  "installMethod": "native",
+  "autoUpdates": false,
   "theme": "dark-ansi",
   "tipsHistory": {
     "new-user-warmup": 1,
@@ -7,18 +9,7 @@
     "terminal-setup": 1,
     "memory-command": 1,
     "theme-command": 1,
-    "status-line": 1,
-    "prompt-queue": 1,
-    "enter-to-steer-in-relatime": 2,
-    "todo-list": 2,
-    "shift-enter": 4,
-    "install-github-app": 4,
-    "install-slack-app": 4,
-    "drag-and-drop-images": 5,
-    "double-esc-code-restore": 5,
-    "continue": 5,
-    "shift-tab": 6,
-    "image-paste": 6
+    "status-line": 3
   },
   "cachedGrowthBookFeatures": {
     "tengu_1p_event_batch_config": {
@@ -28,49 +19,57 @@
     },
     "tengu_mcp_tool_search": true,
     "tengu_scratch": false,
+    "tengu_brass_pebble": false,
     "tengu_disable_bypass_permissions_mode": false,
-    "tengu_claudeai_mcp_connectors": true,
+    "tengu_event_sampling_config": {},
+    "tengu_marble_anvil": true,
+    "tengu_tool_pear": false,
+    "tengu_scarf_coffee": false,
     "tengu_log_segment_events": false,
     "tengu_log_datadog_events": true,
-    "tengu_pid_based_version_locking": true,
-    "tengu_event_sampling_config": {},
-    "tengu_tool_pear": false,
-    "tengu_keybinding_customization": false,
+    "tengu_claudeai_mcp_connectors": false,
+    "tengu_keybinding_customization_release": true,
+    "tengu_c4w_usage_limit_notifications_enabled": true,
     "tengu_thinkback": false,
-    "tengu_attribution_header": true,
-    "enhanced_telemetry_beta": false,
+    "tengu_pid_based_version_locking": true,
     "tengu_tool_search_unsupported_models": [
       "haiku"
     ],
-    "tengu_c4w_usage_limit_notifications_enabled": true,
+    "tengu_attribution_header": true,
+    "enhanced_telemetry_beta": false,
     "tengu_vscode_review_upsell": false,
     "tengu_vscode_onboarding": false,
-    "tengu_streaming_tool_execution2": false,
+    "tengu_marble_kite": false,
+    "tengu_kv7_prompt_sort": true,
+    "tengu_coral_fern": false,
+    "tengu_cache_plum_violet": true,
+    "tengu_streaming_tool_execution2": true,
     "tengu_bash_haiku_prefetch": true,
+    "tengu_cork_m4q": true,
+    "tengu_system_prompt_global_cache": false,
+    "tengu_workout": false,
+    "tengu_quiet_fern": true,
+    "tengu_file_write_optimization": true,
+    "tengu_plum_vx3": false,
+    "tengu_session_memory": false,
+    "tengu_sm_compact": false,
+    "tengu_compact_cache_prefix": true,
+    "tengu_compact_streaming_retry": false,
+    "tengu_vinteuil_phrase": false,
+    "tengu_oboe": true,
+    "tengu_tst_names_in_messages": false,
     "tengu-top-of-feed-tip": {
       "tip": "",
       "color": ""
     },
     "tengu_react_vulnerability_warning": false,
     "tengu_code_diff_cli": true,
+    "tengu_pr_status_cli": true,
     "tengu_post_compact_survey": false,
-    "tengu_session_memory": false,
-    "tengu_plank_river_frost": "user_intent",
-    "tengu_brass_pebble": false,
-    "tengu_scarf_coffee": false,
-    "tengu_keybinding_customization_release": true,
-    "tengu_marble_kite": false,
-    "tengu_kv7_prompt_sort": true,
-    "tengu_cache_plum_violet": false,
-    "tengu_cork_m4q": false,
-    "tengu_marble_anvil": false,
-    "tengu_tst_kx7": false,
-    "tengu_coral_fern": false,
-    "tengu_file_write_optimization": true,
-    "tengu_plum_vx3": false
+    "tengu_tst_kx7": false
   },
-  "userID": "eb63b4dd215ddb1ae47bb4bd3b5d5c460f45974d8dff39a6a7ec7ac9be956161",
-  "firstStartTime": "2026-01-22T14:07:30.639Z",
+  "userID": "92648cb971eee29b1194dd9615c3810f0367679952340cae83421ddc6e09c836",
+  "firstStartTime": "2026-01-31T18:13:26.651Z",
   "sonnet45MigrationComplete": true,
   "opus45MigrationComplete": true,
   "opusProMigrationComplete": true,
@@ -78,33 +77,18 @@
   "s1mAccessCache": {
     "94c0de74-e020-46a5-9c53-db244ef6cec6": {
       "hasAccess": false,
-      "timestamp": 1769628769928
+      "hasAccessNotAsDefault": true,
+      "timestamp": 1770383847353
     }
   },
-  "cachedChromeExtensionInstalled": false,
-  "changelogLastFetched": 1769116017696,
-  "oauthAccount": {
-    "accountUuid": "ffeb57b9-95bb-45db-a2b0-cbcf46bd5fad",
-    "emailAddress": "seth.miller@vaisala.com",
-    "organizationUuid": "94c0de74-e020-46a5-9c53-db244ef6cec6",
-    "hasExtraUsageEnabled": true,
-    "displayName": "Seth",
-    "organizationRole": "user",
-    "workspaceRole": null,
-    "organizationName": "Vaisala"
-  },
-  "claudeCodeFirstTokenDate": "2026-01-21T14:08:16.353698Z",
-  "hasCompletedOnboarding": true,
-  "lastOnboardingVersion": "2.1.15",
-  "lastReleaseNotesSeen": "2.1.15",
   "mcpServers": {
     "context7": {
       "type": "http",
-      "url": "http://0.0.0.0:11001/mcp/"
+      "url": "http://host.docker.internal:11001/mcp"
     },
     "terraform": {
       "type": "http",
-      "url": "http://0.0.0.0:11002/mcp/"
+      "url": "http://host.docker.internal:11002/mcp"
     },
     "aws-knowledge-mcp-server": {
       "type": "http",
@@ -135,27 +119,33 @@
       ]
     }
   },
-  "projects": {
-    "/workspace": {
-      "allowedTools": [],
-      "mcpContextUris": [],
-      "mcpServers": {},
-      "enabledMcpjsonServers": [],
-      "disabledMcpjsonServers": [],
-      "hasTrustDialogAccepted": false,
-      "projectOnboardingSeenCount": 0,
-      "hasClaudeMdExternalIncludesApproved": false,
-      "hasClaudeMdExternalIncludesWarningShown": false,
-      "exampleFiles": [
-        "__main__.py",
-        "common_bands.py",
-        "test_product_config_manager.py",
-        "pyproject.toml",
-        "docker-compose.yml"
-      ],
-      "exampleFilesGeneratedAt": 1769624346509
+  "skillUsage": {
+    "stac": {
+      "usageCount": 5,
+      "lastUsedAt": 1770242559199
     }
   },
+  "clientDataCache": {
+    "data": {},
+    "timestamp": 1770244722765
+  },
+  "cachedChromeExtensionInstalled": false,
+  "changelogLastFetched": 1770170139773,
+  "autoUpdatesProtectedForNative": true,
+  "oauthAccount": {
+    "accountUuid": "ffeb57b9-95bb-45db-a2b0-cbcf46bd5fad",
+    "emailAddress": "seth.miller@vaisala.com",
+    "organizationUuid": "94c0de74-e020-46a5-9c53-db244ef6cec6",
+    "hasExtraUsageEnabled": true,
+    "displayName": "Seth",
+    "organizationRole": "user",
+    "workspaceRole": null,
+    "organizationName": "Vaisala"
+  },
+  "claudeCodeFirstTokenDate": "2026-01-21T14:08:16.353698Z",
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "2.1.31",
+  "lastReleaseNotesSeen": "2.1.31",
   "hasShownS1MWelcomeV2": {
     "94c0de74-e020-46a5-9c53-db244ef6cec6": true
   },
@@ -164,11 +154,7 @@
   },
   "officialMarketplaceAutoInstallAttempted": true,
   "officialMarketplaceAutoInstalled": true,
-  "shiftEnterKeyBindingInstalled": true,
-  "skillUsage": {
-    "stac": {
-      "usageCount": 1,
-      "lastUsedAt": 1769623964114
-    }
+  "projects": {
+
   }
 }
