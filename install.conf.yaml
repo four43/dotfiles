@@ -46,8 +46,28 @@
         type: symlink
         create: true
         force: true
+    ~/.config/autostart/fix-monitor-resolution.sh:
+        path: kde/autostart/fix-monitor-resolution.sh
+        type: symlink
+        create: true
+        force: true
+    ~/.config/autostart/fix-monitor-resolution.desktop:
+        path: kde/autostart/fix-monitor-resolution.desktop
+        type: symlink
+        create: true
+        force: true
     ~/.config/plasma-workspace/env/ssh-agent.sh:
         path: kde/plasma-workspace-env/ssh-agent.sh
+        type: symlink
+        create: true
+        force: true
+    ~/.config/plasma-workspace/scripts/fix-monitor-on-unlock.sh:
+        path: kde/plasma-workspace/scripts/fix-monitor-on-unlock.sh
+        type: symlink
+        create: true
+        force: true
+    ~/.config/systemd/user/fix-monitor-on-unlock.service:
+        path: arch/systemd/user/fix-monitor-on-unlock.service
         type: symlink
         create: true
         force: true

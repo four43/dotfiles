@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Fix Monitor Resolution
+Exec=/home/smiller/.config/autostart/fix-monitor-resolution.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

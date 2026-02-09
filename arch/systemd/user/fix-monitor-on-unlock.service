@@ -1,0 +1,12 @@
+[Unit]
+Description=Fix monitor resolution on screen unlock
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/smiller/.config/plasma-workspace/scripts/fix-monitor-on-unlock.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
