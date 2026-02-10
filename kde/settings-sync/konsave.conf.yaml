@@ -9,6 +9,7 @@ save:
       - plasma-org.kde.plasma.desktop-appletsrc # Panel/Widget locations
       - kcminputrc         # Mouse/Keyboard settings
       - kscreenlockerrc    # Lock screen
+      - kwinrulesrc        # Window rules
       # find more: `ls ~/.config | grep -E 'rc$|^k'`
 
 # "export" entries are ONLY added when you run `konsave -e`
