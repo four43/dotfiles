@@ -87,4 +87,8 @@ flatpak install \
 	com.brave.Browser \
 	com.discordapp.Discord \
 	com.slack.Slack \
-	com.spotify.Client
+	com.spotify.Client \
+	org.gimp.GIMP \
+	org.kde.kwrite \
+	org.qgis.qgis \
+	&& echo "Installed flatpaks" >&2
