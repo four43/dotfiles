@@ -9,6 +9,6 @@ if [[ -z "$origin_url" ]]; then
     exit 1
 fi
 
-origin_web_url=$(echo "$origin_url" | cut -d '@' -f2 | sed 's/:/\//g' | sed 's/\.git$//')
+origin_web_url=$(echo "$origin_url" | cut -d '@' -f2 | sed 's/:/\//g' | sed 's/\.\(com\|org\)-[^/]*/.\1/' | sed 's/\.git$//')
 xdg-open "https://$origin_web_url" >&2 2> /dev/null
 
