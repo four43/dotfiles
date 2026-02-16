@@ -1,16 +1,37 @@
 {
-  "numStartups": 3,
+  "numStartups": 16,
   "installMethod": "native",
   "autoUpdates": false,
   "theme": "dark-ansi",
   "tipsHistory": {
-    "new-user-warmup": 1,
-    "plan-mode-for-complex-tasks": 1,
-    "terminal-setup": 1,
+    "new-user-warmup": 9,
+    "plan-mode-for-complex-tasks": 12,
+    "terminal-setup": 12,
     "memory-command": 1,
     "theme-command": 1,
-    "status-line": 3
+    "status-line": 3,
+    "prompt-queue": 13,
+    "enter-to-steer-in-relatime": 4,
+    "todo-list": 4,
+    "install-github-app": 14,
+    "install-slack-app": 15,
+    "drag-and-drop-images": 15,
+    "double-esc-code-restore": 6,
+    "continue": 6,
+    "shift-tab": 7,
+    "image-paste": 7,
+    "custom-agents": 7,
+    "agent-flag": 7,
+    "web-app": 8,
+    "mobile-app": 8,
+    "shift-enter-setup": 11,
+    "permissions": 11,
+    "rename-conversation": 12,
+    "custom-commands": 12,
+    "frontend-design-plugin": 14
   },
+  "promptQueueUseCount": 2,
+  "showExpandedTodos": true,
   "cachedGrowthBookFeatures": {
     "tengu_1p_event_batch_config": {
       "scheduledDelayMillis": 5000,
@@ -27,7 +48,7 @@
     "tengu_scarf_coffee": false,
     "tengu_log_segment_events": false,
     "tengu_log_datadog_events": true,
-    "tengu_claudeai_mcp_connectors": false,
+    "tengu_claudeai_mcp_connectors": true,
     "tengu_keybinding_customization_release": true,
     "tengu_c4w_usage_limit_notifications_enabled": true,
     "tengu_thinkback": false,
@@ -46,16 +67,16 @@
     "tengu_streaming_tool_execution2": true,
     "tengu_bash_haiku_prefetch": true,
     "tengu_cork_m4q": true,
-    "tengu_system_prompt_global_cache": false,
+    "tengu_system_prompt_global_cache": true,
     "tengu_workout": false,
     "tengu_quiet_fern": true,
     "tengu_file_write_optimization": true,
-    "tengu_plum_vx3": false,
+    "tengu_plum_vx3": true,
     "tengu_session_memory": false,
     "tengu_sm_compact": false,
     "tengu_compact_cache_prefix": true,
     "tengu_compact_streaming_retry": false,
-    "tengu_vinteuil_phrase": false,
+    "tengu_vinteuil_phrase": true,
     "tengu_oboe": true,
     "tengu_tst_names_in_messages": false,
     "tengu-top-of-feed-tip": {
@@ -66,7 +87,31 @@
     "tengu_code_diff_cli": true,
     "tengu_pr_status_cli": true,
     "tengu_post_compact_survey": false,
-    "tengu_tst_kx7": false
+    "tengu_tst_kx7": false,
+    "tengu_chomp_inflection": true,
+    "tengu_silver_lantern": true,
+    "tengu_copper_lantern": true,
+    "tengu_workout2": true,
+    "tengu_plan_mode_interview_phase": false,
+    "tengu_marble_lantern_disabled": false,
+    "tengu_penguins_enabled": true,
+    "tengu_penguins_off": null,
+    "tengu_mcp_elicitation": false,
+    "tengu_bergotte_lantern": false,
+    "tengu_snippet_save": true,
+    "tengu_plank_river_frost": "user_intent",
+    "tengu_fgts": false,
+    "tengu_immediate_model_command": false,
+    "tengu_birthday_hat": false,
+    "tengu_mulberry_fog": false,
+    "tengu_prompt_cache_1h_config": {
+      "allowlist": [
+        "repl_main_thread*",
+        "sdk"
+      ]
+    },
+    "tengu_permission_explainer": true,
+    "tengu_amber_prism": false
   },
   "userID": "92648cb971eee29b1194dd9615c3810f0367679952340cae83421ddc6e09c836",
   "firstStartTime": "2026-01-31T18:13:26.651Z",
@@ -78,7 +123,7 @@
     "94c0de74-e020-46a5-9c53-db244ef6cec6": {
       "hasAccess": false,
       "hasAccessNotAsDefault": true,
-      "timestamp": 1770383847353
+      "timestamp": 1771274926308
     }
   },
   "mcpServers": {
@@ -95,57 +140,55 @@
       "url": "https://knowledge-mcp.global.api.aws"
     },
     "aws-diagram": {
-      "type": "stdio",
-      "command": "socat",
-      "args": [
-        "-",
-        "UNIX-CONNECT:/tmp/mcp-sockets/aws-diagram.sock"
-      ]
+      "type": "http",
+      "url": "http://host.docker.internal:11004/mcp"
     },
     "aws-documentation": {
-      "type": "stdio",
-      "command": "socat",
-      "args": [
-        "-",
-        "UNIX-CONNECT:/tmp/mcp-sockets/aws-documentation.sock"
-      ]
+      "type": "http",
+      "url": "http://host.docker.internal:11005/mcp"
     },
     "terraform-aws": {
+      "type": "http",
+      "url": "http://host.docker.internal:11003/mcp"
+    },
+    "playwright": {
       "type": "stdio",
-      "command": "socat",
+      "command": "npx",
       "args": [
-        "-",
-        "UNIX-CONNECT:/tmp/mcp-sockets/terraform-aws.sock"
-      ]
+        "@playwright/mcp@latest",
+        "--executable-path",
+        "/home/smiller/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome"
+      ],
+      "env": {}
     }
   },
   "skillUsage": {
     "stac": {
-      "usageCount": 5,
-      "lastUsedAt": 1770242559199
+      "usageCount": 8,
+      "lastUsedAt": 1770582113920
     }
   },
   "clientDataCache": {
     "data": {},
-    "timestamp": 1770244722765
+    "timestamp": 1771275926511
   },
   "cachedChromeExtensionInstalled": false,
-  "changelogLastFetched": 1770170139773,
+  "changelogLastFetched": 1771271964908,
   "autoUpdatesProtectedForNative": true,
   "oauthAccount": {
     "accountUuid": "ffeb57b9-95bb-45db-a2b0-cbcf46bd5fad",
     "emailAddress": "seth.miller@vaisala.com",
     "organizationUuid": "94c0de74-e020-46a5-9c53-db244ef6cec6",
     "hasExtraUsageEnabled": true,
-    "displayName": "Seth",
-    "organizationRole": "user",
-    "workspaceRole": null,
-    "organizationName": "Vaisala"
+    "billingType": "stripe_subscription",
+    "accountCreatedAt": "2025-09-10T21:40:46.596478Z",
+    "subscriptionCreatedAt": "2025-08-12T08:55:04.109888Z",
+    "displayName": "Seth"
   },
   "claudeCodeFirstTokenDate": "2026-01-21T14:08:16.353698Z",
   "hasCompletedOnboarding": true,
   "lastOnboardingVersion": "2.1.31",
-  "lastReleaseNotesSeen": "2.1.31",
+  "lastReleaseNotesSeen": "2.1.42",
   "hasShownS1MWelcomeV2": {
     "94c0de74-e020-46a5-9c53-db244ef6cec6": true
   },
@@ -155,6 +198,222 @@
   "officialMarketplaceAutoInstallAttempted": true,
   "officialMarketplaceAutoInstalled": true,
   "projects": {
-
-  }
+    "/home/smiller/projects/VaisalaCorp/xwe-data-sdk": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "reactVulnerabilityCache": {
+        "detected": false,
+        "package": null,
+        "packageName": null,
+        "version": null,
+        "packageManager": null
+      },
+      "exampleFiles": [
+        "test_cli_serve_schemas.py",
+        "test_cli_validate.py",
+        "serve_specs.py",
+        "__main__.py",
+        "common_bands.py"
+      ],
+      "exampleFilesGeneratedAt": 1770388737725,
+      "hasCompletedProjectOnboarding": true,
+      "lastCost": 0.000725,
+      "lastAPIDuration": 1481,
+      "lastAPIDurationWithoutRetries": 1478,
+      "lastToolDuration": 0,
+      "lastDuration": 19905698,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 540,
+      "lastTotalOutputTokens": 37,
+      "lastTotalCacheCreationInputTokens": 0,
+      "lastTotalCacheReadInputTokens": 0,
+      "lastTotalWebSearchRequests": 0,
+      "lastFpsAverage": 0,
+      "lastFpsLow1Pct": 27.58,
+      "lastModelUsage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 540,
+          "outputTokens": 37,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.000725
+        }
+      },
+      "lastSessionId": "07595501-2131-4660-8407-4a5d4b832f5e"
+    },
+    "/workspace": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "__main__.py",
+        "common_bands.py",
+        "grib2.py",
+        "test_cli_inspect.py",
+        "test_manager.py"
+      ],
+      "exampleFilesGeneratedAt": 1770408943730
+    },
+    "/home/smiller/projects/VaisalaCorp/infra-mgmt": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "init.sh",
+        "vars.tf",
+        "github.tf",
+        "outputs.tf",
+        "disney-lightning-query-v1.ipynb"
+      ],
+      "exampleFilesGeneratedAt": 1770491112209
+    },
+    "/home/smiller": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {
+        "context7": {
+          "type": "http",
+          "url": "http://host.docker.internal:11001/mcp"
+        }
+      },
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 19,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [],
+      "reactVulnerabilityCache": {
+        "detected": false,
+        "package": null,
+        "packageName": null,
+        "version": null,
+        "packageManager": null
+      },
+      "lastCost": 0,
+      "lastAPIDuration": 0,
+      "lastAPIDurationWithoutRetries": 0,
+      "lastToolDuration": 0,
+      "lastDuration": 25824,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 0,
+      "lastTotalOutputTokens": 0,
+      "lastTotalCacheCreationInputTokens": 0,
+      "lastTotalCacheReadInputTokens": 0,
+      "lastTotalWebSearchRequests": 0,
+      "lastFpsAverage": 1.74,
+      "lastFpsLow1Pct": 221.72,
+      "lastModelUsage": {},
+      "lastSessionId": "34e3996e-985c-4841-ac3e-b9591f8c3920",
+      "lastSessionMetrics": {
+        "frame_duration_ms_count": 44,
+        "frame_duration_ms_min": 0.2098039999982575,
+        "frame_duration_ms_max": 4.5102569999999105,
+        "frame_duration_ms_avg": 1.477266068181941,
+        "frame_duration_ms_p50": 1.1724034999997457,
+        "frame_duration_ms_p95": 3.932554600000163,
+        "frame_duration_ms_p99": 4.328947499999813
+      }
+    },
+    "/home/smiller/projects/four43/mini-chat": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 2,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "services.py",
+        "routes.py",
+        "chat.js",
+        "dependencies.py",
+        "pyproject.toml"
+      ],
+      "exampleFilesGeneratedAt": 1771005237895,
+      "hasCompletedProjectOnboarding": true,
+      "lastCost": 37.72487489999998,
+      "lastAPIDuration": 4948611,
+      "lastAPIDurationWithoutRetries": 4948057,
+      "lastToolDuration": 1686454,
+      "lastDuration": 22058578,
+      "lastLinesAdded": 2679,
+      "lastLinesRemoved": 1403,
+      "lastTotalInputTokens": 77490,
+      "lastTotalOutputTokens": 276446,
+      "lastTotalCacheCreationInputTokens": 1891350,
+      "lastTotalCacheReadInputTokens": 51625468,
+      "lastTotalWebSearchRequests": 0,
+      "lastFpsAverage": 10.69,
+      "lastFpsLow1Pct": 91.16,
+      "lastModelUsage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 74909,
+          "outputTokens": 70117,
+          "cacheReadInputTokens": 6388064,
+          "cacheCreationInputTokens": 590039,
+          "webSearchRequests": 0,
+          "costUSD": 1.8018491499999998
+        },
+        "claude-opus-4-6": {
+          "inputTokens": 2581,
+          "outputTokens": 206329,
+          "cacheReadInputTokens": 45237404,
+          "cacheCreationInputTokens": 1301311,
+          "webSearchRequests": 0,
+          "costUSD": 35.92302574999998
+        }
+      },
+      "lastSessionId": "a18d2804-7819-47c0-9e35-d034d68249e3",
+      "lastSessionMetrics": {
+        "frame_duration_ms_count": 235798,
+        "frame_duration_ms_min": 0.029474999755620956,
+        "frame_duration_ms_max": 252.99637300148606,
+        "frame_duration_ms_avg": 1.5903740866705183,
+        "frame_duration_ms_p50": 0.8691350007429719,
+        "frame_duration_ms_p95": 2.2058401009999202,
+        "frame_duration_ms_p99": 21.1201926493644
+      }
+    }
+  },
+  "hasShownOpus46Notice": {
+    "94c0de74-e020-46a5-9c53-db244ef6cec6": true
+  },
+  "githubRepoPaths": {
+    "vaisalacorp/xwe-data-sdk": [
+      "/home/smiller/projects/VaisalaCorp/xwe-data-sdk"
+    ],
+    "four43/mini-chat": [
+      "/home/smiller/projects/four43/mini-chat/frontend",
+      "/home/smiller/projects/four43/mini-chat"
+    ]
+  },
+  "penguinModeOrgEnabled": false,
+  "opus46FeedSeenCount": 4,
+  "effortCalloutDismissed": true,
+  "showSpinnerTree": false
 }

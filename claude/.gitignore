@@ -10,6 +10,7 @@ session-env
 shell-snapshots
 statsig
 telemetry
+tasks
 todos
 .claude.json
 .credentials.json
