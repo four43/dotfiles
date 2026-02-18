@@ -30,3 +30,6 @@
 
 [url "git@github.com-VaisalaCorp:VaisalaCorp/"]
     insteadOf = git@github.com:VaisalaCorp/
+
+[url "git@github.com-VaisalaCorp:seth-miller_vai/"]
+    insteadOf = git@github.com:seth-miller_vai/
