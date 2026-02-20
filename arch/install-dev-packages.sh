@@ -6,6 +6,10 @@ sudo usermod -aG docker,video,audio,wheel smiller
 
 # In order to clone the repo you will probably need git and openssh
 
+# Time
+sudo systemctl enable systemd-timesyncd.service
+sudo systemctl start systemd-timesyncd.service
+
 # Configure sources automatically
 echo "[Sources List] --- Installing Reflector ---" >&2
 sudo pacman -Sy --needed reflector --noconfirm
@@ -39,6 +43,7 @@ sudo pacman -Syy
 
 sudo pacman -S \
 	alacritty \
+	ark \
 	aws-cli-v2 \
 	base-devel \
 	bluez \
@@ -58,12 +63,14 @@ sudo pacman -S \
 	nodejs \
 	openssh \
 	python \
+	python-click \
 	python-pip \
 	shfmt \
 	timeshift \
 	tmux \
 	ttf-opensans \
 	unzip \
+	uv \
 	zsh \
 	&& echo "Installed dev tools"
 
