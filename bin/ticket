@@ -19,71 +19,95 @@ from pathlib import Path
 
 import click
 
+
 # ── Config ──────────────────────────────────────────────
 
-CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "ticket"
-CONFIG_FILE = CONFIG_DIR / "config.json"
 
-DEFAULT_CONFIG = {
-    "base_url": "https://vaisala.atlassian.net",
-    "email": "${XWE_JIRA_EMAIL}",
-    "api_token": "${XWE_JIRA_API_TOKEN}",
-    "default_project": "WEAT",
-    "projects": [],
-    "team_groups": [],
-}
+class Config:
+    _DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "ticket"
+    _FILE = _DIR / "config.json"
+    _DEFAULTS = {
+        "base_url": "https://vaisala.atlassian.net",
+        "email": "${XWE_JIRA_EMAIL}",
+        "api_token": "${XWE_JIRA_API_TOKEN}",
+        "default_project": "WEAT",
+        "projects": [],
+        "team_groups": [],
+    }
+    _ENV_VAR_RE = re.compile(r"\$\{([^}]+)\}")
 
-_ENV_VAR_RE = re.compile(r"\$\{([^}]+)\}")
+    def __init__(self):
+        self._client: "JiraClient | None" = None
 
+    def _expand(self, value: str) -> str:
+        def replace(match: re.Match) -> str:
+            var = match.group(1)
+            val = os.environ.get(var)
+            if val is None:
+                raise click.ClickException(
+                    f"Environment variable ${{{var}}} is not set "
+                    f"(referenced in {self._FILE})"
+                )
+            return val
+        return self._ENV_VAR_RE.sub(replace, value)
 
-def _expand_env_vars(value: str) -> str:
-    """Expand ${VAR_NAME} references in a string from os.environ."""
-    def replace(match: re.Match) -> str:
-        var_name = match.group(1)
-        val = os.environ.get(var_name)
-        if val is None:
-            raise click.ClickException(
-                f"Environment variable ${{{var_name}}} is not set "
-                f"(referenced in {CONFIG_FILE})"
+    def load(self) -> dict:
+        """Load raw config (env vars NOT expanded)."""
+        try:
+            return json.loads(self._FILE.read_text())
+        except FileNotFoundError:
+            self.save(self._DEFAULTS)
+            return dict(self._DEFAULTS)
+        except json.JSONDecodeError:
+            click.echo(f"Warning: corrupt config at {self._FILE}, using defaults", err=True)
+            return dict(self._DEFAULTS)
+
+    def resolve(self) -> dict:
+        """Load config and expand all ${VAR} references."""
+        raw = self.load()
+        return {
+            k: self._expand(v) if isinstance(v, str) else v
+            for k, v in raw.items()
+        }
+
+    def save(self, updates: dict) -> None:
+        """Merge updates into existing config and persist."""
+        try:
+            data = json.loads(self._FILE.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = dict(self._DEFAULTS)
+        data.update(updates)
+        self._DIR.mkdir(parents=True, exist_ok=True)
+        self._FILE.write_text(json.dumps(data, indent=2) + "\n")
+
+    def project(self, override: str | None = None) -> str:
+        if override:
+            return override
+        raw = self.load()
+        return raw.get("default_project", raw.get("last_project", "WEAT"))
+
+    @property
+    def base_url(self) -> str:
+        return self.load().get("base_url", "https://vaisala.atlassian.net")
+
+    @property
+    def client(self) -> "JiraClient":
+        if self._client is None:
+            resolved = self.resolve()
+            email = resolved.get("email", "")
+            api_token = resolved.get("api_token", "")
+            if not email or not api_token:
+                raise click.ClickException(
+                    "email and api_token must be configured in " + str(self._FILE)
+                )
+            self._client = JiraClient(
+                resolved.get("base_url", "https://vaisala.atlassian.net"),
+                email, api_token,
             )
-        return val
-
-    return _ENV_VAR_RE.sub(replace, value)
+        return self._client
 
 
-def load_config() -> dict:
-    """Load raw config (env vars NOT expanded)."""
-    try:
-        return json.loads(CONFIG_FILE.read_text())
-    except FileNotFoundError:
-        save_config(DEFAULT_CONFIG)
-        return dict(DEFAULT_CONFIG)
-    except json.JSONDecodeError:
-        click.echo(f"Warning: corrupt config at {CONFIG_FILE}, using defaults", err=True)
-        return dict(DEFAULT_CONFIG)
-
-
-def resolve_config() -> dict:
-    """Load config and expand all ${VAR} references."""
-    raw = load_config()
-    resolved = {}
-    for key, value in raw.items():
-        if isinstance(value, str):
-            resolved[key] = _expand_env_vars(value)
-        else:
-            resolved[key] = value
-    return resolved
-
-
-def save_config(updates: dict) -> None:
-    """Merge updates into existing config and persist."""
-    try:
-        config = json.loads(CONFIG_FILE.read_text())
-    except (FileNotFoundError, json.JSONDecodeError):
-        config = dict(DEFAULT_CONFIG)
-    config.update(updates)
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    CONFIG_FILE.write_text(json.dumps(config, indent=2) + "\n")
+config = Config()
 
 
 # ── ADF (Atlassian Document Format) ────────────────────
@@ -115,7 +139,6 @@ def _adf_to_text(node: dict | None) -> str:
     if ntype == "orderedList":
         return text
     if ntype == "listItem":
-        # Indent and prefix child paragraphs
         lines = text.strip().split("\n")
         return "- " + "\n  ".join(lines) + "\n"
     if ntype == "blockquote":
@@ -134,7 +157,6 @@ def _text_to_adf(text: str) -> dict:
         para = para.strip()
         if not para:
             continue
-        # Convert inline newlines to hardBreaks
         inline: list[dict] = []
         lines = para.split("\n")
         for i, line in enumerate(lines):
@@ -160,7 +182,6 @@ def _parse_edit_text(text: str) -> tuple[str, str]:
     if EDIT_SEPARATOR in text:
         summary, _, description = text.partition(EDIT_SEPARATOR)
     else:
-        # Fallback: first line is summary, rest is description
         summary, _, description = text.partition("\n")
     return summary.strip(), description.strip()
 
@@ -200,6 +221,8 @@ class JiraClient:
             me = self._get("/rest/api/3/myself")
             self._account_id = me["accountId"]
         return self._account_id
+
+    # ── HTTP ────────────────────────────────────────────
 
     def _request(
         self,
@@ -241,6 +264,8 @@ class JiraClient:
     def _put(self, path: str, data: dict) -> tuple[dict | None, int]:
         return self._request("PUT", path, data=data)
 
+    # ── Issues ──────────────────────────────────────────
+
     def create_issue(
         self,
         project_key: str,
@@ -260,13 +285,14 @@ class JiraClient:
         result, _ = self._post("/rest/api/3/issue", {"fields": fields})
         return result
 
-    def move_to_active_sprint(self, project_key: str, issue_key: str) -> None:
-        board_id = self._get_board_id(project_key)
-        sprint_id = self._get_active_sprint_id(board_id)
-        self._post(
-            f"/rest/agile/1.0/sprint/{sprint_id}/issue",
-            {"issues": [issue_key]},
+    def get_issue(self, issue_key: str) -> dict:
+        return self._get(
+            f"/rest/api/3/issue/{issue_key}",
+            params={"fields": "summary,status,priority,assignee,components,updated,description"},
         )
+
+    def update_issue(self, issue_key: str, fields: dict) -> None:
+        self._put(f"/rest/api/3/issue/{issue_key}", {"fields": fields})
 
     def search_issues(
         self, jql: str, fields: str = "summary,status,priority,updated", max_results: int = 50,
@@ -276,6 +302,41 @@ class JiraClient:
             params={"jql": jql, "maxResults": str(max_results), "fields": fields},
         )
         return result.get("issues", [])
+
+    def move_to_active_sprint(self, project_key: str, issue_key: str) -> None:
+        board_id = self._get_board_id(project_key)
+        sprint_id = self._get_active_sprint_id(board_id)
+        self._post(
+            f"/rest/agile/1.0/sprint/{sprint_id}/issue",
+            {"issues": [issue_key]},
+        )
+
+    def get_transitions(self, issue_key: str) -> list[dict]:
+        result = self._get(f"/rest/api/3/issue/{issue_key}/transitions")
+        return result.get("transitions", [])
+
+    def transition_issue(self, issue_key: str, transition_id: str) -> None:
+        self._post(
+            f"/rest/api/3/issue/{issue_key}/transitions",
+            {"transition": {"id": transition_id}},
+        )
+
+    # ── Comments ────────────────────────────────────────
+
+    def get_comments(self, issue_key: str) -> list[dict]:
+        result = self._get(
+            f"/rest/api/3/issue/{issue_key}/comment",
+            params={"orderBy": "-created", "maxResults": "20"},
+        )
+        return result.get("comments", [])
+
+    def add_comment(self, issue_key: str, body_adf: dict) -> None:
+        self._post(
+            f"/rest/api/3/issue/{issue_key}/comment",
+            {"body": body_adf},
+        )
+
+    # ── Queries ─────────────────────────────────────────
 
     def my_open_tickets(self, project_key: str | None = None) -> list[dict]:
         jql = "assignee = currentUser() AND statusCategory not in (Done) ORDER BY updated DESC"
@@ -295,17 +356,6 @@ class JiraClient:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
 
-    def get_sprints(
-        self, project_key: str, states: str = "active,future",
-    ) -> list[dict]:
-        """Get sprints for a project's board. Returns [{id, name, state, startDate, endDate}, ...]."""
-        board_id = self._get_board_id(project_key)
-        result = self._get(
-            f"/rest/agile/1.0/board/{board_id}/sprint",
-            params={"state": states},
-        )
-        return result.get("values", [])
-
     def my_backlog_tickets(
         self, project_key: str | None = None, max_results: int = 5
     ) -> list[dict]:
@@ -320,104 +370,18 @@ class JiraClient:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
 
-    def get_transitions(self, issue_key: str) -> list[dict]:
-        result = self._get(f"/rest/api/3/issue/{issue_key}/transitions")
-        return result.get("transitions", [])
+    # ── Sprints ─────────────────────────────────────────
 
-    def transition_issue(self, issue_key: str, transition_id: str) -> None:
-        self._post(
-            f"/rest/api/3/issue/{issue_key}/transitions",
-            {"transition": {"id": transition_id}},
-        )
-
-    def get_components(self, project_key: str) -> list[str]:
-        result = self._get(f"/rest/api/3/project/{project_key}/components")
-        return [c["name"] for c in result]
-
-    def get_issue(self, issue_key: str) -> dict:
-        return self._get(
-            f"/rest/api/3/issue/{issue_key}",
-            params={"fields": "summary,status,priority,assignee,components,updated,description"},
-        )
-
-    def update_issue(self, issue_key: str, fields: dict) -> None:
-        self._put(f"/rest/api/3/issue/{issue_key}", {"fields": fields})
-
-    def get_comments(self, issue_key: str) -> list[dict]:
+    def get_sprints(
+        self, project_key: str, states: str = "active,future",
+    ) -> list[dict]:
+        """Get sprints for a project's board."""
+        board_id = self._get_board_id(project_key)
         result = self._get(
-            f"/rest/api/3/issue/{issue_key}/comment",
-            params={"orderBy": "-created", "maxResults": "20"},
+            f"/rest/agile/1.0/board/{board_id}/sprint",
+            params={"state": states},
         )
-        return result.get("comments", [])
-
-    def add_comment(self, issue_key: str, body_adf: dict) -> None:
-        self._post(
-            f"/rest/api/3/issue/{issue_key}/comment",
-            {"body": body_adf},
-        )
-
-    def search_projects(self, query: str = "") -> list[dict]:
-        """Search for JIRA projects. Returns [{key, name}, ...]."""
-        params: dict = {"maxResults": "50", "orderBy": "name"}
-        if query:
-            params["query"] = query
-        result = self._get("/rest/api/3/project/search", params=params)
-        return [
-            {"key": p["key"], "name": p.get("name", "")}
-            for p in result.get("values", [])
-        ]
-
-    def search_groups(self, query: str = "") -> list[dict]:
-        """Search for Atlassian groups. Returns [{name, groupId}, ...]."""
-        params = {"maxResults": "20"}
-        if query:
-            params["query"] = query
-        result = self._get("/rest/api/3/groups/picker", params=params)
-        groups = result.get("groups", [])
-        for g in groups:
-            g["name"] = g["name"].strip()
-        return groups
-
-    def get_group_members(self, group_id: str) -> list[dict]:
-        """Get members of an Atlassian group by ID. Returns [{accountId, displayName}, ...]."""
-        result = self._get(
-            "/rest/api/3/group/member",
-            params={"groupId": group_id, "maxResults": "200"},
-        )
-        return [
-            {"accountId": m["accountId"], "displayName": m.get("displayName", "")}
-            for m in result.get("values", [])
-            if m.get("accountType") == "atlassian"
-        ]
-
-    def get_assignable_users(self, project_key: str, query: str = "") -> list[dict]:
-        """Get users assignable to a project. Returns [{accountId, displayName}, ...]."""
-        params = {"project": project_key, "maxResults": "50"}
-        if query:
-            params["query"] = query
-        result = self._get("/rest/api/3/user/assignable/search", params=params)
-        return [
-            {"accountId": u["accountId"], "displayName": u.get("displayName", "")}
-            for u in result
-            if u.get("accountType") == "atlassian"
-        ]
-
-    def get_team_members(self, project_key: str) -> list[dict]:
-        """Get team members: from configured groups if set, else assignable users."""
-        config = load_config()
-        groups = config.get("team_groups", [])
-        if groups:
-            seen = set()
-            members = []
-            for group in groups:
-                group_id = group["group_id"] if isinstance(group, dict) else group
-                for m in self.get_group_members(group_id):
-                    if m["accountId"] not in seen:
-                        seen.add(m["accountId"])
-                        members.append(m)
-            members.sort(key=lambda m: m["displayName"].lower())
-            return members
-        return self.get_assignable_users(project_key)
+        return result.get("values", [])
 
     def _get_board_id(self, project_key: str) -> int:
         result = self._get(
@@ -437,55 +401,203 @@ class JiraClient:
             raise JiraApiError(404, {"message": "No active sprint found"})
         return sprints[0]["id"]
 
+    # ── Projects & Components ───────────────────────────
 
-def make_client() -> JiraClient:
-    config = resolve_config()
-    email = config.get("email", "")
-    api_token = config.get("api_token", "")
-    if not email or not api_token:
-        raise click.ClickException(
-            "email and api_token must be configured in " + str(CONFIG_FILE)
+    def get_components(self, project_key: str) -> list[str]:
+        result = self._get(f"/rest/api/3/project/{project_key}/components")
+        return [c["name"] for c in result]
+
+    def search_projects(self, query: str = "") -> list[dict]:
+        """Search for JIRA projects. Returns [{key, name}, ...]."""
+        params: dict = {"maxResults": "50", "orderBy": "name"}
+        if query:
+            params["query"] = query
+        result = self._get("/rest/api/3/project/search", params=params)
+        return [
+            {"key": p["key"], "name": p.get("name", "")}
+            for p in result.get("values", [])
+        ]
+
+    # ── Users & Groups ──────────────────────────────────
+
+    def search_groups(self, query: str = "") -> list[dict]:
+        """Search for Atlassian groups. Returns [{name, groupId}, ...]."""
+        params = {"maxResults": "20"}
+        if query:
+            params["query"] = query
+        result = self._get("/rest/api/3/groups/picker", params=params)
+        groups = result.get("groups", [])
+        for g in groups:
+            g["name"] = g["name"].strip()
+        return groups
+
+    def get_group_members(self, group_id: str) -> list[dict]:
+        result = self._get(
+            "/rest/api/3/group/member",
+            params={"groupId": group_id, "maxResults": "200"},
         )
-    return JiraClient(config.get("base_url", "https://vaisala.atlassian.net"), email, api_token)
+        return [
+            {"accountId": m["accountId"], "displayName": m.get("displayName", "")}
+            for m in result.get("values", [])
+            if m.get("accountType") == "atlassian"
+        ]
+
+    def get_assignable_users(self, project_key: str, query: str = "") -> list[dict]:
+        params = {"project": project_key, "maxResults": "50"}
+        if query:
+            params["query"] = query
+        result = self._get("/rest/api/3/user/assignable/search", params=params)
+        return [
+            {"accountId": u["accountId"], "displayName": u.get("displayName", "")}
+            for u in result
+            if u.get("accountType") == "atlassian"
+        ]
+
+    def get_team_members(self, project_key: str) -> list[dict]:
+        """Get team members: from configured groups if set, else assignable users."""
+        groups = config.load().get("team_groups", [])
+        if groups:
+            seen = set()
+            members = []
+            for group in groups:
+                group_id = group["group_id"] if isinstance(group, dict) else group
+                for m in self.get_group_members(group_id):
+                    if m["accountId"] not in seen:
+                        seen.add(m["accountId"])
+                        members.append(m)
+            members.sort(key=lambda m: m["displayName"].lower())
+            return members
+        return self.get_assignable_users(project_key)
+
+    def resolve_assignee(self, project_key: str, assignee_input: str) -> str:
+        """Resolve an assignee display name or 'me' to an account ID."""
+        if assignee_input.lower() == "me":
+            return self.account_id
+        members = self.get_team_members(project_key)
+        query = assignee_input.lower()
+        for m in members:
+            if m["displayName"].lower() == query:
+                click.echo(f"Assignee: {m['displayName']}")
+                return m["accountId"]
+        matches = [m for m in members if query in m["displayName"].lower()]
+        if len(matches) == 1:
+            click.echo(f"Assignee: {matches[0]['displayName']}")
+            return matches[0]["accountId"]
+        if len(matches) > 1:
+            click.echo(f"Multiple matches for '{assignee_input}':")
+            for i, m in enumerate(matches, 1):
+                click.echo(f"  [{i}] {m['displayName']}")
+            choice = click.prompt(
+                "Select assignee",
+                type=click.IntRange(1, len(matches)),
+            )
+            selected = matches[choice - 1]
+            click.echo(f"Assignee: {selected['displayName']}")
+            return selected["accountId"]
+        raise click.ClickException(f"No team member found matching '{assignee_input}'")
 
 
 # ── Completion Cache ────────────────────────────────────
 
-CACHE_DIR = Path(tempfile.gettempdir()) / "ticket-completions"
 
+class CompletionCache:
+    _DIR = Path(tempfile.gettempdir()) / "ticket-completions"
 
-def _read_cache(name: str, ttl_seconds: int = 300) -> list[str] | None:
-    path = CACHE_DIR / f"{name}.json"
-    try:
-        if time.time() - path.stat().st_mtime > ttl_seconds:
+    def read(self, name: str, ttl_seconds: int = 300) -> list[str] | None:
+        path = self._DIR / f"{name}.json"
+        try:
+            if time.time() - path.stat().st_mtime > ttl_seconds:
+                return None
+            return json.loads(path.read_text())
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
             return None
-        return json.loads(path.read_text())
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return None
+
+    def write(self, name: str, values: list[str]) -> None:
+        self._DIR.mkdir(parents=True, exist_ok=True)
+        (self._DIR / f"{name}.json").write_text(json.dumps(values))
 
 
-def _write_cache(name: str, values: list[str]) -> None:
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    (CACHE_DIR / f"{name}.json").write_text(json.dumps(values))
+cache = CompletionCache()
+
+
+# ── Output Formatting ──────────────────────────────────
+
+
+class Formatter:
+    STATUS_ORDER = [
+        "open", "in development", "in progress", "blocked",
+        "ready for verification", "ready to deploy", "done", "closed",
+    ]
+    STATUS_COLORS = {
+        "open": "white",
+        "in development": "blue",
+        "in progress": "blue",
+        "blocked": "red",
+        "ready for verification": "yellow",
+        "ready to deploy": "yellow",
+        "done": "green",
+        "closed": "bright_black",
+    }
+
+    def status_color(self, status: str) -> str:
+        return self.STATUS_COLORS.get(status.lower(), "white")
+
+    def _status_sort_key(self, issue: dict) -> int:
+        status = issue["fields"].get("status", {}).get("name", "").lower()
+        try:
+            return self.STATUS_ORDER.index(status)
+        except ValueError:
+            return len(self.STATUS_ORDER)
+
+    def ticket_table(self, issues: list[dict]) -> None:
+        if not issues:
+            click.echo("  No tickets found.")
+            return
+
+        sorted_issues = sorted(issues, key=self._status_sort_key)
+
+        key_width = max(len(i["key"]) for i in sorted_issues)
+        status_width = max(
+            len(i["fields"].get("status", {}).get("name", "Unknown"))
+            for i in sorted_issues
+        ) + 2
+
+        for issue in sorted_issues:
+            key = issue["key"]
+            fields = issue["fields"]
+            summary = fields.get("summary", "")
+            status = fields.get("status", {}).get("name", "Unknown")
+
+            color = self.status_color(status)
+            status_str = click.style(f"[{status}]".ljust(status_width), fg=color)
+
+            max_summary = 60
+            if len(summary) > max_summary:
+                summary = summary[: max_summary - 1] + "…"
+
+            click.echo(f"  {key:<{key_width}}  {status_str}  {summary}")
+
+
+fmt = Formatter()
+
+
+# ── Shell Completions ──────────────────────────────────
 
 
 def _complete_project(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
-    config = load_config()
-    projects = config.get("projects", [])
+    projects = config.load().get("projects", [])
     if projects:
         return [
             click.shell_completion.CompletionItem(p["key"], help=p["name"])
             for p in projects if incomplete.upper() in p["key"].upper()
         ]
-    # Fall back to API search
     cache_key = "projects"
-    items = _read_cache(cache_key)
+    items = cache.read(cache_key)
     if items is None:
         try:
-            client = make_client()
-            found = client.search_projects(incomplete)
+            found = config.client.search_projects(incomplete)
             items = [f"{p['key']}\t{p['name']}" for p in found]
-            _write_cache(cache_key, items)
+            cache.write(cache_key, items)
         except Exception:
             return []
     results = []
@@ -497,14 +609,13 @@ def _complete_project(ctx: click.Context, param: click.Parameter, incomplete: st
 
 
 def _complete_components(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
-    project = ctx.params.get("project") or get_project(None)
+    project = ctx.params.get("project") or config.project()
     cache_key = f"components-{project}"
-    names = _read_cache(cache_key)
+    names = cache.read(cache_key)
     if names is None:
         try:
-            client = make_client()
-            names = client.get_components(project)
-            _write_cache(cache_key, names)
+            names = config.client.get_components(project)
+            cache.write(cache_key, names)
         except Exception:
             return []
     return [
@@ -514,15 +625,14 @@ def _complete_components(ctx: click.Context, param: click.Parameter, incomplete:
 
 
 def _complete_issue_key(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
-    project = get_project(None)
+    project = config.project()
     cache_key = f"issues-{project}"
-    items = _read_cache(cache_key, ttl_seconds=120)
+    items = cache.read(cache_key, ttl_seconds=120)
     if items is None:
         try:
-            client = make_client()
-            issues = client.my_open_tickets(project)
+            issues = config.client.my_open_tickets(project)
             items = [f"{i['key']}\t{i['fields'].get('summary', '')}" for i in issues]
-            _write_cache(cache_key, items)
+            cache.write(cache_key, items)
         except Exception:
             return []
     results = []
@@ -534,15 +644,14 @@ def _complete_issue_key(ctx: click.Context, param: click.Parameter, incomplete: 
 
 
 def _complete_assignee(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
-    project = ctx.params.get("project") or get_project(None)
+    project = ctx.params.get("project") or config.project()
     cache_key = f"team-{project}"
-    items = _read_cache(cache_key)
+    items = cache.read(cache_key)
     if items is None:
         try:
-            client = make_client()
-            members = client.get_team_members(project)
+            members = config.client.get_team_members(project)
             items = [f"{m['accountId']}\t{m['displayName']}" for m in members]
-            _write_cache(cache_key, items)
+            cache.write(cache_key, items)
         except Exception:
             return []
     results = []
@@ -551,116 +660,6 @@ def _complete_assignee(ctx: click.Context, param: click.Parameter, incomplete: s
         if incomplete.lower() in display_name.lower():
             results.append(click.shell_completion.CompletionItem(display_name, help=account_id))
     return results
-
-
-def _resolve_assignee(client: JiraClient, project_key: str, assignee_input: str) -> str:
-    """Resolve an assignee display name or 'me' to an account ID."""
-    if assignee_input.lower() == "me":
-        return client.account_id
-    members = client.get_team_members(project_key)
-    query = assignee_input.lower()
-    # Exact match (full display name)
-    for m in members:
-        if m["displayName"].lower() == query:
-            click.echo(f"Assignee: {m['displayName']}")
-            return m["accountId"]
-    # Partial match on any part of the name
-    matches = [m for m in members if query in m["displayName"].lower()]
-    if len(matches) == 1:
-        click.echo(f"Assignee: {matches[0]['displayName']}")
-        return matches[0]["accountId"]
-    if len(matches) > 1:
-        click.echo(f"Multiple matches for '{assignee_input}':")
-        for i, m in enumerate(matches, 1):
-            click.echo(f"  [{i}] {m['displayName']}")
-        choice = click.prompt(
-            "Select assignee",
-            type=click.IntRange(1, len(matches)),
-        )
-        selected = matches[choice - 1]
-        click.echo(f"Assignee: {selected['displayName']}")
-        return selected["accountId"]
-    raise click.ClickException(f"No team member found matching '{assignee_input}'")
-
-
-# ── Output Formatting ──────────────────────────────────
-
-# Order and color for statuses (matched case-insensitively)
-STATUS_ORDER = [
-    "open",
-    "in development",
-    "in progress",
-    "blocked",
-    "ready for verification",
-    "ready to deploy",
-    "done",
-    "closed",
-]
-
-STATUS_COLORS = {
-    "open": "white",
-    "in development": "blue",
-    "in progress": "blue",
-    "blocked": "red",
-    "ready for verification": "yellow",
-    "ready to deploy": "yellow",
-    "done": "green",
-    "closed": "bright_black",
-}
-
-
-def _status_sort_key(issue: dict) -> int:
-    status = issue["fields"].get("status", {}).get("name", "").lower()
-    try:
-        return STATUS_ORDER.index(status)
-    except ValueError:
-        return len(STATUS_ORDER)
-
-
-def _status_color(status: str) -> str:
-    return STATUS_COLORS.get(status.lower(), "white")
-
-
-def format_ticket_table(issues: list[dict]) -> None:
-    if not issues:
-        click.echo("  No tickets found.")
-        return
-
-    sorted_issues = sorted(issues, key=_status_sort_key)
-
-    # Compute column widths from actual data
-    key_width = max(len(i["key"]) for i in sorted_issues)
-    status_width = max(
-        len(i["fields"].get("status", {}).get("name", "Unknown"))
-        for i in sorted_issues
-    ) + 2  # for brackets
-
-    for issue in sorted_issues:
-        key = issue["key"]
-        fields = issue["fields"]
-        summary = fields.get("summary", "")
-        status = fields.get("status", {}).get("name", "Unknown")
-
-        color = _status_color(status)
-        status_str = click.style(f"[{status}]".ljust(status_width), fg=color)
-
-        max_summary = 60
-        if len(summary) > max_summary:
-            summary = summary[: max_summary - 1] + "…"
-
-        click.echo(f"  {key:<{key_width}}  {status_str}  {summary}")
-
-
-def get_project(project_override: str | None) -> str:
-    if project_override:
-        return project_override
-    config = load_config()
-    return config.get("default_project", config.get("last_project", "WEAT"))
-
-
-def get_base_url() -> str:
-    config = load_config()
-    return config.get("base_url", "https://vaisala.atlassian.net")
 
 
 # ── CLI Commands ────────────────────────────────────────
@@ -680,25 +679,25 @@ def cli():
 @click.option("-t", "--type", "issue_type", default="Task", help="Issue type")
 def create(summary: str, now: bool, component: tuple, assignee: str, project: str | None, issue_type: str):
     """Create a new JIRA ticket."""
-    client = make_client()
-    project_key = get_project(project)
+    client = config.client
+    project_key = config.project(project)
 
     try:
-        assignee_id = _resolve_assignee(client, project_key, assignee)
+        assignee_id = client.resolve_assignee(project_key, assignee)
         result = client.create_issue(
             project_key, summary, issue_type,
             list(component) if component else None,
             assignee_account_id=assignee_id,
         )
         issue_key = result["key"]
-        save_config({"default_project": project_key})
+        config.save({"default_project": project_key})
         click.echo(f"Created {issue_key}: {summary}")
 
         if now:
             client.move_to_active_sprint(project_key, issue_key)
             click.echo("Added to current sprint")
 
-        click.echo(f"{get_base_url()}/browse/{issue_key}")
+        click.echo(f"{config.base_url}/browse/{issue_key}")
 
     except JiraApiError as e:
         raise click.ClickException(str(e))
@@ -716,35 +715,34 @@ def list_tickets(project: str | None, sprint_id: str | None, backlog: bool, show
     By default shows current sprint tickets followed by the top 5 backlog items.
     Use --sprint current or --sprint <ID> to filter by sprint.
     """
-    client = make_client()
-    project_key = get_project(project)
+    client = config.client
+    project_key = config.project(project)
 
     try:
         if show_all:
             issues = client.my_all_tickets(project_key)
-            format_ticket_table(issues)
+            fmt.ticket_table(issues)
         elif sprint_id is not None:
             sid = None if sprint_id == "current" else int(sprint_id)
             issues = client.my_sprint_tickets(project_key, sprint_id=sid)
-            format_ticket_table(issues)
+            fmt.ticket_table(issues)
         elif backlog:
             issues = client.my_backlog_tickets(project_key, max_results=20)
-            format_ticket_table(issues)
+            fmt.ticket_table(issues)
         else:
             sprint_issues = client.my_sprint_tickets(project_key)
             backlog_issues = client.my_backlog_tickets(project_key, max_results=5)
 
+            click.echo(click.style("Sprint", bold=True))
             if sprint_issues:
-                click.echo(click.style("Sprint", bold=True))
-                format_ticket_table(sprint_issues)
+                fmt.ticket_table(sprint_issues)
             else:
-                click.echo(click.style("Sprint", bold=True))
                 click.echo("  No sprint tickets.")
 
             click.echo()
             click.echo(click.style("Backlog", bold=True))
             if backlog_issues:
-                format_ticket_table(backlog_issues)
+                fmt.ticket_table(backlog_issues)
                 click.echo("  ...")
             else:
                 click.echo("  No backlog tickets.")
@@ -757,8 +755,8 @@ def list_tickets(project: str | None, sprint_id: str | None, backlog: bool, show
 @click.option("--all", "show_all", is_flag=True, help="Include closed sprints")
 def list_sprints(project: str | None, show_all: bool):
     """List sprints for the project board."""
-    client = make_client()
-    project_key = get_project(project)
+    client = config.client
+    project_key = config.project(project)
     states = "active,future,closed" if show_all else "active,future"
 
     try:
@@ -780,7 +778,7 @@ def list_sprints(project: str | None, show_all: bool):
 @click.argument("issue_key", shell_complete=_complete_issue_key)
 def show(issue_key: str):
     """Show details of a ticket."""
-    client = make_client()
+    client = config.client
     try:
         issue = client.get_issue(issue_key)
         fields = issue["fields"]
@@ -790,7 +788,7 @@ def show(issue_key: str):
         assignee_name = assignee.get("displayName", "Unassigned") if assignee else "Unassigned"
         components = ", ".join(c["name"] for c in fields.get("components", []))
 
-        color = _status_color(status)
+        color = fmt.status_color(status)
         click.echo(f"  {issue['key']}  {click.style(status, fg=color)}")
         click.echo(f"  {fields.get('summary', '')}")
         click.echo(f"  Assignee: {assignee_name}")
@@ -798,7 +796,7 @@ def show(issue_key: str):
             click.echo(f"  Priority: {priority}")
         if components:
             click.echo(f"  Components: {components}")
-        click.echo(f"  {get_base_url()}/browse/{issue['key']}")
+        click.echo(f"  {config.base_url}/browse/{issue['key']}")
 
         description = _adf_to_text(fields.get("description")).strip()
         if description:
@@ -836,7 +834,7 @@ def edit(issue_key: str):
         ──── description ────
         Description text here
     """
-    client = make_client()
+    client = config.client
     try:
         issue = client.get_issue(issue_key)
         fields = issue["fields"]
@@ -888,7 +886,7 @@ def comment(issue_key: str, text: str | None):
         echo "some comment" | ticket comment WEAT-123
         ticket comment WEAT-123              # opens $EDITOR
     """
-    client = make_client()
+    client = config.client
     try:
         if text:
             body = text
@@ -914,7 +912,7 @@ def comment(issue_key: str, text: str | None):
 @click.argument("issue_key", shell_complete=_complete_issue_key)
 def move(issue_key: str):
     """Transition a ticket to a new status."""
-    client = make_client()
+    client = config.client
     try:
         transitions = client.get_transitions(issue_key)
         if not transitions:
@@ -935,6 +933,9 @@ def move(issue_key: str):
         raise click.ClickException(str(e))
 
 
+# ── Team Subcommands ───────────────────────────────────
+
+
 @cli.group()
 def team():
     """Manage team groups for assignee autocomplete."""
@@ -944,7 +945,7 @@ def team():
 @click.argument("query")
 def team_search(query: str):
     """Search for Atlassian groups by name."""
-    client = make_client()
+    client = config.client
     try:
         groups = client.search_groups(query)
         if not groups:
@@ -962,8 +963,7 @@ def team_search(query: str):
 @click.argument("group_name")
 def team_add(group_name: str):
     """Add a group to team_groups config."""
-    client = make_client()
-    # Search for the group to get its ID
+    client = config.client
     results = client.search_groups(group_name)
     match = None
     for g in results:
@@ -971,7 +971,6 @@ def team_add(group_name: str):
             match = g
             break
     if not match:
-        # Try partial match if only one result
         matches = [g for g in results if group_name.lower() in g["name"].lower()]
         if len(matches) == 1:
             match = matches[0]
@@ -979,13 +978,12 @@ def team_add(group_name: str):
         raise click.ClickException(
             f"Group '{group_name}' not found. Use 'ticket team search' to find the exact name."
         )
-    # Validate we can fetch members
     try:
         members = client.get_group_members(match["groupId"])
     except JiraApiError as e:
         raise click.ClickException(f"Cannot access group '{match['name']}': {e}")
-    config = load_config()
-    groups = config.get("team_groups", [])
+    raw = config.load()
+    groups = raw.get("team_groups", [])
     existing_names = {
         (g["name"] if isinstance(g, dict) else g) for g in groups
     }
@@ -993,7 +991,7 @@ def team_add(group_name: str):
         click.echo(f"Already configured: {match['name']}")
         return
     groups.append({"name": match["name"], "group_id": match["groupId"]})
-    save_config({"team_groups": groups})
+    config.save({"team_groups": groups})
     click.echo(f"Added '{match['name']}' ({len(members)} members) to team_groups")
 
 
@@ -1001,8 +999,8 @@ def team_add(group_name: str):
 @click.argument("group_name")
 def team_remove(group_name: str):
     """Remove a group from team_groups config."""
-    config = load_config()
-    groups = config.get("team_groups", [])
+    raw = config.load()
+    groups = raw.get("team_groups", [])
     new_groups = [
         g for g in groups
         if (g["name"] if isinstance(g, dict) else g).lower() != group_name.lower()
@@ -1010,7 +1008,7 @@ def team_remove(group_name: str):
     if len(new_groups) == len(groups):
         click.echo(f"Not configured: {group_name}")
         return
-    save_config({"team_groups": new_groups})
+    config.save({"team_groups": new_groups})
     click.echo(f"Removed '{group_name}' from team_groups")
 
 
@@ -1018,10 +1016,10 @@ def team_remove(group_name: str):
 @click.option("-p", "--project", default=None, help="Project key (for fallback list)", shell_complete=_complete_project)
 def team_show(project: str | None):
     """Show configured groups and their members."""
-    config = load_config()
-    groups = config.get("team_groups", [])
-    client = make_client()
-    project_key = get_project(project)
+    raw = config.load()
+    groups = raw.get("team_groups", [])
+    client = config.client
+    project_key = config.project(project)
 
     try:
         if groups:
@@ -1041,6 +1039,9 @@ def team_show(project: str | None):
         raise click.ClickException(str(e))
 
 
+# ── Project Subcommands ────────────────────────────────
+
+
 @cli.group()
 def project():
     """Manage configured projects."""
@@ -1050,7 +1051,7 @@ def project():
 @click.argument("query")
 def project_search(query: str):
     """Search for JIRA projects."""
-    client = make_client()
+    client = config.client
     try:
         projects = client.search_projects(query)
         if not projects:
@@ -1067,8 +1068,7 @@ def project_search(query: str):
 @click.argument("project_key")
 def project_add(project_key: str):
     """Add a project to the configured list."""
-    client = make_client()
-    # Validate project exists
+    client = config.client
     results = client.search_projects(project_key)
     match = None
     for p in results:
@@ -1079,18 +1079,17 @@ def project_add(project_key: str):
         raise click.ClickException(
             f"Project '{project_key}' not found. Use 'ticket project search' to find it."
         )
-    config = load_config()
-    projects = config.get("projects", [])
+    raw = config.load()
+    projects = raw.get("projects", [])
     existing_keys = {p["key"] for p in projects}
     if match["key"] in existing_keys:
         click.echo(f"Already configured: {match['key']}")
         return
     projects.append({"key": match["key"], "name": match["name"]})
-    save_config({"projects": projects})
+    config.save({"projects": projects})
     click.echo(f"Added {match['key']} ({match['name']})")
-    # Set as default if it's the first project
     if len(projects) == 1:
-        save_config({"default_project": match["key"]})
+        config.save({"default_project": match["key"]})
         click.echo("Set as default project")
 
 
@@ -1098,22 +1097,22 @@ def project_add(project_key: str):
 @click.argument("project_key")
 def project_remove(project_key: str):
     """Remove a project from the configured list."""
-    config = load_config()
-    projects = config.get("projects", [])
+    raw = config.load()
+    projects = raw.get("projects", [])
     new_projects = [p for p in projects if p["key"].upper() != project_key.upper()]
     if len(new_projects) == len(projects):
         click.echo(f"Not configured: {project_key}")
         return
-    save_config({"projects": new_projects})
+    config.save({"projects": new_projects})
     click.echo(f"Removed {project_key}")
 
 
 @project.command("list")
 def project_list():
     """Show configured projects."""
-    config = load_config()
-    projects = config.get("projects", [])
-    default = get_project(None)
+    raw = config.load()
+    projects = raw.get("projects", [])
+    default = config.project()
     if not projects:
         click.echo(f"No projects configured. Current default: {default}")
         return
@@ -1126,13 +1125,12 @@ def project_list():
 @click.argument("project_key")
 def project_default(project_key: str):
     """Set the default project."""
-    config = load_config()
-    projects = config.get("projects", [])
-    # Allow setting default even if not in configured list, but warn
+    raw = config.load()
+    projects = raw.get("projects", [])
     configured_keys = {p["key"].upper() for p in projects}
     if projects and project_key.upper() not in configured_keys:
         click.echo(f"Warning: {project_key} is not in your configured projects list")
-    save_config({"default_project": project_key.upper()})
+    config.save({"default_project": project_key.upper()})
     click.echo(f"Default project set to {project_key.upper()}")
 
 
