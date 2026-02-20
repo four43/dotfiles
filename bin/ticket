@@ -343,6 +343,13 @@ class JiraClient:
     def update_issue(self, issue_key: str, fields: dict) -> None:
         self._put(f"/rest/api/3/issue/{issue_key}", {"fields": fields})
 
+    def get_comments(self, issue_key: str) -> list[dict]:
+        result = self._get(
+            f"/rest/api/3/issue/{issue_key}/comment",
+            params={"orderBy": "-created", "maxResults": "20"},
+        )
+        return result.get("comments", [])
+
     def add_comment(self, issue_key: str, body_adf: dict) -> None:
         self._post(
             f"/rest/api/3/issue/{issue_key}/comment",
@@ -779,16 +786,39 @@ def show(issue_key: str):
         fields = issue["fields"]
         status = fields.get("status", {}).get("name", "Unknown")
         priority = fields.get("priority", {}).get("name", "")
+        assignee = fields.get("assignee", {})
+        assignee_name = assignee.get("displayName", "Unassigned") if assignee else "Unassigned"
         components = ", ".join(c["name"] for c in fields.get("components", []))
 
         color = _status_color(status)
         click.echo(f"  {issue['key']}  {click.style(status, fg=color)}")
         click.echo(f"  {fields.get('summary', '')}")
+        click.echo(f"  Assignee: {assignee_name}")
         if priority:
             click.echo(f"  Priority: {priority}")
         if components:
             click.echo(f"  Components: {components}")
         click.echo(f"  {get_base_url()}/browse/{issue['key']}")
+
+        description = _adf_to_text(fields.get("description")).strip()
+        if description:
+            click.echo()
+            click.echo(click.style("  Description", bold=True))
+            for line in description.split("\n"):
+                click.echo(f"  {line}")
+
+        comments = client.get_comments(issue_key)
+        if comments:
+            click.echo()
+            click.echo(click.style(f"  Comments ({len(comments)})", bold=True))
+            for c in comments:
+                author = c.get("author", {}).get("displayName", "Unknown")
+                created = c.get("created", "")[:10]
+                body = _adf_to_text(c.get("body")).strip()
+                click.echo()
+                click.echo(f"  {click.style(author, bold=True)}  {click.style(created, fg='bright_black')}")
+                for line in body.split("\n"):
+                    click.echo(f"    {line}")
     except JiraApiError as e:
         raise click.ClickException(str(e))
 
