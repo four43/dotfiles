@@ -1,78 +1,655 @@
-#!/usr/bin/env python
-# PYTHON_ARGCOMPLETE_OK
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click>=8.1"]
+# ///
+"""JIRA ticket CLI."""
 
-import argcomplete
-import argparse
-import requests
-from requests.auth import HTTPBasicAuth
+import base64
+import json
 import os
-from typing import Dict, Iterator, Any, Optional
+import re
+import tempfile
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
 
-url = f"https://medialogicgroup.atlassian.net/rest/api/3"
+import click
 
-username = os.environ["AW_CONFLUENCE_USERNAME"]
-app_password = os.environ["AW_CONFLUENCE_PASSWORD"]
-auth = HTTPBasicAuth(username, app_password)
-headers = {
-    "Accept": "application/json"
+# ── Config ──────────────────────────────────────────────
+
+CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "ticket"
+CONFIG_FILE = CONFIG_DIR / "config.json"
+
+DEFAULT_CONFIG = {
+    "base_url": "https://vaisala.atlassian.net",
+    "email": "${XWE_JIRA_EMAIL}",
+    "api_token": "${XWE_JIRA_API_TOKEN}",
+    "last_project": "WEAT",
+}
+
+_ENV_VAR_RE = re.compile(r"\$\{([^}]+)\}")
+
+
+def _expand_env_vars(value: str) -> str:
+    """Expand ${VAR_NAME} references in a string from os.environ."""
+    def replace(match: re.Match) -> str:
+        var_name = match.group(1)
+        val = os.environ.get(var_name)
+        if val is None:
+            raise click.ClickException(
+                f"Environment variable ${{{var_name}}} is not set "
+                f"(referenced in {CONFIG_FILE})"
+            )
+        return val
+
+    return _ENV_VAR_RE.sub(replace, value)
+
+
+def load_config() -> dict:
+    """Load raw config (env vars NOT expanded)."""
+    try:
+        return json.loads(CONFIG_FILE.read_text())
+    except FileNotFoundError:
+        save_config(DEFAULT_CONFIG)
+        return dict(DEFAULT_CONFIG)
+    except json.JSONDecodeError:
+        click.echo(f"Warning: corrupt config at {CONFIG_FILE}, using defaults", err=True)
+        return dict(DEFAULT_CONFIG)
+
+
+def resolve_config() -> dict:
+    """Load config and expand all ${VAR} references."""
+    raw = load_config()
+    resolved = {}
+    for key, value in raw.items():
+        if isinstance(value, str):
+            resolved[key] = _expand_env_vars(value)
+        else:
+            resolved[key] = value
+    return resolved
+
+
+def save_config(updates: dict) -> None:
+    """Merge updates into existing config and persist."""
+    try:
+        config = json.loads(CONFIG_FILE.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        config = dict(DEFAULT_CONFIG)
+    config.update(updates)
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(json.dumps(config, indent=2) + "\n")
+
+
+# ── Errors ──────────────────────────────────────────────
+
+
+class JiraApiError(Exception):
+    def __init__(self, status_code: int, body: dict):
+        self.status_code = status_code
+        self.body = body
+        messages = body.get("errorMessages", [])
+        errors = body.get("errors", {})
+        if messages:
+            detail = "; ".join(messages)
+        elif errors:
+            detail = "; ".join(f"{k}: {v}" for k, v in errors.items())
+        else:
+            detail = str(body)
+        super().__init__(f"HTTP {status_code}: {detail}")
+
+
+# ── JIRA Client ─────────────────────────────────────────
+
+
+class JiraClient:
+    def __init__(self, base_url: str, email: str, api_token: str):
+        self.base_url = base_url.rstrip("/")
+        self._auth_header = "Basic " + base64.b64encode(
+            f"{email}:{api_token}".encode()
+        ).decode()
+        self._account_id: str | None = None
+
+    @property
+    def account_id(self) -> str:
+        if self._account_id is None:
+            me = self._get("/rest/api/3/myself")
+            self._account_id = me["accountId"]
+        return self._account_id
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        data: dict | None = None,
+        params: dict | None = None,
+    ) -> tuple[dict | None, int]:
+        url = self.base_url + path
+        if params:
+            url += "?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+
+        body = json.dumps(data).encode() if data else None
+        req = urllib.request.Request(url, data=body, method=method)
+        req.add_header("Authorization", self._auth_header)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            resp = urllib.request.urlopen(req)
+            status = resp.status
+            resp_body = resp.read().decode()
+            return (json.loads(resp_body) if resp_body else None), status
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode()
+            try:
+                error_data = json.loads(error_body)
+            except json.JSONDecodeError:
+                error_data = {"raw": error_body}
+            raise JiraApiError(e.code, error_data) from e
+
+    def _get(self, path: str, params: dict | None = None) -> dict:
+        result, _ = self._request("GET", path, params=params)
+        return result
+
+    def _post(self, path: str, data: dict) -> tuple[dict | None, int]:
+        return self._request("POST", path, data=data)
+
+    def create_issue(
+        self,
+        project_key: str,
+        summary: str,
+        issue_type: str = "Task",
+        components: list[str] | None = None,
+    ) -> dict:
+        fields: dict = {
+            "project": {"key": project_key},
+            "issuetype": {"name": issue_type},
+            "summary": summary,
+            "assignee": {"accountId": self.account_id},
+        }
+        if components:
+            fields["components"] = [{"name": c} for c in components]
+        result, _ = self._post("/rest/api/3/issue", {"fields": fields})
+        return result
+
+    def move_to_active_sprint(self, project_key: str, issue_key: str) -> None:
+        board_id = self._get_board_id(project_key)
+        sprint_id = self._get_active_sprint_id(board_id)
+        self._post(
+            f"/rest/agile/1.0/sprint/{sprint_id}/issue",
+            {"issues": [issue_key]},
+        )
+
+    def search_issues(
+        self, jql: str, fields: str = "summary,status,priority,updated", max_results: int = 50,
+    ) -> list[dict]:
+        result = self._get(
+            "/rest/api/3/search/jql",
+            params={"jql": jql, "maxResults": str(max_results), "fields": fields},
+        )
+        return result.get("issues", [])
+
+    def my_open_tickets(self, project_key: str | None = None) -> list[dict]:
+        jql = "assignee = currentUser() AND statusCategory not in (Done) ORDER BY updated DESC"
+        if project_key:
+            jql = f"project = {project_key} AND {jql}"
+        return self.search_issues(jql)
+
+    def my_sprint_tickets(self, project_key: str | None = None) -> list[dict]:
+        jql = "assignee = currentUser() AND sprint in openSprints() AND statusCategory not in (Done) ORDER BY updated DESC"
+        if project_key:
+            jql = f"project = {project_key} AND {jql}"
+        return self.search_issues(jql)
+
+    def my_backlog_tickets(
+        self, project_key: str | None = None, max_results: int = 5
+    ) -> list[dict]:
+        jql = "assignee = currentUser() AND sprint not in openSprints() AND statusCategory not in (Done) ORDER BY rank ASC"
+        if project_key:
+            jql = f"project = {project_key} AND {jql}"
+        return self.search_issues(jql, max_results=max_results)
+
+    def my_all_tickets(self, project_key: str | None = None) -> list[dict]:
+        jql = "assignee = currentUser() ORDER BY updated DESC"
+        if project_key:
+            jql = f"project = {project_key} AND {jql}"
+        return self.search_issues(jql)
+
+    def get_transitions(self, issue_key: str) -> list[dict]:
+        result = self._get(f"/rest/api/3/issue/{issue_key}/transitions")
+        return result.get("transitions", [])
+
+    def transition_issue(self, issue_key: str, transition_id: str) -> None:
+        self._post(
+            f"/rest/api/3/issue/{issue_key}/transitions",
+            {"transition": {"id": transition_id}},
+        )
+
+    def get_components(self, project_key: str) -> list[str]:
+        result = self._get(f"/rest/api/3/project/{project_key}/components")
+        return [c["name"] for c in result]
+
+    def get_issue(self, issue_key: str) -> dict:
+        return self._get(
+            f"/rest/api/3/issue/{issue_key}",
+            params={"fields": "summary,status,priority,assignee,components,updated,description"},
+        )
+
+    def _get_board_id(self, project_key: str) -> int:
+        result = self._get(
+            "/rest/agile/1.0/board", params={"projectKeyOrId": project_key}
+        )
+        boards = result.get("values", [])
+        if not boards:
+            raise JiraApiError(404, {"message": f"No board found for {project_key}"})
+        return boards[0]["id"]
+
+    def _get_active_sprint_id(self, board_id: int) -> int:
+        result = self._get(
+            f"/rest/agile/1.0/board/{board_id}/sprint", params={"state": "active"}
+        )
+        sprints = result.get("values", [])
+        if not sprints:
+            raise JiraApiError(404, {"message": "No active sprint found"})
+        return sprints[0]["id"]
+
+
+def make_client() -> JiraClient:
+    config = resolve_config()
+    email = config.get("email", "")
+    api_token = config.get("api_token", "")
+    if not email or not api_token:
+        raise click.ClickException(
+            "email and api_token must be configured in " + str(CONFIG_FILE)
+        )
+    return JiraClient(config.get("base_url", "https://vaisala.atlassian.net"), email, api_token)
+
+
+# ── Completion Cache ────────────────────────────────────
+
+CACHE_DIR = Path(tempfile.gettempdir()) / "ticket-completions"
+
+
+def _read_cache(name: str, ttl_seconds: int = 300) -> list[str] | None:
+    path = CACHE_DIR / f"{name}.json"
+    try:
+        if time.time() - path.stat().st_mtime > ttl_seconds:
+            return None
+        return json.loads(path.read_text())
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+
+
+def _write_cache(name: str, values: list[str]) -> None:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    (CACHE_DIR / f"{name}.json").write_text(json.dumps(values))
+
+
+def _complete_components(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    project = ctx.params.get("project") or get_project(None)
+    cache_key = f"components-{project}"
+    names = _read_cache(cache_key)
+    if names is None:
+        try:
+            client = make_client()
+            names = client.get_components(project)
+            _write_cache(cache_key, names)
+        except Exception:
+            return []
+    return [
+        click.shell_completion.CompletionItem(n)
+        for n in names if n.lower().startswith(incomplete.lower())
+    ]
+
+
+def _complete_issue_key(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    project = get_project(None)
+    cache_key = f"issues-{project}"
+    items = _read_cache(cache_key, ttl_seconds=120)
+    if items is None:
+        try:
+            client = make_client()
+            issues = client.my_open_tickets(project)
+            items = [f"{i['key']}\t{i['fields'].get('summary', '')}" for i in issues]
+            _write_cache(cache_key, items)
+        except Exception:
+            return []
+    results = []
+    for item in items:
+        key, _, summary = item.partition("\t")
+        if key.lower().startswith(incomplete.lower()):
+            results.append(click.shell_completion.CompletionItem(key, help=summary))
+    return results
+
+
+# ── Output Formatting ──────────────────────────────────
+
+# Order and color for statuses (matched case-insensitively)
+STATUS_ORDER = [
+    "open",
+    "in development",
+    "in progress",
+    "blocked",
+    "ready for verification",
+    "ready to deploy",
+    "done",
+    "closed",
+]
+
+STATUS_COLORS = {
+    "open": "white",
+    "in development": "blue",
+    "in progress": "blue",
+    "blocked": "red",
+    "ready for verification": "yellow",
+    "ready to deploy": "yellow",
+    "done": "green",
+    "closed": "bright_black",
 }
 
 
-def query_jira(path: str, params: Optional[Dict[str, Any]] = None, paged: bool = True) -> Iterator[Dict[str, Any]]:
-    while True:
-        get_res = requests.request(
-            "GET",
-            url=f"{url}{path}",
-            params=params,
-            headers=headers,
-            auth=auth
+def _status_sort_key(issue: dict) -> int:
+    status = issue["fields"].get("status", {}).get("name", "").lower()
+    try:
+        return STATUS_ORDER.index(status)
+    except ValueError:
+        return len(STATUS_ORDER)
+
+
+def _status_color(status: str) -> str:
+    return STATUS_COLORS.get(status.lower(), "white")
+
+
+def format_ticket_table(issues: list[dict]) -> None:
+    if not issues:
+        click.echo("  No tickets found.")
+        return
+
+    sorted_issues = sorted(issues, key=_status_sort_key)
+
+    # Compute column widths from actual data
+    key_width = max(len(i["key"]) for i in sorted_issues)
+    status_width = max(
+        len(i["fields"].get("status", {}).get("name", "Unknown"))
+        for i in sorted_issues
+    ) + 2  # for brackets
+
+    for issue in sorted_issues:
+        key = issue["key"]
+        fields = issue["fields"]
+        summary = fields.get("summary", "")
+        status = fields.get("status", {}).get("name", "Unknown")
+
+        color = _status_color(status)
+        status_str = click.style(f"[{status}]".ljust(status_width), fg=color)
+
+        max_summary = 60
+        if len(summary) > max_summary:
+            summary = summary[: max_summary - 1] + "…"
+
+        click.echo(f"  {key:<{key_width}}  {status_str}  {summary}")
+
+
+def get_project(project_override: str | None) -> str:
+    if project_override:
+        return project_override
+    config = load_config()
+    return config.get("last_project", "WEAT")
+
+
+def get_base_url() -> str:
+    config = load_config()
+    return config.get("base_url", "https://vaisala.atlassian.net")
+
+
+# ── CLI Commands ────────────────────────────────────────
+
+
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """JIRA ticket manager."""
+    ctx.ensure_object(dict)
+    if ctx.invoked_subcommand is None:
+        interactive_mode()
+
+
+@cli.command()
+@click.argument("summary")
+@click.option("--now", is_flag=True, help="Add to current active sprint")
+@click.option("-c", "--component", multiple=True, help="Component name(s)", shell_complete=_complete_components)
+@click.option("-p", "--project", default=None, help="Project key (default: last used)")
+@click.option("-t", "--type", "issue_type", default="Task", help="Issue type")
+def create(summary: str, now: bool, component: tuple, project: str | None, issue_type: str):
+    """Create a new JIRA ticket."""
+    client = make_client()
+    project_key = get_project(project)
+
+    try:
+        result = client.create_issue(
+            project_key, summary, issue_type,
+            list(component) if component else None,
         )
-        get_res.raise_for_status()
-        response_data = get_res.json()
+        issue_key = result["key"]
+        save_config({"last_project": project_key})
+        click.echo(f"Created {issue_key}: {summary}")
 
-        if paged:
-            yield from response_data["values"]
+        if now:
+            client.move_to_active_sprint(project_key, issue_key)
+            click.echo("Added to current sprint")
+
+        click.echo(f"{get_base_url()}/browse/{issue_key}")
+
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command("list")
+@click.option("-p", "--project", default=None, help="Filter by project")
+@click.option("--sprint", is_flag=True, help="Current sprint only")
+@click.option("--backlog", is_flag=True, help="Backlog only")
+@click.option("--all", "show_all", is_flag=True, help="Include Done tickets")
+def list_tickets(project: str | None, sprint: bool, backlog: bool, show_all: bool):
+    """List your assigned tickets.
+
+    By default shows current sprint tickets followed by the top 5 backlog items.
+    """
+    client = make_client()
+    project_key = get_project(project)
+
+    try:
+        if show_all:
+            issues = client.my_all_tickets(project_key)
+            format_ticket_table(issues)
+        elif sprint:
+            issues = client.my_sprint_tickets(project_key)
+            format_ticket_table(issues)
+        elif backlog:
+            issues = client.my_backlog_tickets(project_key, max_results=20)
+            format_ticket_table(issues)
         else:
-            return response_data
+            sprint_issues = client.my_sprint_tickets(project_key)
+            backlog_issues = client.my_backlog_tickets(project_key, max_results=5)
 
-        if response_data["isLast"]:
-            break
+            if sprint_issues:
+                click.echo(click.style("Sprint", bold=True))
+                format_ticket_table(sprint_issues)
+            else:
+                click.echo(click.style("Sprint", bold=True))
+                click.echo("  No sprint tickets.")
 
-
-def get_projects(query: Optional[str] = None) -> Iterator[Dict[str, Any]]:
-    yield from query_jira("/project/search", {
-        "query": query,
-    })
-
-
-def get_users(query: Optional[str] = None) -> Iterator[Dict[str, Any]]:
-    users = list(query_jira("/users/search", paged=False))
-    return [u for u in users if u["displayName"].startswith(query)]
-
-
-def projectCompleter(prefix: str, action: Optional[argparse.Action] = None,
-                     parser: Optional[argparse.ArgumentParser] = None,
-                     parsed_args: Optional[argparse.Namespace] = None):
-    projects = get_projects(prefix)
-    return [p["name"] for p in projects]
+            click.echo()
+            click.echo(click.style("Backlog", bold=True))
+            if backlog_issues:
+                format_ticket_table(backlog_issues)
+                click.echo("  ...")
+            else:
+                click.echo("  No backlog tickets.")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
 
 
-def userCompleter(prefix: str, action: Optional[argparse.Action] = None,
-                     parser: Optional[argparse.ArgumentParser] = None,
-                     parsed_args: Optional[argparse.Namespace] = None):
-    users = get_users(prefix)
-    return [u["displayName"] for u in users]
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+def show(issue_key: str):
+    """Show details of a ticket."""
+    client = make_client()
+    try:
+        issue = client.get_issue(issue_key)
+        fields = issue["fields"]
+        status = fields.get("status", {}).get("name", "Unknown")
+        priority = fields.get("priority", {}).get("name", "")
+        components = ", ".join(c["name"] for c in fields.get("components", []))
+
+        color = _status_color(status)
+        click.echo(f"  {issue['key']}  {click.style(status, fg=color)}")
+        click.echo(f"  {fields.get('summary', '')}")
+        if priority:
+            click.echo(f"  Priority: {priority}")
+        if components:
+            click.echo(f"  Components: {components}")
+        click.echo(f"  {get_base_url()}/browse/{issue['key']}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("project").completer = projectCompleter
-parser.add_argument("assignee").completer = userCompleter
-parser.add_argument("title")
-parser.add_argument("-d", "--description")
-parser.add_argument("-b", "--backlog")
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+def move(issue_key: str):
+    """Transition a ticket to a new status."""
+    client = make_client()
+    try:
+        transitions = client.get_transitions(issue_key)
+        if not transitions:
+            raise click.ClickException(f"No transitions available for {issue_key}")
 
-if __name__ == '__main__':
-    argcomplete.autocomplete(parser)
+        click.echo(f"Available transitions for {issue_key}:")
+        for i, t in enumerate(transitions, 1):
+            click.echo(f"  [{i}] {t['name']}")
 
-    userCompleter("Se")
-    args = parser.parse_args()
+        choice = click.prompt(
+            "Select transition",
+            type=click.IntRange(1, len(transitions)),
+        )
+        selected = transitions[choice - 1]
+        client.transition_issue(issue_key, selected["id"])
+        click.echo(f"Moved {issue_key} to {selected['name']}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+# ── Interactive Mode ────────────────────────────────────
+
+
+def interactive_mode():
+    """Simple interactive menu for common ticket operations."""
+    client = make_client()
+    project = get_project(None)
+
+    click.echo(f"JIRA Ticket Manager — {project}")
+    click.echo("─" * 40)
+
+    while True:
+        click.echo()
+        click.echo("  [c] Create ticket")
+        click.echo("  [l] List my tickets")
+        click.echo("  [s] Show ticket details")
+        click.echo("  [m] Move ticket status")
+        click.echo("  [p] Change project")
+        click.echo("  [q] Quit")
+        click.echo()
+
+        choice = click.prompt(
+            "Action",
+            type=click.Choice(["c", "l", "s", "m", "p", "q"], case_sensitive=False),
+            show_choices=False,
+        )
+
+        try:
+            if choice == "q":
+                break
+
+            elif choice == "c":
+                summary = click.prompt("Summary")
+                now = click.confirm("Add to current sprint?", default=False)
+                comp_input = click.prompt("Component (blank to skip)", default="", show_default=False)
+                components = [comp_input] if comp_input else None
+
+                result = client.create_issue(project, summary, components=components)
+                issue_key = result["key"]
+                save_config({"last_project": project})
+                click.echo(f"Created {issue_key}: {summary}")
+
+                if now:
+                    client.move_to_active_sprint(project, issue_key)
+                    click.echo("Added to current sprint")
+
+                click.echo(f"{get_base_url()}/browse/{issue_key}")
+
+            elif choice == "l":
+                sprint_issues = client.my_sprint_tickets(project)
+                backlog_issues = client.my_backlog_tickets(project, max_results=5)
+
+                click.echo(click.style("Sprint", bold=True))
+                if sprint_issues:
+                    format_ticket_table(sprint_issues)
+                else:
+                    click.echo("  No sprint tickets.")
+
+                click.echo()
+                click.echo(click.style("Backlog", bold=True))
+                if backlog_issues:
+                    format_ticket_table(backlog_issues)
+                    click.echo("  ...")
+                else:
+                    click.echo("  No backlog tickets.")
+
+            elif choice == "s":
+                key = click.prompt("Issue key")
+                issue = client.get_issue(key)
+                fields = issue["fields"]
+                status = fields.get("status", {}).get("name", "Unknown")
+                color = _status_color(status)
+                click.echo(f"  {issue['key']}  {click.style(status, fg=color)}")
+                click.echo(f"  {fields.get('summary', '')}")
+                priority = fields.get("priority", {}).get("name", "")
+                if priority:
+                    click.echo(f"  Priority: {priority}")
+                components = ", ".join(c["name"] for c in fields.get("components", []))
+                if components:
+                    click.echo(f"  Components: {components}")
+                click.echo(f"  {get_base_url()}/browse/{issue['key']}")
+
+            elif choice == "m":
+                key = click.prompt("Issue key")
+                transitions = client.get_transitions(key)
+                if not transitions:
+                    click.echo("No transitions available.")
+                    continue
+                for i, t in enumerate(transitions, 1):
+                    click.echo(f"  [{i}] {t['name']}")
+                idx = click.prompt(
+                    "Select transition",
+                    type=click.IntRange(1, len(transitions)),
+                )
+                selected = transitions[idx - 1]
+                client.transition_issue(key, selected["id"])
+                click.echo(f"Moved {key} to {selected['name']}")
+
+            elif choice == "p":
+                project = click.prompt("Project key", default=project)
+                save_config({"last_project": project})
+                click.echo(f"Switched to {project}")
+
+        except JiraApiError as e:
+            click.echo(f"Error: {e}", err=True)
+        except click.Abort:
+            click.echo()
+
+
+# ── Entry Point ─────────────────────────────────────────
+
+if __name__ == "__main__":
+    cli()
