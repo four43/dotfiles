@@ -1,395 +1,92 @@
-# JIRA API Reference
+# JIRA Ticket Management
 
-REST API v3 at `https://vaisala.atlassian.net/rest/api/3/`
-Agile API at `https://vaisala.atlassian.net/rest/agile/1.0/`
+Use the `ticket` CLI for all JIRA operations. Never use raw curl or API calls.
 
-Auth: Build a base64 header — do NOT use curl's `-u` flag (breaks with special chars in env vars):
+## Quick Reference
+
+```
+ticket list                                  # sprint + top 5 backlog
+ticket list --all                            # include Done
+ticket list --backlog                        # backlog only
+ticket list --sprint current                 # current sprint only
+ticket show WEAT-123                         # full details + comments
+ticket search 'JQL query'                    # arbitrary JQL search
+ticket create "Summary" [options]            # create ticket
+ticket edit WEAT-123                         # edit summary + description (stdin or $EDITOR)
+ticket status WEAT-123 "In Development"      # transition status
+ticket comment WEAT-123 "Comment text"       # add comment (arg, stdin, or $EDITOR)
+ticket assign WEAT-123 "Jane Smith"          # reassign
+ticket assign WEAT-123 --none               # unassign
+ticket move WEAT-123 current                 # move to active sprint
+ticket move WEAT-123 backlog                 # move to backlog
+ticket move WEAT-123 "Sprint 42"             # move to named sprint
+ticket delete WEAT-123                       # delete (prompts for confirmation)
+ticket sprints                               # list sprints
+ticket project list                          # configured projects
+ticket team show                             # team members
+```
+
+## Create Options
+
+```
+ticket create "Summary" \
+  -d "Description text" \
+  -p WEAT \
+  -t Task \
+  -c ComponentName \
+  -a "Jane Smith" \
+  -l tech-debt \
+  --priority High \
+  --parent WEAT-100 \
+  --now
+```
+
+- `-d` / `--description` - description text
+- `-p` / `--project` - project key (default: last used)
+- `-t` / `--type` - issue type (default: Task)
+- `-c` / `--component` - component (repeatable)
+- `-a` / `--assignee` - assignee name (default: me)
+- `-l` / `--label` - label (repeatable)
+- `--priority` - High, Medium, Low
+- `--parent` - parent issue key (creates subtask)
+- `--now` - add to active sprint
+
+## Editing and Commenting via stdin
+
+For non-interactive use, pipe content to `edit` and `comment`:
 
 ```bash
-AUTH=$(printf '%s:%s' "${XWE_JIRA_EMAIL}" "${XWE_JIRA_API_TOKEN}" | base64 -w 0)
-# Then on every request:
--H "Authorization: Basic ${AUTH}" -H "Content-Type: application/json"
+echo "Updated summary
+──── description ────
+New description here" | ticket edit WEAT-123
+
+echo "Comment text" | ticket comment WEAT-123
 ```
 
-## Issues
-
-### Get issue
+## Useful JQL Queries
 
 ```
-GET /rest/api/3/issue/{issueIdOrKey}
+ticket search 'project = WEAT AND sprint in openSprints()'
+ticket search 'project = WEAT AND labels = "tech-debt" ORDER BY updated DESC'
+ticket search 'project = WEAT AND text ~ "search term"'
+ticket search 'project = WEAT AND status changed AFTER -7d'
+ticket search 'project = WEAT AND created >= -1w ORDER BY created DESC'
+ticket search 'assignee = currentUser() AND statusCategory not in (Done)'
 ```
 
-Query params:
-- `fields` - comma-separated field names (e.g. `summary,status,assignee,description`)
-- `expand` - expand fields (e.g. `renderedFields,transitions,changelog`)
-
-### Create issue
+## Setup Commands
 
 ```
-POST /rest/api/3/issue
+ticket project search weather              # find projects
+ticket project add WEAT                     # add to configured list
+ticket project default WEAT                 # set default
+ticket team search "dev team"               # find groups
+ticket team add "dev-team-group"            # configure for assignee lookup
+ticket team show                            # list team members
 ```
 
-```json
-{
-  "fields": {
-    "project": { "key": "WEAT" },
-    "issuetype": { "name": "Task" },
-    "summary": "Ticket title",
-    "description": {
-      "type": "doc",
-      "version": 1,
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Description text" }]
-        }
-      ]
-    },
-    "assignee": { "accountId": "<accountId>" },
-    "priority": { "name": "Medium" },
-    "labels": ["label1"],
-    "components": [{ "name": "ComponentName" }]
-  }
-}
-```
-
-Response includes `key` (e.g. `WEAT-123`) and `id`.
-
-Note: Description uses Atlassian Document Format (ADF), not plain text.
-
-### Edit issue
-
-```
-PUT /rest/api/3/issue/{issueIdOrKey}
-```
-
-Send only the fields to update:
-
-```json
-{
-  "fields": {
-    "summary": "Updated title",
-    "labels": ["new-label"]
-  }
-}
-```
-
-### Delete issue
-
-```
-DELETE /rest/api/3/issue/{issueIdOrKey}
-```
-
-Query params:
-- `deleteSubtasks` - `true` to also delete subtasks
-
-### Assign issue
-
-```
-PUT /rest/api/3/issue/{issueIdOrKey}/assignee
-```
-
-```json
-{ "accountId": "<accountId>" }
-```
-
-Use `{ "accountId": null }` to unassign.
-
-## Search (JQL)
-
-### Search with JQL
-
-**IMPORTANT**: The old `POST /rest/api/3/search` endpoint has been removed.
-Use the new endpoint with **GET** and query parameters:
-
-```
-GET /rest/api/3/search/jql?jql={jql}&maxResults={n}&fields={fields}
-```
-
-Use curl's `-G` and `--data-urlencode` to properly encode parameters:
-
-```bash
-AUTH=$(printf '%s:%s' "${XWE_JIRA_EMAIL}" "${XWE_JIRA_API_TOKEN}" | base64 -w 0)
-curl -s \
-  -H "Authorization: Basic ${AUTH}" \
-  -G \
-  --data-urlencode 'jql=project = WEAT AND status = "In Progress" ORDER BY updated DESC' \
-  --data-urlencode 'maxResults=25' \
-  --data-urlencode 'startAt=0' \
-  --data-urlencode 'fields=summary,status,assignee,priority,updated' \
-  "https://vaisala.atlassian.net/rest/api/3/search/jql"
-```
-
-**JQL gotcha**: The `!=` operator gets mangled during URL encoding. Use `not in (Value)` instead:
-- BAD: `statusCategory != Done`
-- GOOD: `statusCategory not in (Done)`
-
-Useful JQL queries:
-- `assignee = currentUser() ORDER BY updated DESC` - My tickets
-- `assignee = currentUser() AND statusCategory not in (Done) ORDER BY updated DESC` - My open tickets
-- `project = WEAT AND sprint in openSprints()` - Current sprint
-- `project = WEAT AND status changed AFTER -7d` - Recently updated
-- `project = WEAT AND text ~ "search term"` - Full text search
-- `project = WEAT AND created >= -1w ORDER BY created DESC` - Created this week
-- `project = WEAT AND status = Done AND resolved >= -1w` - Recently completed
-
-Response: `{ "issues": [{ "key": "WEAT-1", "fields": { ... } }] }`
-
-### Issue picker (autocomplete)
-
-```
-GET /rest/api/3/issue/picker?query=search+term&currentProjectId=WEAT
-```
-
-## Transitions (Status Changes)
-
-### Get available transitions
-
-```
-GET /rest/api/3/issue/{issueIdOrKey}/transitions
-```
-
-Returns list of valid transitions from the current status.
-
-### Perform transition
-
-```
-POST /rest/api/3/issue/{issueIdOrKey}/transitions
-```
-
-```json
-{
-  "transition": { "id": "31" },
-  "fields": {},
-  "update": {
-    "comment": [
-      {
-        "add": {
-          "body": {
-            "type": "doc",
-            "version": 1,
-            "content": [
-              {
-                "type": "paragraph",
-                "content": [{ "type": "text", "text": "Moving to In Progress" }]
-              }
-            ]
-          }
-        }
-      }
-    ]
-  }
-}
-```
-
-Workflow: Get transitions first to find the `id`, then POST with that id.
-
-## Comments
-
-### List comments
-
-```
-GET /rest/api/3/issue/{issueIdOrKey}/comment
-```
-
-Query params:
-- `startAt`, `maxResults` - pagination
-- `orderBy` - `created` or `-created`
-- `expand` - `renderedBody` for HTML
-
-### Add comment
-
-```
-POST /rest/api/3/issue/{issueIdOrKey}/comment
-```
-
-```json
-{
-  "body": {
-    "type": "doc",
-    "version": 1,
-    "content": [
-      {
-        "type": "paragraph",
-        "content": [{ "type": "text", "text": "Comment text here" }]
-      }
-    ]
-  }
-}
-```
-
-### Update comment
-
-```
-PUT /rest/api/3/issue/{issueIdOrKey}/comment/{commentId}
-```
-
-Same body format as add comment.
-
-### Delete comment
-
-```
-DELETE /rest/api/3/issue/{issueIdOrKey}/comment/{commentId}
-```
-
-## Projects
-
-### List projects
-
-```
-GET /rest/api/3/project/search
-```
-
-Query params:
-- `query` - filter by name
-- `maxResults`, `startAt` - pagination
-- `expand` - `description,lead,url`
-
-### Get project
-
-```
-GET /rest/api/3/project/{projectIdOrKey}
-```
-
-### List project components
-
-```
-GET /rest/api/3/project/{projectIdOrKey}/components
-```
-
-### List project versions
-
-```
-GET /rest/api/3/project/{projectIdOrKey}/versions
-```
-
-## Users
-
-### Get current user
-
-```
-GET /rest/api/3/myself
-```
-
-Returns `accountId`, `displayName`, `emailAddress`.
-
-### Search users
-
-```
-GET /rest/api/3/user/search?query=name
-```
-
-### Find assignable users
-
-```
-GET /rest/api/3/user/assignable/search?project=WEAT&query=name
-```
-
-## Worklogs
-
-### Add worklog
-
-```
-POST /rest/api/3/issue/{issueIdOrKey}/worklog
-```
-
-```json
-{
-  "timeSpentSeconds": 3600,
-  "comment": {
-    "type": "doc",
-    "version": 1,
-    "content": [
-      {
-        "type": "paragraph",
-        "content": [{ "type": "text", "text": "Worked on implementation" }]
-      }
-    ]
-  },
-  "started": "2024-01-15T09:00:00.000+0000"
-}
-```
-
-## Agile (Boards & Sprints)
-
-### List boards
-
-```
-GET /rest/agile/1.0/board?projectKeyOrId=WEAT
-```
-
-### Get board sprints
-
-```
-GET /rest/agile/1.0/board/{boardId}/sprint?state=active
-```
-
-States: `future`, `active`, `closed`.
-
-### Get sprint issues
-
-```
-GET /rest/agile/1.0/sprint/{sprintId}/issue
-```
-
-### Move issues to sprint
-
-```
-POST /rest/agile/1.0/sprint/{sprintId}/issue
-```
-
-```json
-{ "issues": ["WEAT-123", "WEAT-456"] }
-```
-
-Returns `204 No Content` on success.
-
-### Rank issues
-
-```
-PUT /rest/agile/1.0/issue/rank
-```
-
-```json
-{
-  "issues": ["WEAT-123"],
-  "rankBeforeIssue": "WEAT-100"
-}
-```
-
-## Atlassian Document Format (ADF)
-
-JIRA v3 uses ADF for rich text fields (description, comments). Key node types:
-
-```json
-{
-  "type": "doc",
-  "version": 1,
-  "content": [
-    { "type": "paragraph", "content": [{ "type": "text", "text": "Plain text" }] },
-    { "type": "heading", "attrs": { "level": 2 }, "content": [{ "type": "text", "text": "Heading" }] },
-    { "type": "bulletList", "content": [
-      { "type": "listItem", "content": [
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Item 1" }] }
-      ]}
-    ]},
-    { "type": "codeBlock", "attrs": { "language": "python" }, "content": [
-      { "type": "text", "text": "print('hello')" }
-    ]},
-    { "type": "blockquote", "content": [
-      { "type": "paragraph", "content": [{ "type": "text", "text": "Quoted text" }] }
-    ]}
-  ]
-}
-```
-
-Text marks for inline formatting:
-- `{ "type": "text", "text": "bold", "marks": [{ "type": "strong" }] }`
-- `{ "type": "text", "text": "italic", "marks": [{ "type": "em" }] }`
-- `{ "type": "text", "text": "code", "marks": [{ "type": "code" }] }`
-- `{ "type": "text", "text": "link text", "marks": [{ "type": "link", "attrs": { "href": "https://..." } }] }`
-
-## Links
-
-- Browse issue: `https://vaisala.atlassian.net/browse/{issueKey}`
-- Board: `https://vaisala.atlassian.net/jira/software/projects/{projectKey}/boards/{boardId}`
+## Guidelines
+
+- Always confirm with the user before creating, modifying, or deleting tickets
+- Use `ticket search` with JQL for any query not covered by `ticket list`
+- Browse URL: `https://vaisala.atlassian.net/browse/{KEY}`

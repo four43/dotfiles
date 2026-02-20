@@ -261,6 +261,9 @@ class JiraClient:
     def _post(self, path: str, data: dict) -> tuple[dict | None, int]:
         return self._request("POST", path, data=data)
 
+    def _delete(self, path: str) -> tuple[dict | None, int]:
+        return self._request("DELETE", path)
+
     def _put(self, path: str, data: dict) -> tuple[dict | None, int]:
         return self._request("PUT", path, data=data)
 
@@ -273,6 +276,10 @@ class JiraClient:
         issue_type: str = "Task",
         components: list[str] | None = None,
         assignee_account_id: str | None = None,
+        description: str | None = None,
+        labels: list[str] | None = None,
+        priority: str | None = None,
+        parent_key: str | None = None,
     ) -> dict:
         fields: dict = {
             "project": {"key": project_key},
@@ -282,6 +289,14 @@ class JiraClient:
         }
         if components:
             fields["components"] = [{"name": c} for c in components]
+        if description:
+            fields["description"] = _text_to_adf(description)
+        if labels:
+            fields["labels"] = labels
+        if priority:
+            fields["priority"] = {"name": priority}
+        if parent_key:
+            fields["parent"] = {"key": parent_key}
         result, _ = self._post("/rest/api/3/issue", {"fields": fields})
         return result
 
@@ -294,8 +309,11 @@ class JiraClient:
     def update_issue(self, issue_key: str, fields: dict) -> None:
         self._put(f"/rest/api/3/issue/{issue_key}", {"fields": fields})
 
+    def delete_issue(self, issue_key: str) -> None:
+        self._delete(f"/rest/api/3/issue/{issue_key}")
+
     def search_issues(
-        self, jql: str, fields: str = "summary,status,priority,updated", max_results: int = 50,
+        self, jql: str, fields: str = "summary,status,priority,issuetype,assignee,updated", max_results: int = 50,
     ) -> list[dict]:
         result = self._get(
             "/rest/api/3/search/jql",
@@ -303,12 +321,16 @@ class JiraClient:
         )
         return result.get("issues", [])
 
-    def move_to_active_sprint(self, project_key: str, issue_key: str) -> None:
-        board_id = self._get_board_id(project_key)
-        sprint_id = self._get_active_sprint_id(board_id)
+    def move_to_sprint(self, issue_key: str, sprint_id: int) -> None:
         self._post(
             f"/rest/agile/1.0/sprint/{sprint_id}/issue",
             {"issues": [issue_key]},
+        )
+
+    def move_to_backlog(self, issue_keys: list[str]) -> None:
+        self._post(
+            "/rest/agile/1.0/backlog/issue",
+            {"issues": issue_keys},
         )
 
     def get_transitions(self, issue_key: str) -> list[dict]:
@@ -338,34 +360,48 @@ class JiraClient:
 
     # ── Queries ─────────────────────────────────────────
 
-    def my_open_tickets(self, project_key: str | None = None) -> list[dict]:
-        jql = "assignee = currentUser() AND statusCategory not in (Done) ORDER BY updated DESC"
+    @staticmethod
+    def _assignee_clause(assignee: str | None) -> str:
+        if assignee is None or assignee.lower() == "me":
+            return "assignee = currentUser()"
+        if assignee.lower() == "all":
+            return ""
+        return f'assignee = "{assignee}"'
+
+    def my_open_tickets(self, project_key: str | None = None, assignee: str | None = None) -> list[dict]:
+        clauses = [c for c in [self._assignee_clause(assignee)] if c]
+        clauses.append("statusCategory not in (Done)")
+        jql = " AND ".join(clauses) + " ORDER BY updated DESC"
         if project_key:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
 
     def my_sprint_tickets(
         self, project_key: str | None = None, sprint_id: int | None = None,
+        assignee: str | None = None,
     ) -> list[dict]:
-        if sprint_id:
-            sprint_clause = f"sprint = {sprint_id}"
-        else:
-            sprint_clause = "sprint in openSprints()"
-        jql = f"assignee = currentUser() AND {sprint_clause} ORDER BY status ASC, updated DESC"
+        sprint_clause = f"sprint = {sprint_id}" if sprint_id else "sprint in openSprints()"
+        clauses = [c for c in [self._assignee_clause(assignee)] if c]
+        clauses.append(sprint_clause)
+        jql = " AND ".join(clauses) + " ORDER BY status ASC, updated DESC"
         if project_key:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
 
     def my_backlog_tickets(
-        self, project_key: str | None = None, max_results: int = 5
+        self, project_key: str | None = None, max_results: int = 5,
+        assignee: str | None = None,
     ) -> list[dict]:
-        jql = "assignee = currentUser() AND sprint not in openSprints() AND statusCategory not in (Done) ORDER BY rank ASC"
+        clauses = [c for c in [self._assignee_clause(assignee)] if c]
+        clauses.extend(["sprint not in openSprints()", "statusCategory not in (Done)"])
+        jql = " AND ".join(clauses) + " ORDER BY rank ASC"
         if project_key:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql, max_results=max_results)
 
-    def my_all_tickets(self, project_key: str | None = None) -> list[dict]:
-        jql = "assignee = currentUser() ORDER BY updated DESC"
+    def my_all_tickets(self, project_key: str | None = None, assignee: str | None = None) -> list[dict]:
+        clauses = [c for c in [self._assignee_clause(assignee)] if c]
+        jql = (" AND ".join(clauses) + " " if clauses else "") + "ORDER BY updated DESC"
         if project_key:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
@@ -538,9 +574,19 @@ class Formatter:
         "done": "green",
         "closed": "bright_black",
     }
+    TYPE_ICONS = {
+        "task": ("\u2611", "blue"),
+        "bug": ("!", "red"),
+        "story": ("S", "green"),
+        "epic": ("\u2632", "magenta"),
+    }
 
     def status_color(self, status: str) -> str:
         return self.STATUS_COLORS.get(status.lower(), "white")
+
+    def type_icon(self, issue_type: str) -> str:
+        icon, color = self.TYPE_ICONS.get(issue_type.lower(), ("?", None))
+        return click.style(f"[{icon}]", fg=color) if color else f"[{icon}]"
 
     def _status_sort_key(self, issue: dict) -> int:
         status = issue["fields"].get("status", {}).get("name", "").lower()
@@ -549,7 +595,18 @@ class Formatter:
         except ValueError:
             return len(self.STATUS_ORDER)
 
-    def ticket_table(self, issues: list[dict]) -> None:
+    @staticmethod
+    def _assignee_name(fields: dict) -> str:
+        assignee = fields.get("assignee")
+        if not assignee:
+            return "Unassigned"
+        name = assignee.get("displayName", "")
+        parts = name.split()
+        if len(parts) >= 2:
+            return f"{parts[0]} {parts[-1][0]}."
+        return name
+
+    def ticket_table(self, issues: list[dict], show_assignee: bool = False) -> None:
         if not issues:
             click.echo("  No tickets found.")
             return
@@ -561,21 +618,33 @@ class Formatter:
             len(i["fields"].get("status", {}).get("name", "Unknown"))
             for i in sorted_issues
         ) + 2
+        if show_assignee:
+            assignee_width = max(
+                len(self._assignee_name(i["fields"])) for i in sorted_issues
+            )
 
         for issue in sorted_issues:
             key = issue["key"]
             fields = issue["fields"]
             summary = fields.get("summary", "")
             status = fields.get("status", {}).get("name", "Unknown")
+            issue_type = fields.get("issuetype", {}).get("name", "")
 
             color = self.status_color(status)
             status_str = click.style(f"[{status}]".ljust(status_width), fg=color)
+            type_str = self.type_icon(issue_type)
+
+            if show_assignee:
+                name = self._assignee_name(fields)
+                assignee_str = f"  {name:<{assignee_width}}"
+            else:
+                assignee_str = ""
 
             max_summary = 60
             if len(summary) > max_summary:
-                summary = summary[: max_summary - 1] + "…"
+                summary = summary[: max_summary - 1] + "\u2026"
 
-            click.echo(f"  {key:<{key_width}}  {status_str}  {summary}")
+            click.echo(f"  {key:<{key_width}}  {status_str}  {type_str}{assignee_str}  {summary}")
 
 
 fmt = Formatter()
@@ -643,6 +712,77 @@ def _complete_issue_key(ctx: click.Context, param: click.Parameter, incomplete: 
     return results
 
 
+def _complete_parent(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    project = ctx.params.get("project") or config.project()
+    cache_key = f"parents-{project}"
+    items = cache.read(cache_key, ttl_seconds=300)
+    if items is None:
+        try:
+            jql = (
+                f"project = {project} AND statusCategory not in (Done) "
+                "ORDER BY issuetype ASC, updated DESC"
+            )
+            issues = config.client.search_issues(
+                jql, fields="summary,issuetype", max_results=50,
+            )
+            items = [
+                f"{i['key']}\t{i['fields'].get('issuetype', {}).get('name', '')}\t{i['fields'].get('summary', '')}"
+                for i in issues
+            ]
+            cache.write(cache_key, items)
+        except Exception:
+            return []
+    EPIC_TYPES = {"epic"}
+    results = []
+    for item in items:
+        key, itype, summary = item.split("\t", 2)
+        if not key.lower().startswith(incomplete.lower()):
+            continue
+        is_epic = itype.lower() in EPIC_TYPES
+        help_text = f"[{itype}] {summary}" if itype else summary
+        results.append((not is_epic, click.shell_completion.CompletionItem(key, help=help_text)))
+    results.sort(key=lambda x: x[0])
+    return [r[1] for r in results]
+
+
+def _complete_transition(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    issue_key = ctx.params.get("issue_key")
+    if not issue_key:
+        return []
+    cache_key = f"transitions-{issue_key}"
+    items = cache.read(cache_key, ttl_seconds=120)
+    if items is None:
+        try:
+            transitions = config.client.get_transitions(issue_key)
+            items = [t["name"] for t in transitions]
+            cache.write(cache_key, items)
+        except Exception:
+            return []
+    return [
+        click.shell_completion.CompletionItem(name)
+        for name in items if incomplete.lower() in name.lower()
+    ]
+
+
+def _complete_sprint(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    project = ctx.params.get("project") or config.project()
+    cache_key = f"sprints-{project}"
+    items = cache.read(cache_key, ttl_seconds=300)
+    if items is None:
+        try:
+            sprints = config.client.get_sprints(project)
+            items = [f"{s['id']}\t{s['name']}" for s in sprints]
+            cache.write(cache_key, items)
+        except Exception:
+            return []
+    results = [click.shell_completion.CompletionItem("backlog", help="Move to backlog")]
+    for item in items:
+        sid, _, name = item.partition("\t")
+        if incomplete.lower() in name.lower() or incomplete in sid:
+            results.append(click.shell_completion.CompletionItem(name, help=f"Sprint {sid}"))
+    return results
+
+
 def _complete_assignee(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
     project = ctx.params.get("project") or config.project()
     cache_key = f"team-{project}"
@@ -677,7 +817,15 @@ def cli():
 @click.option("-a", "--assignee", default="me", help="Assignee name (default: me)", shell_complete=_complete_assignee)
 @click.option("-p", "--project", default=None, help="Project key (default: last used)", shell_complete=_complete_project)
 @click.option("-t", "--type", "issue_type", default="Task", help="Issue type")
-def create(summary: str, now: bool, component: tuple, assignee: str, project: str | None, issue_type: str):
+@click.option("-d", "--description", default=None, help="Description text")
+@click.option("-l", "--label", multiple=True, help="Label(s)")
+@click.option("--priority", default=None, help="Priority (e.g. High, Medium, Low)")
+@click.option("--parent", default=None, help="Parent issue key (for subtasks)", shell_complete=_complete_parent)
+def create(
+    summary: str, now: bool, component: tuple, assignee: str,
+    project: str | None, issue_type: str, description: str | None,
+    label: tuple, priority: str | None, parent: str | None,
+):
     """Create a new JIRA ticket."""
     client = config.client
     project_key = config.project(project)
@@ -688,13 +836,19 @@ def create(summary: str, now: bool, component: tuple, assignee: str, project: st
             project_key, summary, issue_type,
             list(component) if component else None,
             assignee_account_id=assignee_id,
+            description=description,
+            labels=list(label) if label else None,
+            priority=priority,
+            parent_key=parent,
         )
         issue_key = result["key"]
         config.save({"default_project": project_key})
         click.echo(f"Created {issue_key}: {summary}")
 
         if now:
-            client.move_to_active_sprint(project_key, issue_key)
+            board_id = client._get_board_id(project_key)
+            sprint_id = client._get_active_sprint_id(board_id)
+            client.move_to_sprint(issue_key, sprint_id)
             click.echo("Added to current sprint")
 
         click.echo(f"{config.base_url}/browse/{issue_key}")
@@ -705,44 +859,47 @@ def create(summary: str, now: bool, component: tuple, assignee: str, project: st
 
 @cli.command("list")
 @click.option("-p", "--project", default=None, help="Filter by project", shell_complete=_complete_project)
+@click.option("-a", "--assignee", default="me", help="Filter by assignee (default: me, 'all' for everyone)", shell_complete=_complete_assignee)
 @click.option("--sprint", "sprint_id", default=None,
                help="Filter by sprint: 'current' or a sprint ID")
 @click.option("--backlog", is_flag=True, help="Backlog only")
 @click.option("--all", "show_all", is_flag=True, help="Include Done tickets")
-def list_tickets(project: str | None, sprint_id: str | None, backlog: bool, show_all: bool):
-    """List your assigned tickets.
+def list_tickets(project: str | None, assignee: str, sprint_id: str | None, backlog: bool, show_all: bool):
+    """List assigned tickets.
 
-    By default shows current sprint tickets followed by the top 5 backlog items.
-    Use --sprint current or --sprint <ID> to filter by sprint.
+    \b
+    By default shows your current sprint tickets followed by the top 5 backlog items.
+    Use -a to filter by assignee, or -a all to show everyone's tickets.
     """
     client = config.client
     project_key = config.project(project)
+    show_names = assignee.lower() != "me"
 
     try:
         if show_all:
-            issues = client.my_all_tickets(project_key)
-            fmt.ticket_table(issues)
+            issues = client.my_all_tickets(project_key, assignee=assignee)
+            fmt.ticket_table(issues, show_assignee=show_names)
         elif sprint_id is not None:
             sid = None if sprint_id == "current" else int(sprint_id)
-            issues = client.my_sprint_tickets(project_key, sprint_id=sid)
-            fmt.ticket_table(issues)
+            issues = client.my_sprint_tickets(project_key, sprint_id=sid, assignee=assignee)
+            fmt.ticket_table(issues, show_assignee=show_names)
         elif backlog:
-            issues = client.my_backlog_tickets(project_key, max_results=20)
-            fmt.ticket_table(issues)
+            issues = client.my_backlog_tickets(project_key, max_results=20, assignee=assignee)
+            fmt.ticket_table(issues, show_assignee=show_names)
         else:
-            sprint_issues = client.my_sprint_tickets(project_key)
-            backlog_issues = client.my_backlog_tickets(project_key, max_results=5)
+            sprint_issues = client.my_sprint_tickets(project_key, assignee=assignee)
+            backlog_issues = client.my_backlog_tickets(project_key, max_results=5, assignee=assignee)
 
             click.echo(click.style("Sprint", bold=True))
             if sprint_issues:
-                fmt.ticket_table(sprint_issues)
+                fmt.ticket_table(sprint_issues, show_assignee=show_names)
             else:
                 click.echo("  No sprint tickets.")
 
             click.echo()
             click.echo(click.style("Backlog", bold=True))
             if backlog_issues:
-                fmt.ticket_table(backlog_issues)
+                fmt.ticket_table(backlog_issues, show_assignee=show_names)
                 click.echo("  ...")
             else:
                 click.echo("  No backlog tickets.")
@@ -910,24 +1067,180 @@ def comment(issue_key: str, text: str | None):
 
 @cli.command()
 @click.argument("issue_key", shell_complete=_complete_issue_key)
-def move(issue_key: str):
-    """Transition a ticket to a new status."""
+@click.option("-y", "--yes", is_flag=True, help="Skip confirmation")
+def delete(issue_key: str, yes: bool):
+    """Delete a ticket.
+
+    \b
+    Examples:
+        ticket delete WEAT-123
+        ticket delete WEAT-123 --yes
+    """
+    client = config.client
+    try:
+        if not yes:
+            issue = client.get_issue(issue_key)
+            summary = issue["fields"].get("summary", "")
+            click.echo(f"  {issue_key}: {summary}")
+            click.confirm("Delete this ticket?", abort=True)
+        client.delete_issue(issue_key)
+        click.echo(f"Deleted {issue_key}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+@click.argument("assignee", required=False, shell_complete=_complete_assignee)
+@click.option("--none", "unassign", is_flag=True, help="Unassign the ticket")
+def assign(issue_key: str, assignee: str | None, unassign: bool):
+    """Reassign a ticket.
+
+    \b
+    Examples:
+        ticket assign WEAT-123 "Jane Smith"
+        ticket assign WEAT-123 me
+        ticket assign WEAT-123 --none
+    """
+    client = config.client
+    try:
+        if unassign:
+            client.update_issue(issue_key, {"assignee": None})
+            click.echo(f"Unassigned {issue_key}")
+        elif assignee:
+            project_key = issue_key.rsplit("-", 1)[0]
+            account_id = client.resolve_assignee(project_key, assignee)
+            client.update_issue(issue_key, {"assignee": {"accountId": account_id}})
+            click.echo(f"Assigned {issue_key}")
+        else:
+            raise click.ClickException("Provide an assignee name or use --none to unassign")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("jql")
+@click.option("-m", "--max-results", default=50, type=int, help="Max results (default: 50)")
+def search(jql: str, max_results: int):
+    """Search for tickets using a JQL query.
+
+    \b
+    Examples:
+        ticket search 'project = WEAT AND labels = "tech-debt" ORDER BY updated DESC'
+        ticket search 'text ~ "deploy pipeline"'
+        ticket search 'assignee = currentUser() AND status = "In Development"'
+    """
+    client = config.client
+    try:
+        issues = client.search_issues(jql, max_results=max_results)
+        fmt.ticket_table(issues)
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+@click.argument("status", shell_complete=_complete_transition)
+def status(issue_key: str, status: str):
+    """Transition a ticket to a new status.
+
+    \b
+    Examples:
+        ticket status WEAT-123 "In Development"
+        ticket status WEAT-123 done
+    """
     client = config.client
     try:
         transitions = client.get_transitions(issue_key)
         if not transitions:
             raise click.ClickException(f"No transitions available for {issue_key}")
 
-        click.echo(f"Available transitions for {issue_key}:")
-        for i, t in enumerate(transitions, 1):
-            click.echo(f"  [{i}] {t['name']}")
+        query = status.lower()
+        # Exact match first
+        selected = None
+        for t in transitions:
+            if t["name"].lower() == query:
+                selected = t
+                break
+        # Substring match
+        if not selected:
+            matches = [t for t in transitions if query in t["name"].lower()]
+            if len(matches) == 1:
+                selected = matches[0]
+            elif len(matches) > 1:
+                names = ", ".join(f"'{t['name']}'" for t in matches)
+                raise click.ClickException(
+                    f"Ambiguous status '{status}' matches: {names}"
+                )
 
-        choice = click.prompt(
-            "Select transition",
-            type=click.IntRange(1, len(transitions)),
-        )
-        selected = transitions[choice - 1]
+        if not selected:
+            names = ", ".join(f"'{t['name']}'" for t in transitions)
+            raise click.ClickException(
+                f"No transition matching '{status}'. Available: {names}"
+            )
+
         client.transition_issue(issue_key, selected["id"])
+        click.echo(f"Moved {issue_key} to {selected['name']}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+@click.argument("destination", shell_complete=_complete_sprint)
+@click.option("-p", "--project", default=None, help="Project key", shell_complete=_complete_project)
+def move(issue_key: str, destination: str, project: str | None):
+    """Move a ticket to a sprint or backlog.
+
+    \b
+    Examples:
+        ticket move WEAT-123 backlog
+        ticket move WEAT-123 "Sprint 42"
+        ticket move WEAT-123 current
+    """
+    client = config.client
+    project_key = config.project(project) or issue_key.rsplit("-", 1)[0]
+
+    try:
+        if destination.lower() == "backlog":
+            client.move_to_backlog([issue_key])
+            click.echo(f"Moved {issue_key} to backlog")
+            return
+
+        sprints = client.get_sprints(project_key)
+        if not sprints:
+            raise click.ClickException(f"No sprints found for {project_key}")
+
+        if destination.lower() == "current":
+            active = [s for s in sprints if s.get("state") == "active"]
+            if not active:
+                raise click.ClickException("No active sprint found")
+            selected = active[0]
+        else:
+            # Exact match first
+            selected = None
+            query = destination.lower()
+            for s in sprints:
+                if s["name"].lower() == query:
+                    selected = s
+                    break
+            # Substring match
+            if not selected:
+                matches = [s for s in sprints if query in s["name"].lower()]
+                if len(matches) == 1:
+                    selected = matches[0]
+                elif len(matches) > 1:
+                    names = ", ".join(f"'{s['name']}'" for s in matches)
+                    raise click.ClickException(
+                        f"Ambiguous sprint '{destination}' matches: {names}"
+                    )
+            if not selected:
+                names = ", ".join(f"'{s['name']}'" for s in sprints)
+                raise click.ClickException(
+                    f"No sprint matching '{destination}'. Available: {names}"
+                )
+
+        client.move_to_sprint(issue_key, selected["id"])
         click.echo(f"Moved {issue_key} to {selected['name']}")
     except JiraApiError as e:
         raise click.ClickException(str(e))
