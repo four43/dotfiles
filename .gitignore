@@ -1,3 +1,6 @@
+.claude
+.venv
+
 # Ignore vim swap files
 *.sw*
 
@@ -16,6 +19,5 @@ vim/undo
 # Ignore downloaded vim spell files
 vim/spell
 
-# Ignore python cache files
 .mypy_cache
 __pycache__
