@@ -1,0 +1,41 @@
+#!/bin/bash
+set -eo pipefail
+
+# Installs a pre-push git hook that runs ./util/lint and ./util/test
+# Appends to an existing hook if one exists (e.g. git-lfs)
+
+MARKER="# git-hook-push"
+
+git_dir=$(git rev-parse --git-dir 2>/dev/null)
+if [[ -z "$git_dir" ]]; then
+    echo "Error: not in a git repository" >&2
+    exit 1
+fi
+
+hook_path="${git_dir}/hooks/pre-push"
+
+hook_content='
+'"${MARKER}"'
+if [[ -x ./util/lint ]]; then
+    echo "Running ./util/lint..." >&2
+    ./util/lint
+fi
+
+if [[ -x ./util/test ]]; then
+    echo "Running ./util/test..." >&2
+    ./util/test
+fi'
+
+if [[ -f "$hook_path" ]]; then
+    if grep -qF "$MARKER" "$hook_path"; then
+        echo "Error: pre-push hook already contains git-hook-push section" >&2
+        exit 1
+    fi
+    echo "Appending to existing pre-push hook at ${hook_path}" >&2
+    echo "$hook_content" >> "$hook_path"
+else
+    mkdir -p "${git_dir}/hooks"
+    printf '#!/bin/bash\nset -eo pipefail\n%s\n' "$hook_content" > "$hook_path"
+    chmod +x "$hook_path"
+    echo "Installed pre-push hook at ${hook_path}" >&2
+fi
