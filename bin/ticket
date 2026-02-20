@@ -659,13 +659,9 @@ def get_base_url() -> str:
 # ── CLI Commands ────────────────────────────────────────
 
 
-@click.group(invoke_without_command=True)
-@click.pass_context
-def cli(ctx):
+@click.group()
+def cli():
     """JIRA ticket manager."""
-    ctx.ensure_object(dict)
-    if ctx.invoked_subcommand is None:
-        interactive_mode()
 
 
 @cli.command()
@@ -1108,117 +1104,6 @@ def project_default(project_key: str):
         click.echo(f"Warning: {project_key} is not in your configured projects list")
     save_config({"default_project": project_key.upper()})
     click.echo(f"Default project set to {project_key.upper()}")
-
-
-# ── Interactive Mode ────────────────────────────────────
-
-
-def interactive_mode():
-    """Simple interactive menu for common ticket operations."""
-    client = make_client()
-    project = get_project(None)
-
-    click.echo(f"JIRA Ticket Manager — {project}")
-    click.echo("─" * 40)
-
-    while True:
-        click.echo()
-        click.echo("  [c] Create ticket")
-        click.echo("  [l] List my tickets")
-        click.echo("  [s] Show ticket details")
-        click.echo("  [m] Move ticket status")
-        click.echo("  [p] Change project")
-        click.echo("  [q] Quit")
-        click.echo()
-
-        choice = click.prompt(
-            "Action",
-            type=click.Choice(["c", "l", "s", "m", "p", "q"], case_sensitive=False),
-            show_choices=False,
-        )
-
-        try:
-            if choice == "q":
-                break
-
-            elif choice == "c":
-                summary = click.prompt("Summary")
-                assignee_input = click.prompt("Assignee", default="me")
-                now = click.confirm("Add to current sprint?", default=False)
-                comp_input = click.prompt("Component (blank to skip)", default="", show_default=False)
-                components = [comp_input] if comp_input else None
-
-                assignee_id = _resolve_assignee(client, project, assignee_input)
-                result = client.create_issue(project, summary, components=components, assignee_account_id=assignee_id)
-                issue_key = result["key"]
-                save_config({"default_project": project})
-                click.echo(f"Created {issue_key}: {summary}")
-
-                if now:
-                    client.move_to_active_sprint(project, issue_key)
-                    click.echo("Added to current sprint")
-
-                click.echo(f"{get_base_url()}/browse/{issue_key}")
-
-            elif choice == "l":
-                sprint_issues = client.my_sprint_tickets(project)
-                backlog_issues = client.my_backlog_tickets(project, max_results=5)
-
-                click.echo(click.style("Sprint", bold=True))
-                if sprint_issues:
-                    format_ticket_table(sprint_issues)
-                else:
-                    click.echo("  No sprint tickets.")
-
-                click.echo()
-                click.echo(click.style("Backlog", bold=True))
-                if backlog_issues:
-                    format_ticket_table(backlog_issues)
-                    click.echo("  ...")
-                else:
-                    click.echo("  No backlog tickets.")
-
-            elif choice == "s":
-                key = click.prompt("Issue key")
-                issue = client.get_issue(key)
-                fields = issue["fields"]
-                status = fields.get("status", {}).get("name", "Unknown")
-                color = _status_color(status)
-                click.echo(f"  {issue['key']}  {click.style(status, fg=color)}")
-                click.echo(f"  {fields.get('summary', '')}")
-                priority = fields.get("priority", {}).get("name", "")
-                if priority:
-                    click.echo(f"  Priority: {priority}")
-                components = ", ".join(c["name"] for c in fields.get("components", []))
-                if components:
-                    click.echo(f"  Components: {components}")
-                click.echo(f"  {get_base_url()}/browse/{issue['key']}")
-
-            elif choice == "m":
-                key = click.prompt("Issue key")
-                transitions = client.get_transitions(key)
-                if not transitions:
-                    click.echo("No transitions available.")
-                    continue
-                for i, t in enumerate(transitions, 1):
-                    click.echo(f"  [{i}] {t['name']}")
-                idx = click.prompt(
-                    "Select transition",
-                    type=click.IntRange(1, len(transitions)),
-                )
-                selected = transitions[idx - 1]
-                client.transition_issue(key, selected["id"])
-                click.echo(f"Moved {key} to {selected['name']}")
-
-            elif choice == "p":
-                project = click.prompt("Project key", default=project)
-                save_config({"default_project": project})
-                click.echo(f"Switched to {project}")
-
-        except JiraApiError as e:
-            click.echo(f"Error: {e}", err=True)
-        except click.Abort:
-            click.echo()
 
 
 # ── Entry Point ─────────────────────────────────────────
