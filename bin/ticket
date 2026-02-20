@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import re
+import sys
 import tempfile
 import time
 import urllib.error
@@ -85,6 +86,85 @@ def save_config(updates: dict) -> None:
     CONFIG_FILE.write_text(json.dumps(config, indent=2) + "\n")
 
 
+# ── ADF (Atlassian Document Format) ────────────────────
+
+def _adf_to_text(node: dict | None) -> str:
+    """Convert an ADF document to plain text."""
+    if not node:
+        return ""
+    ntype = node.get("type", "")
+    children = node.get("content", [])
+
+    if ntype == "text":
+        return node.get("text", "")
+    if ntype == "hardBreak":
+        return "\n"
+    if ntype == "rule":
+        return "\n---\n"
+
+    parts = [_adf_to_text(c) for c in children]
+    text = "".join(parts)
+
+    if ntype == "paragraph":
+        return text + "\n\n"
+    if ntype == "heading":
+        level = node.get("attrs", {}).get("level", 1)
+        return "#" * level + " " + text + "\n\n"
+    if ntype == "bulletList":
+        return text
+    if ntype == "orderedList":
+        return text
+    if ntype == "listItem":
+        # Indent and prefix child paragraphs
+        lines = text.strip().split("\n")
+        return "- " + "\n  ".join(lines) + "\n"
+    if ntype == "blockquote":
+        return "".join("> " + line + "\n" for line in text.strip().split("\n")) + "\n"
+    if ntype == "codeBlock":
+        lang = node.get("attrs", {}).get("language", "")
+        return f"```{lang}\n{text}```\n\n"
+
+    return text
+
+
+def _text_to_adf(text: str) -> dict:
+    """Convert plain text to a simple ADF document."""
+    content = []
+    for para in text.split("\n\n"):
+        para = para.strip()
+        if not para:
+            continue
+        # Convert inline newlines to hardBreaks
+        inline: list[dict] = []
+        lines = para.split("\n")
+        for i, line in enumerate(lines):
+            if i > 0:
+                inline.append({"type": "hardBreak"})
+            inline.append({"type": "text", "text": line})
+        content.append({"type": "paragraph", "content": inline})
+    return {"type": "doc", "version": 1, "content": content or [
+        {"type": "paragraph", "content": []}
+    ]}
+
+
+EDIT_SEPARATOR = "──── description ────"
+
+
+def _compose_edit_text(summary: str, description: str) -> str:
+    """Build the text shown in the editor."""
+    return f"{summary}\n{EDIT_SEPARATOR}\n{description}"
+
+
+def _parse_edit_text(text: str) -> tuple[str, str]:
+    """Parse editor text back into (summary, description)."""
+    if EDIT_SEPARATOR in text:
+        summary, _, description = text.partition(EDIT_SEPARATOR)
+    else:
+        # Fallback: first line is summary, rest is description
+        summary, _, description = text.partition("\n")
+    return summary.strip(), description.strip()
+
+
 # ── Errors ──────────────────────────────────────────────
 
 
@@ -158,6 +238,9 @@ class JiraClient:
     def _post(self, path: str, data: dict) -> tuple[dict | None, int]:
         return self._request("POST", path, data=data)
 
+    def _put(self, path: str, data: dict) -> tuple[dict | None, int]:
+        return self._request("PUT", path, data=data)
+
     def create_issue(
         self,
         project_key: str,
@@ -200,11 +283,28 @@ class JiraClient:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
 
-    def my_sprint_tickets(self, project_key: str | None = None) -> list[dict]:
-        jql = "assignee = currentUser() AND sprint in openSprints() AND statusCategory not in (Done) ORDER BY updated DESC"
+    def my_sprint_tickets(
+        self, project_key: str | None = None, sprint_id: int | None = None,
+    ) -> list[dict]:
+        if sprint_id:
+            sprint_clause = f"sprint = {sprint_id}"
+        else:
+            sprint_clause = "sprint in openSprints()"
+        jql = f"assignee = currentUser() AND {sprint_clause} ORDER BY status ASC, updated DESC"
         if project_key:
             jql = f"project = {project_key} AND {jql}"
         return self.search_issues(jql)
+
+    def get_sprints(
+        self, project_key: str, states: str = "active,future",
+    ) -> list[dict]:
+        """Get sprints for a project's board. Returns [{id, name, state, startDate, endDate}, ...]."""
+        board_id = self._get_board_id(project_key)
+        result = self._get(
+            f"/rest/agile/1.0/board/{board_id}/sprint",
+            params={"state": states},
+        )
+        return result.get("values", [])
 
     def my_backlog_tickets(
         self, project_key: str | None = None, max_results: int = 5
@@ -238,6 +338,15 @@ class JiraClient:
         return self._get(
             f"/rest/api/3/issue/{issue_key}",
             params={"fields": "summary,status,priority,assignee,components,updated,description"},
+        )
+
+    def update_issue(self, issue_key: str, fields: dict) -> None:
+        self._put(f"/rest/api/3/issue/{issue_key}", {"fields": fields})
+
+    def add_comment(self, issue_key: str, body_adf: dict) -> None:
+        self._post(
+            f"/rest/api/3/issue/{issue_key}/comment",
+            {"body": body_adf},
         )
 
     def search_projects(self, query: str = "") -> list[dict]:
@@ -594,13 +703,15 @@ def create(summary: str, now: bool, component: tuple, assignee: str, project: st
 
 @cli.command("list")
 @click.option("-p", "--project", default=None, help="Filter by project", shell_complete=_complete_project)
-@click.option("--sprint", is_flag=True, help="Current sprint only")
+@click.option("--sprint", "sprint_id", default=None,
+               help="Filter by sprint: 'current' or a sprint ID")
 @click.option("--backlog", is_flag=True, help="Backlog only")
 @click.option("--all", "show_all", is_flag=True, help="Include Done tickets")
-def list_tickets(project: str | None, sprint: bool, backlog: bool, show_all: bool):
+def list_tickets(project: str | None, sprint_id: str | None, backlog: bool, show_all: bool):
     """List your assigned tickets.
 
     By default shows current sprint tickets followed by the top 5 backlog items.
+    Use --sprint current or --sprint <ID> to filter by sprint.
     """
     client = make_client()
     project_key = get_project(project)
@@ -609,8 +720,9 @@ def list_tickets(project: str | None, sprint: bool, backlog: bool, show_all: boo
         if show_all:
             issues = client.my_all_tickets(project_key)
             format_ticket_table(issues)
-        elif sprint:
-            issues = client.my_sprint_tickets(project_key)
+        elif sprint_id is not None:
+            sid = None if sprint_id == "current" else int(sprint_id)
+            issues = client.my_sprint_tickets(project_key, sprint_id=sid)
             format_ticket_table(issues)
         elif backlog:
             issues = client.my_backlog_tickets(project_key, max_results=20)
@@ -637,6 +749,30 @@ def list_tickets(project: str | None, sprint: bool, backlog: bool, show_all: boo
         raise click.ClickException(str(e))
 
 
+@cli.command("sprints")
+@click.option("-p", "--project", default=None, help="Project key", shell_complete=_complete_project)
+@click.option("--all", "show_all", is_flag=True, help="Include closed sprints")
+def list_sprints(project: str | None, show_all: bool):
+    """List sprints for the project board."""
+    client = make_client()
+    project_key = get_project(project)
+    states = "active,future,closed" if show_all else "active,future"
+
+    try:
+        sprints = client.get_sprints(project_key, states=states)
+        if not sprints:
+            click.echo("No sprints found.")
+            return
+        id_width = max(len(str(s["id"])) for s in sprints)
+        for s in sprints:
+            state = s.get("state", "unknown")
+            color = {"active": "green", "future": "blue", "closed": "bright_black"}.get(state, "white")
+            state_str = click.style(f"[{state}]", fg=color)
+            click.echo(f"  {s['id']:<{id_width}}  {state_str:<20}  {s.get('name', '')}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
 @cli.command()
 @click.argument("issue_key", shell_complete=_complete_issue_key)
 def show(issue_key: str):
@@ -657,6 +793,93 @@ def show(issue_key: str):
         if components:
             click.echo(f"  Components: {components}")
         click.echo(f"  {get_base_url()}/browse/{issue['key']}")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+def edit(issue_key: str):
+    """Edit a ticket's summary and description.
+
+    Opens $EDITOR with the current values. Reads from stdin if piped.
+
+    \b
+    Editor format:
+        Summary line here
+        ──── description ────
+        Description text here
+    """
+    client = make_client()
+    try:
+        issue = client.get_issue(issue_key)
+        fields = issue["fields"]
+        old_summary = fields.get("summary", "")
+        old_description = _adf_to_text(fields.get("description")).strip()
+
+        if sys.stdin.isatty():
+            text = click.edit(
+                _compose_edit_text(old_summary, old_description),
+                extension=".md",
+            )
+            if text is None:
+                click.echo("No changes (editor closed without saving).")
+                return
+        else:
+            text = sys.stdin.read()
+
+        new_summary, new_description = _parse_edit_text(text)
+
+        if not new_summary:
+            raise click.ClickException("Summary cannot be empty")
+
+        update: dict = {}
+        if new_summary != old_summary:
+            update["summary"] = new_summary
+        if new_description != old_description:
+            update["description"] = _text_to_adf(new_description)
+
+        if not update:
+            click.echo("No changes.")
+            return
+
+        client.update_issue(issue_key, update)
+        changed = " and ".join(update.keys())
+        click.echo(f"Updated {issue_key} ({changed})")
+    except JiraApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("issue_key", shell_complete=_complete_issue_key)
+@click.argument("text", required=False)
+def comment(issue_key: str, text: str | None):
+    """Add a comment to a ticket.
+
+    \b
+    Three ways to provide the comment body:
+        ticket comment WEAT-123 "Fixed the flaky test"
+        echo "some comment" | ticket comment WEAT-123
+        ticket comment WEAT-123              # opens $EDITOR
+    """
+    client = make_client()
+    try:
+        if text:
+            body = text
+        elif not sys.stdin.isatty():
+            body = sys.stdin.read().strip()
+        else:
+            body = click.edit(extension=".md")
+            if body is None:
+                click.echo("No comment (editor closed without saving).")
+                return
+            body = body.strip()
+
+        if not body:
+            raise click.ClickException("Comment cannot be empty")
+
+        client.add_comment(issue_key, _text_to_adf(body))
+        click.echo(f"Commented on {issue_key}")
     except JiraApiError as e:
         raise click.ClickException(str(e))
 
