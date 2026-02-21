@@ -586,7 +586,9 @@ class Formatter:
 
     def type_icon(self, issue_type: str) -> str:
         icon, color = self.TYPE_ICONS.get(issue_type.lower(), ("?", None))
-        return click.style(f"[{icon}]", fg=color) if color else f"[{icon}]"
+        if color:
+            return click.style(f"[{icon}]", fg=color)
+        return f"[{icon}]"
 
     def _status_sort_key(self, issue: dict) -> int:
         status = issue["fields"].get("status", {}).get("name", "").lower()
@@ -606,6 +608,9 @@ class Formatter:
             return f"{parts[0]} {parts[-1][0]}."
         return name
 
+    _ALT_BG = "\033[48;5;236m"
+    _RESET = "\033[0m"
+
     def ticket_table(self, issues: list[dict], show_assignee: bool = False) -> None:
         if not issues:
             click.echo("  No tickets found.")
@@ -623,15 +628,15 @@ class Formatter:
                 len(self._assignee_name(i["fields"])) for i in sorted_issues
             )
 
-        for issue in sorted_issues:
+        for idx, issue in enumerate(sorted_issues):
             key = issue["key"]
             fields = issue["fields"]
             summary = fields.get("summary", "")
             status = fields.get("status", {}).get("name", "Unknown")
             issue_type = fields.get("issuetype", {}).get("name", "")
 
-            color = self.status_color(status)
-            status_str = click.style(f"[{status}]".ljust(status_width), fg=color)
+            key_str = click.style(f"  {key:<{key_width}}  ")
+            status_str = click.style(f"[{status}]".ljust(status_width), fg=self.status_color(status))
             type_str = self.type_icon(issue_type)
 
             if show_assignee:
@@ -643,8 +648,12 @@ class Formatter:
             max_summary = 60
             if len(summary) > max_summary:
                 summary = summary[: max_summary - 1] + "\u2026"
+            summary_str = f"  {summary}"
 
-            click.echo(f"  {key:<{key_width}}  {status_str}  {type_str}{assignee_str}  {summary}")
+            line = f"{key_str}{status_str}  {type_str}{assignee_str}{summary_str}"
+            if idx % 2 == 1:
+                line = self._ALT_BG + line.replace(self._RESET, self._RESET + self._ALT_BG) + self._RESET
+            click.echo(line)
 
 
 fmt = Formatter()

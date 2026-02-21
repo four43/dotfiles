@@ -1,0 +1,1224 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click>=8.1"]
+# ///
+"""Confluence page CLI."""
+
+import base64
+import json
+import os
+import re
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+import click
+
+
+# ── Config ──────────────────────────────────────────────
+
+
+class Config:
+    _DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "confluence"
+    _FILE = _DIR / "config.json"
+    _DEFAULTS = {
+        "base_url": "https://vaisala.atlassian.net",
+        "email": "${XWE_JIRA_EMAIL}",
+        "api_token": "${XWE_JIRA_API_TOKEN}",
+        "default_space": "",
+        "spaces": [],
+    }
+    _ENV_VAR_RE = re.compile(r"\$\{([^}]+)\}")
+
+    def __init__(self):
+        self._client: "ConfluenceClient | None" = None
+
+    def _expand(self, value: str) -> str:
+        def replace(match: re.Match) -> str:
+            var = match.group(1)
+            val = os.environ.get(var)
+            if val is None:
+                raise click.ClickException(
+                    f"Environment variable ${{{var}}} is not set "
+                    f"(referenced in {self._FILE})"
+                )
+            return val
+        return self._ENV_VAR_RE.sub(replace, value)
+
+    def load(self) -> dict:
+        """Load raw config (env vars NOT expanded)."""
+        try:
+            return json.loads(self._FILE.read_text())
+        except FileNotFoundError:
+            self.save(self._DEFAULTS)
+            return dict(self._DEFAULTS)
+        except json.JSONDecodeError:
+            click.echo(f"Warning: corrupt config at {self._FILE}, using defaults", err=True)
+            return dict(self._DEFAULTS)
+
+    def resolve(self) -> dict:
+        """Load config and expand all ${VAR} references."""
+        raw = self.load()
+        return {
+            k: self._expand(v) if isinstance(v, str) else v
+            for k, v in raw.items()
+        }
+
+    def save(self, updates: dict) -> None:
+        """Merge updates into existing config and persist."""
+        try:
+            data = json.loads(self._FILE.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = dict(self._DEFAULTS)
+        data.update(updates)
+        self._DIR.mkdir(parents=True, exist_ok=True)
+        self._FILE.write_text(json.dumps(data, indent=2) + "\n")
+
+    def space(self, override: str | None = None) -> str:
+        if override:
+            return override
+        raw = self.load()
+        return raw.get("default_space", "")
+
+    @property
+    def base_url(self) -> str:
+        return self.load().get("base_url", "https://vaisala.atlassian.net")
+
+    @property
+    def client(self) -> "ConfluenceClient":
+        if self._client is None:
+            resolved = self.resolve()
+            email = resolved.get("email", "")
+            api_token = resolved.get("api_token", "")
+            if not email or not api_token:
+                raise click.ClickException(
+                    "email and api_token must be configured in " + str(self._FILE)
+                )
+            self._client = ConfluenceClient(
+                resolved.get("base_url", "https://vaisala.atlassian.net"),
+                email, api_token,
+            )
+        return self._client
+
+
+config = Config()
+
+
+# ── Storage Format Conversion ──────────────────────────
+
+# Marker used to embed raw macros in text so they round-trip through edit.
+_MACRO_FENCE = "~~~confluence-macro"
+_MACRO_FENCE_END = "~~~"
+
+
+def _storage_to_text(html: str) -> str:
+    """Convert Confluence storage format (XHTML) to markdown-ish text."""
+    if not html:
+        return ""
+    text = html
+
+    # Extract code blocks: ac:structured-macro name="code" → fenced code blocks
+    def _replace_code_block(m: re.Match) -> str:
+        inner = m.group(1)
+        lang_m = re.search(r'ac:parameter\s+ac:name="language"[^>]*>([^<]*)<', inner)
+        lang = lang_m.group(1) if lang_m else ""
+        body_m = re.search(r'<!\[CDATA\[(.*?)\]\]>', inner, re.DOTALL)
+        body = body_m.group(1) if body_m else ""
+        return f"\n```{lang}\n{body}\n```\n"
+
+    text = re.sub(
+        r'<ac:structured-macro\s+ac:name="code"[^>]*>(.*?)</ac:structured-macro>',
+        _replace_code_block, text, flags=re.DOTALL,
+    )
+
+    # Status lozenges → inline {status:title|colour}
+    def _replace_status(m: re.Match) -> str:
+        raw = m.group(0)
+        title_m = re.search(r'ac:parameter\s+ac:name="title"[^>]*>([^<]*)<', raw)
+        colour_m = re.search(r'ac:parameter\s+ac:name="colour"[^>]*>([^<]*)<', raw)
+        title = title_m.group(1) if title_m else ""
+        colour = colour_m.group(1) if colour_m else ""
+        if colour:
+            return f"{{status:{title}|{colour}}}"
+        return f"{{status:{title}}}"
+
+    text = re.sub(
+        r'<ac:structured-macro\s+ac:name="status"[^>]*>.*?</ac:structured-macro>',
+        _replace_status, text, flags=re.DOTALL,
+    )
+
+    # Info/note/warning/tip panels → GitHub-style blockquotes
+    def _replace_panel(m: re.Match) -> str:
+        panel_type = m.group(1)
+        inner = m.group(2)
+        # Convert <p> tags to newline-separated text before stripping
+        inner = re.sub(r'</p>\s*<p[^>]*>', '\n', inner, flags=re.DOTALL)
+        body = re.sub(r'<[^>]+>', '', inner).strip()
+        header = f"> [!{panel_type.upper()}]\n"
+        lines = body.split("\n")
+        return "\n" + header + "\n".join(f"> {line}" for line in lines) + "\n"
+
+    text = re.sub(
+        r'<ac:structured-macro\s+ac:name="(info|note|warning|tip)"[^>]*>'
+        r'.*?<ac:rich-text-body>(.*?)</ac:rich-text-body>.*?</ac:structured-macro>',
+        _replace_panel, text, flags=re.DOTALL,
+    )
+
+    # Preserve remaining structured macros (draw.io, jira, etc.) by extracting
+    # them into numbered placeholders so subsequent regex passes can't destroy
+    # the raw XML.  We restore them as fenced blocks at the very end.
+    _preserved: list[tuple[str, str]] = []  # (label, raw_xml)
+
+    def _stash_macro(m: re.Match) -> str:
+        raw = m.group(0)
+        name = m.group(1)
+        display = ""
+        for param in ("diagramDisplayName", "diagramName", "key", "url", "title"):
+            pm = re.search(
+                rf'ac:parameter\s+ac:name="{param}"[^>]*>([^<]*)<', raw,
+            )
+            if pm:
+                display = pm.group(1)
+                break
+        label = f"{name}: {display}" if display else name
+        idx = len(_preserved)
+        _preserved.append((label, raw))
+        return f"\x00MACRO_{idx}\x00"
+
+    text = re.sub(
+        r'<ac:structured-macro\s+ac:name="([^"]*)"[^>]*>.*?</ac:structured-macro>',
+        _stash_macro, text, flags=re.DOTALL,
+    )
+
+    # Stash any remaining ac: block elements (ac:link, ac:image, etc.)
+    # so unknown content is never silently lost.
+    def _stash_ac_block(m: re.Match) -> str:
+        raw = m.group(0)
+        tag = m.group(1)
+        idx = len(_preserved)
+        _preserved.append((tag, raw))
+        return f"\x00MACRO_{idx}\x00"
+
+    text = re.sub(
+        r'<ac:(\w[\w-]*)(?:\s[^>]*)?>.*?</ac:\1>',
+        _stash_ac_block, text, flags=re.DOTALL,
+    )
+
+    # Strip orphaned self-closing ac:/ri: tags (remnants of already-processed
+    # blocks, not standalone content).
+    text = re.sub(r'<ac:[^>]*/>', '', text)
+    text = re.sub(r'<ri:[^>]*/>', '', text)
+
+    # Headings
+    for level in range(6, 0, -1):
+        text = re.sub(
+            rf'<h{level}[^>]*>(.*?)</h{level}>',
+            lambda m, l=level: f"\n{'#' * l} {m.group(1).strip()}\n",
+            text, flags=re.DOTALL,
+        )
+
+    # Links
+    text = re.sub(r'<a\s+href="([^"]*)"[^>]*>(.*?)</a>', r'[\2](\1)', text, flags=re.DOTALL)
+
+    # Bold and italic
+    text = re.sub(r'<strong>(.*?)</strong>', r'**\1**', text, flags=re.DOTALL)
+    text = re.sub(r'<em>(.*?)</em>', r'*\1*', text, flags=re.DOTALL)
+
+    # Inline code
+    text = re.sub(r'<code>(.*?)</code>', r'`\1`', text, flags=re.DOTALL)
+
+    # List items
+    text = re.sub(r'<li[^>]*>(.*?)</li>', lambda m: f"- {m.group(1).strip()}\n", text, flags=re.DOTALL)
+    text = re.sub(r'</?[uo]l[^>]*>', '\n', text)
+
+    # Table → simple text
+    text = re.sub(r'<t[hd][^>]*>(.*?)</t[hd]>', r'\1\t', text, flags=re.DOTALL)
+    text = re.sub(r'<tr[^>]*>', '', text)
+    text = re.sub(r'</tr>', '\n', text)
+    text = re.sub(r'</?table[^>]*>', '\n', text)
+    text = re.sub(r'</?thead[^>]*>', '', text)
+    text = re.sub(r'</?tbody[^>]*>', '', text)
+
+    # Paragraphs and breaks
+    text = re.sub(r'<br\s*/?>', '\n', text)
+    text = re.sub(r'<hr\s*/?>', '\n---\n', text)
+    text = re.sub(r'<p\b[^>]*/>', '', text)  # strip self-closing <p /> first
+    text = re.sub(r'<p\b[^/>]*>(.*?)</p>', lambda m: m.group(1).strip() + '\n\n', text, flags=re.DOTALL)
+
+    # Blockquotes (native HTML, distinct from panels)
+    def _replace_blockquote(m: re.Match) -> str:
+        inner = m.group(1).strip()
+        lines = inner.split("\n")
+        return "\n" + "\n".join(f"> {line}" if line.strip() else ">" for line in lines) + "\n"
+
+    text = re.sub(
+        r'<blockquote[^>]*>(.*?)</blockquote>',
+        _replace_blockquote, text, flags=re.DOTALL,
+    )
+
+    # Strip known-safe presentational HTML tags; stash anything unknown
+    _SAFE_STRIP_RE = re.compile(
+        r'</?(?:span|div|font|sup|sub|time|img|colgroup|col|caption'
+        r'|abbr|small|big|center|section|article|header|footer'
+        r'|details|summary|figcaption|figure|mark|wbr|nobr|map|area'
+        r')(?:\s[^>]*)?>',
+        re.IGNORECASE,
+    )
+    text = _SAFE_STRIP_RE.sub('', text)
+
+    # Stash any truly unknown remaining HTML blocks so data isn't lost
+    def _stash_html_block(m: re.Match) -> str:
+        raw = m.group(0)
+        tag = m.group(1)
+        idx = len(_preserved)
+        _preserved.append((f"html:{tag}", raw))
+        return f"\x00MACRO_{idx}\x00"
+
+    text = re.sub(
+        r'<(\w[\w-]*)(?:\s[^>]*)?>.*?</\1>',
+        _stash_html_block, text, flags=re.DOTALL,
+    )
+    # Strip any remaining self-closing / orphaned tags
+    text = re.sub(r'<[^>]+/>', '', text)
+
+    # Decode common entities
+    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
+
+    # Restore preserved macros as fenced blocks
+    for idx, (label, raw) in enumerate(_preserved):
+        text = text.replace(
+            f"\x00MACRO_{idx}\x00",
+            f"\n[{label}]\n{_MACRO_FENCE}\n{raw}\n{_MACRO_FENCE_END}\n",
+        )
+
+    # Clean up whitespace
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
+_STATUS_RE = re.compile(r'\{status:([^}|]+)(?:\|([^}]*))?\}')
+
+
+def _expand_inline_macros(line: str) -> str:
+    """Expand inline shorthand like {status:title|colour} to storage XML."""
+    def _status_repl(m: re.Match) -> str:
+        title = m.group(1)
+        colour = m.group(2) or ""
+        colour_param = f'<ac:parameter ac:name="colour">{colour}</ac:parameter>' if colour else ""
+        return (
+            f'<ac:structured-macro ac:name="status">'
+            f'<ac:parameter ac:name="title">{title}</ac:parameter>'
+            f'{colour_param}'
+            f'</ac:structured-macro>'
+        )
+    return _STATUS_RE.sub(_status_repl, line)
+
+
+def _text_to_storage(text: str) -> str:
+    """Convert markdown-ish text to Confluence storage format (XHTML)."""
+    if not text:
+        return ""
+
+    lines = text.split("\n")
+    output: list[str] = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+
+        # Raw macro fences — pass through verbatim to preserve draw.io etc.
+        if line == _MACRO_FENCE:
+            macro_lines = []
+            i += 1
+            while i < len(lines) and lines[i] != _MACRO_FENCE_END:
+                macro_lines.append(lines[i])
+                i += 1
+            if i < len(lines):
+                i += 1  # skip closing ~~~
+            output.append("\n".join(macro_lines))
+            continue
+
+        # Fenced code blocks
+        if line.startswith("```"):
+            lang = line[3:].strip()
+            code_lines = []
+            i += 1
+            while i < len(lines) and not lines[i].startswith("```"):
+                code_lines.append(lines[i])
+                i += 1
+            i += 1  # skip closing ```
+            code = "\n".join(code_lines)
+            lang_param = f'<ac:parameter ac:name="language">{lang}</ac:parameter>' if lang else ""
+            output.append(
+                f'<ac:structured-macro ac:name="code">'
+                f'{lang_param}'
+                f'<ac:plain-text-body><![CDATA[{code}]]></ac:plain-text-body>'
+                f'</ac:structured-macro>'
+            )
+            continue
+
+        # Headings
+        heading_m = re.match(r'^(#{1,6})\s+(.*)', line)
+        if heading_m:
+            level = len(heading_m.group(1))
+            output.append(f"<h{level}>{heading_m.group(2)}</h{level}>")
+            i += 1
+            continue
+
+        # Horizontal rule
+        if line.strip() == "---":
+            output.append("<hr />")
+            i += 1
+            continue
+
+        # List items (collect consecutive)
+        if line.startswith("- "):
+            items = []
+            while i < len(lines) and lines[i].startswith("- "):
+                items.append(f"<li>{lines[i][2:]}</li>")
+                i += 1
+            output.append("<ul>" + "".join(items) + "</ul>")
+            continue
+
+        # Blank lines
+        if not line.strip():
+            i += 1
+            continue
+
+        # Skip macro label lines (e.g. "[drawio: Name.drawio]") preceding a fence
+        if (
+            line.startswith("[") and line.endswith("]")
+            and i + 1 < len(lines) and lines[i + 1] == _MACRO_FENCE
+        ):
+            i += 1
+            continue
+
+        # Blockquotes and panels
+        if line.startswith("> ") or line == ">":
+            # Check for GitHub-style admonition: > [!TYPE] → panel
+            admonition_m = re.match(r'^> \[!(INFO|NOTE|WARNING|TIP)\]\s*$', line, re.IGNORECASE)
+            if admonition_m:
+                panel_type = admonition_m.group(1).lower()
+                i += 1
+                bq_lines = []
+                while i < len(lines) and (lines[i].startswith("> ") or lines[i] == ">"):
+                    bq_lines.append(lines[i][2:] if lines[i].startswith("> ") else "")
+                    i += 1
+                body_paras = "<p>" + "</p><p>".join(
+                    p.strip() for p in "\n".join(bq_lines).split("\n") if p.strip()
+                ) + "</p>"
+                output.append(
+                    f'<ac:structured-macro ac:name="{panel_type}">'
+                    f'<ac:rich-text-body>{body_paras}</ac:rich-text-body>'
+                    f'</ac:structured-macro>'
+                )
+            else:
+                # Plain blockquote → <blockquote>
+                bq_lines = []
+                while i < len(lines) and (lines[i].startswith("> ") or lines[i] == ">"):
+                    bq_lines.append(lines[i][2:] if lines[i].startswith("> ") else "")
+                    i += 1
+                body_paras = "<p>" + "</p><p>".join(
+                    p.strip() for p in "\n".join(bq_lines).split("\n") if p.strip()
+                ) + "</p>"
+                output.append(f"<blockquote>{body_paras}</blockquote>")
+            continue
+
+        # Regular paragraph — expand inline {status:title|colour} patterns
+        output.append(f"<p>{_expand_inline_macros(line)}</p>")
+        i += 1
+
+    return "".join(output)
+
+
+# ── Edit Flow ──────────────────────────────────────────
+
+
+EDIT_SEPARATOR = "──── content ────"
+
+
+def _compose_edit_text(title: str, body: str) -> str:
+    """Build the text shown in the editor."""
+    return f"{title}\n{EDIT_SEPARATOR}\n{body}"
+
+
+def _parse_edit_text(text: str) -> tuple[str, str]:
+    """Parse editor text back into (title, body)."""
+    if EDIT_SEPARATOR in text:
+        title, _, body = text.partition(EDIT_SEPARATOR)
+    else:
+        title, _, body = text.partition("\n")
+    return title.strip(), body.strip()
+
+
+# ── Errors ──────────────────────────────────────────────
+
+
+class ConfluenceApiError(Exception):
+    def __init__(self, status_code: int, body: dict):
+        self.status_code = status_code
+        self.body = body
+        # v2 errors use "errors" list with "title"/"detail", v1 uses "message"
+        errors = body.get("errors", [])
+        if isinstance(errors, list) and errors:
+            detail = "; ".join(
+                e.get("detail", e.get("title", str(e))) for e in errors
+            )
+        elif body.get("message"):
+            detail = body["message"]
+        else:
+            detail = str(body)
+        super().__init__(f"HTTP {status_code}: {detail}")
+
+
+# ── Confluence Client ──────────────────────────────────
+
+
+class ConfluenceClient:
+    def __init__(self, base_url: str, email: str, api_token: str):
+        self.base_url = base_url.rstrip("/")
+        self._auth_header = "Basic " + base64.b64encode(
+            f"{email}:{api_token}".encode()
+        ).decode()
+
+    # ── HTTP ────────────────────────────────────────────
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        data: dict | list | None = None,
+        params: dict | None = None,
+    ) -> tuple[dict | None, int]:
+        url = self.base_url + path
+        if params:
+            url += "?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+
+        body = json.dumps(data).encode() if data is not None else None
+        req = urllib.request.Request(url, data=body, method=method)
+        req.add_header("Authorization", self._auth_header)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            resp = urllib.request.urlopen(req)
+            status = resp.status
+            resp_body = resp.read().decode()
+            return (json.loads(resp_body) if resp_body else None), status
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode()
+            try:
+                error_data = json.loads(error_body)
+            except json.JSONDecodeError:
+                error_data = {"raw": error_body}
+            raise ConfluenceApiError(e.code, error_data) from e
+
+    def _get(self, path: str, params: dict | None = None) -> dict:
+        result, _ = self._request("GET", path, params=params)
+        return result
+
+    def _post(self, path: str, data: dict | list) -> tuple[dict | None, int]:
+        return self._request("POST", path, data=data)
+
+    def _put(self, path: str, data: dict) -> tuple[dict | None, int]:
+        return self._request("PUT", path, data=data)
+
+    def _delete(self, path: str) -> tuple[dict | None, int]:
+        return self._request("DELETE", path)
+
+    # ── Spaces ─────────────────────────────────────────
+
+    def get_spaces(self, keys: list[str] | None = None, limit: int = 25) -> list[dict]:
+        params: dict = {"limit": str(limit), "sort": "name"}
+        if keys:
+            params["keys"] = ",".join(keys)
+        result = self._get("/wiki/api/v2/spaces", params=params)
+        return result.get("results", [])
+
+    def resolve_space_id(self, space_key: str) -> str:
+        """Resolve a space key to its numeric ID."""
+        spaces = self.get_spaces(keys=[space_key])
+        if not spaces:
+            raise ConfluenceApiError(404, {"message": f"Space '{space_key}' not found"})
+        return spaces[0]["id"]
+
+    # ── Pages ──────────────────────────────────────────
+
+    def get_page(self, page_id: str, body_format: str = "storage") -> dict:
+        return self._get(
+            f"/wiki/api/v2/pages/{page_id}",
+            params={"body-format": body_format},
+        )
+
+    def list_pages(self, space_id: str, limit: int = 25, sort: str = "-modified-date") -> list[dict]:
+        return self._get(
+            "/wiki/api/v2/pages",
+            params={"space-id": space_id, "status": "current", "sort": sort, "limit": str(limit)},
+        ).get("results", [])
+
+    def get_children(self, page_id: str, limit: int = 25) -> list[dict]:
+        return self._get(
+            f"/wiki/api/v2/pages/{page_id}/children",
+            params={"limit": str(limit)},
+        ).get("results", [])
+
+    def get_page_tree(self, space_key: str) -> tuple[dict | None, list]:
+        """Fetch the page tree for a space in sidebar order.
+
+        Returns (homepage, children_tree) where children_tree is a
+        recursive list of (page_dict, children_tree) tuples.
+        """
+        spaces = self.get_spaces(keys=[space_key])
+        if not spaces:
+            raise ConfluenceApiError(404, {"message": f"Space '{space_key}' not found"})
+        homepage_id = spaces[0].get("homepageId")
+        if not homepage_id:
+            return None, []
+        homepage = self.get_page(str(homepage_id))
+        calls = [0]
+        tree = self._fetch_subtree(str(homepage_id), 0, calls)
+        return homepage, tree
+
+    def _fetch_subtree(
+        self, page_id: str, depth: int, calls: list[int],
+        max_depth: int = 10, max_calls: int = 100,
+    ) -> list:
+        """Recursively fetch children in sidebar order."""
+        if depth >= max_depth or calls[0] >= max_calls:
+            return []
+        calls[0] += 1
+        children = self.get_children(page_id, limit=100)
+        return [
+            (child, self._fetch_subtree(str(child["id"]), depth + 1, calls, max_depth, max_calls))
+            for child in children
+        ]
+
+    def create_page(
+        self, space_id: str, title: str, body_storage: str, parent_id: str | None = None,
+    ) -> dict:
+        payload: dict = {
+            "spaceId": space_id,
+            "status": "current",
+            "title": title,
+            "body": {"representation": "storage", "value": body_storage},
+        }
+        if parent_id:
+            payload["parentId"] = parent_id
+        result, _ = self._post("/wiki/api/v2/pages", payload)
+        return result
+
+    def update_page(
+        self, page_id: str, title: str, body_storage: str,
+        version_number: int, message: str = "Updated via CLI",
+    ) -> dict:
+        payload = {
+            "id": page_id,
+            "status": "current",
+            "title": title,
+            "body": {"representation": "storage", "value": body_storage},
+            "version": {"number": version_number, "message": message},
+        }
+        result, _ = self._put(f"/wiki/api/v2/pages/{page_id}", payload)
+        return result
+
+    # ── Search (v1) ────────────────────────────────────
+
+    def search_cql(self, cql: str, limit: int = 25) -> list[dict]:
+        result = self._get(
+            "/wiki/rest/api/search",
+            params={"cql": cql, "limit": str(limit)},
+        )
+        return result.get("results", [])
+
+    # ── Comments (v2) ──────────────────────────────────
+
+    def get_comments(self, page_id: str, limit: int = 25) -> list[dict]:
+        return self._get(
+            f"/wiki/api/v2/pages/{page_id}/footer-comments",
+            params={"body-format": "storage", "limit": str(limit)},
+        ).get("results", [])
+
+    def add_comment(self, page_id: str, body_storage: str) -> dict:
+        result, _ = self._post("/wiki/api/v2/footer-comments", {
+            "pageId": page_id,
+            "body": {"representation": "storage", "value": body_storage},
+        })
+        return result
+
+    # ── Labels (v1) ────────────────────────────────────
+
+    def get_labels(self, page_id: str) -> list[dict]:
+        result = self._get(f"/wiki/rest/api/content/{page_id}/label")
+        return result.get("results", [])
+
+    def add_labels(self, page_id: str, labels: list[str]) -> None:
+        self._post(
+            f"/wiki/rest/api/content/{page_id}/label",
+            [{"prefix": "global", "name": label} for label in labels],
+        )
+
+    def remove_label(self, page_id: str, label: str) -> None:
+        self._delete(f"/wiki/rest/api/content/{page_id}/label/{label}")
+
+
+# ── Output Formatting ──────────────────────────────────
+
+
+class Formatter:
+    _ROW_BG = "\033[48;5;236m"
+    _ROW_RESET = "\033[0m"
+
+    def page_table(self, pages: list[dict]) -> None:
+        if not pages:
+            click.echo("  No pages found.")
+            return
+
+        id_width = max(len(str(p.get("id", ""))) for p in pages)
+        for idx, page in enumerate(pages):
+            page_id = str(page.get("id", ""))
+            title = page.get("title", "")
+            modified = page.get("version", {}).get("createdAt", "")[:10]
+
+            max_title = 70
+            if len(title) > max_title:
+                title = title[: max_title - 1] + "\u2026"
+
+            date_str = click.style(modified, fg="bright_black") if modified else ""
+            line = f"  {page_id:<{id_width}}  {title}  {date_str}"
+            if idx % 2 == 1:
+                line = f"{self._ROW_BG}{line}{self._ROW_RESET}"
+            click.echo(line)
+
+    def page_tree(self, homepage: dict | None, tree: list) -> None:
+        """Display pages as an indented tree matching sidebar order."""
+        if not homepage:
+            click.echo("  No pages found.")
+            return
+        page_id = click.style(str(homepage.get("id", "")), fg="bright_black")
+        click.echo(f"  {click.style(homepage.get('title', ''), bold=True)}  {page_id}")
+        self._render_subtree(tree, "  ")
+
+    def _render_subtree(self, tree: list, prefix: str) -> None:
+        for i, (page, children) in enumerate(tree):
+            is_last = i == len(tree) - 1
+            connector = "└── " if is_last else "├── "
+            page_id = click.style(str(page.get("id", "")), fg="bright_black")
+            title = page.get("title", "")
+            click.echo(f"{prefix}{connector}{title}  {page_id}")
+            if children:
+                extension = "    " if is_last else "│   "
+                self._render_subtree(children, prefix + extension)
+
+
+fmt = Formatter()
+
+
+# ── Completion Cache ───────────────────────────────────
+
+
+class CompletionCache:
+    _DIR = Path(tempfile.gettempdir()) / "confluence-completions"
+
+    def read(self, name: str, ttl_seconds: int = 300) -> list[str] | None:
+        path = self._DIR / f"{name}.json"
+        try:
+            if time.time() - path.stat().st_mtime > ttl_seconds:
+                return None
+            return json.loads(path.read_text())
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            return None
+
+    def write(self, name: str, values: list[str]) -> None:
+        self._DIR.mkdir(parents=True, exist_ok=True)
+        (self._DIR / f"{name}.json").write_text(json.dumps(values))
+
+
+cache = CompletionCache()
+
+
+# ── Shell Completions ──────────────────────────────────
+
+
+def _complete_space(ctx: click.Context, param: click.Parameter, incomplete: str) -> list[click.shell_completion.CompletionItem]:
+    spaces = config.load().get("spaces", [])
+    if spaces:
+        return [
+            click.shell_completion.CompletionItem(s["key"], help=s.get("name", ""))
+            for s in spaces if incomplete.upper() in s["key"].upper()
+        ]
+    cache_key = "spaces"
+    items = cache.read(cache_key)
+    if items is None:
+        try:
+            found = config.client.get_spaces(limit=50)
+            items = [f"{s['key']}\t{s.get('name', '')}" for s in found]
+            cache.write(cache_key, items)
+        except Exception:
+            return []
+    results = []
+    for item in items:
+        key, _, name = item.partition("\t")
+        if incomplete.upper() in key.upper():
+            results.append(click.shell_completion.CompletionItem(key, help=name))
+    return results
+
+
+# ── CLI Commands ────────────────────────────────────────
+
+
+@click.group()
+def cli():
+    """Confluence page manager."""
+
+
+@cli.command()
+@click.argument("page_id")
+def show(page_id: str):
+    """Show page metadata and body.
+
+    \b
+    Examples:
+        confluence show 12345678
+    """
+    client = config.client
+    try:
+        page = client.get_page(page_id, body_format="storage")
+        title = page.get("title", "")
+        space_id = page.get("spaceId", "")
+        version = page.get("version", {})
+        version_num = version.get("number", "")
+        modified = version.get("createdAt", "")[:10]
+        author = version.get("authorId", "")
+
+        click.echo(f"  {click.style(title, bold=True)}")
+        click.echo(f"  ID: {page_id}  Space: {space_id}  Version: {version_num}")
+        if modified:
+            click.echo(f"  Modified: {modified}  Author: {author}")
+        click.echo(f"  {config.base_url}/wiki/pages/{page_id}")
+
+        body_storage = page.get("body", {}).get("storage", {}).get("value", "")
+        body_text = _storage_to_text(body_storage)
+        if body_text:
+            click.echo()
+            click.echo(click.style("  Content", bold=True))
+            for line in body_text.split("\n"):
+                click.echo(f"  {line}")
+
+        # Show labels
+        labels = client.get_labels(page_id)
+        if labels:
+            label_names = [l.get("name", "") for l in labels]
+            click.echo()
+            click.echo(f"  Labels: {', '.join(label_names)}")
+
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("cql")
+@click.option("-l", "--limit", default=25, type=int, help="Max results (default: 25)")
+def search(cql: str, limit: int):
+    """Search pages with CQL (v1 search endpoint).
+
+    \b
+    Examples:
+        confluence search 'type = page AND space = "DEV" AND title ~ "deploy"'
+        confluence search 'type = page AND text ~ "kubernetes"'
+        confluence search 'type = page AND label = "runbook"'
+    """
+    client = config.client
+    try:
+        results = client.search_cql(cql, limit=limit)
+        if not results:
+            click.echo("  No results found.")
+            return
+        id_width = max(
+            len(str(r.get("content", {}).get("id", ""))) for r in results
+        )
+        for idx, r in enumerate(results):
+            content = r.get("content", {})
+            page_id = str(content.get("id", ""))
+            title = r.get("title", content.get("title", ""))
+            # Strip HTML from title (search results may have <b> highlights)
+            title = re.sub(r'<[^>]+>', '', title)
+            excerpt = re.sub(r'<[^>]+>', '', r.get("excerpt", "")).strip()
+
+            max_title = 70
+            if len(title) > max_title:
+                title = title[: max_title - 1] + "\u2026"
+
+            line = f"  {page_id:<{id_width}}  {title}"
+            if idx % 2 == 1:
+                line = f"{fmt._ROW_BG}{line}{fmt._ROW_RESET}"
+            click.echo(line)
+            if excerpt:
+                excerpt_short = excerpt[:100] + "\u2026" if len(excerpt) > 100 else excerpt
+                click.echo(f"  {' ' * id_width}  {click.style(excerpt_short, fg='bright_black')}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command("list")
+@click.option("-s", "--space", default=None, help="Space key", shell_complete=_complete_space)
+@click.option("--sort", "sort_by", default=None, type=click.Choice(["modified"]),
+              help="Show flat list sorted by field instead of tree")
+@click.option("-l", "--limit", default=25, type=int, help="Max results (for --sort)")
+def list_pages(space: str | None, sort_by: str | None, limit: int):
+    """List pages in a space.
+
+    Shows the page tree matching the sidebar order by default.
+    Use --sort modified for a flat list sorted by modification date.
+
+    \b
+    Examples:
+        confluence list -s DEV
+        confluence list -s DEV --sort modified
+        confluence list --sort modified -l 50
+    """
+    client = config.client
+    space_key = config.space(space)
+    if not space_key:
+        raise click.ClickException(
+            "No space specified. Use -s SPACE or set a default with: confluence space default KEY"
+        )
+    try:
+        if sort_by == "modified":
+            space_id = client.resolve_space_id(space_key)
+            pages = client.list_pages(space_id, limit=limit, sort="-modified-date")
+            fmt.page_table(pages)
+        else:
+            homepage, tree = client.get_page_tree(space_key)
+            fmt.page_tree(homepage, tree)
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("page_id")
+@click.option("-l", "--limit", default=25, type=int, help="Max results (default: 25)")
+def children(page_id: str, limit: int):
+    """List child pages of a page.
+
+    \b
+    Examples:
+        confluence children 12345678
+    """
+    client = config.client
+    try:
+        pages = client.get_children(page_id, limit=limit)
+        fmt.page_table(pages)
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("title")
+@click.option("-s", "--space", default=None, help="Space key", shell_complete=_complete_space)
+@click.option("--parent", default=None, help="Parent page ID")
+def create(title: str, space: str | None, parent: str | None):
+    """Create a new page. Body from stdin or $EDITOR.
+
+    \b
+    Examples:
+        confluence create "My New Page" -s DEV
+        echo "Page content" | confluence create "Title" -s DEV
+        confluence create "Title" -s DEV --parent 12345678
+    """
+    client = config.client
+    space_key = config.space(space)
+    if not space_key:
+        raise click.ClickException(
+            "No space specified. Use -s SPACE or set a default with: confluence space default KEY"
+        )
+    try:
+        space_id = client.resolve_space_id(space_key)
+
+        if sys.stdin.isatty():
+            text = click.edit(
+                _compose_edit_text(title, ""),
+                extension=".md",
+            )
+            if text is None:
+                click.echo("No page created (editor closed without saving).")
+                return
+            new_title, body = _parse_edit_text(text)
+            if not new_title:
+                raise click.ClickException("Title cannot be empty")
+            title = new_title
+        else:
+            body = sys.stdin.read().strip()
+
+        body_storage = _text_to_storage(body)
+        result = client.create_page(space_id, title, body_storage, parent_id=parent)
+        page_id = result.get("id", "")
+        click.echo(f"Created page {page_id}: {title}")
+        click.echo(f"{config.base_url}/wiki/pages/{page_id}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("page_id")
+def edit(page_id: str):
+    """Edit a page's title and body.
+
+    Opens $EDITOR with the current content. Reads from stdin if piped.
+
+    \b
+    Editor format:
+        Page Title
+        ──── content ────
+        Body content here...
+    """
+    client = config.client
+    try:
+        page = client.get_page(page_id, body_format="storage")
+        old_title = page.get("title", "")
+        old_body_storage = page.get("body", {}).get("storage", {}).get("value", "")
+        old_body = _storage_to_text(old_body_storage)
+        current_version = page.get("version", {}).get("number", 1)
+
+        if sys.stdin.isatty():
+            text = click.edit(
+                _compose_edit_text(old_title, old_body),
+                extension=".md",
+            )
+            if text is None:
+                click.echo("No changes (editor closed without saving).")
+                return
+        else:
+            text = sys.stdin.read()
+
+        new_title, new_body = _parse_edit_text(text)
+        if not new_title:
+            raise click.ClickException("Title cannot be empty")
+
+        if new_title == old_title and new_body == old_body:
+            click.echo("No changes.")
+            return
+
+        new_body_storage = _text_to_storage(new_body)
+        client.update_page(
+            page_id, new_title, new_body_storage,
+            version_number=current_version + 1,
+        )
+        changed = []
+        if new_title != old_title:
+            changed.append("title")
+        if new_body != old_body:
+            changed.append("body")
+        click.echo(f"Updated page {page_id} ({' and '.join(changed)})")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@cli.command()
+@click.argument("page_id")
+@click.argument("text", required=False)
+def comment(page_id: str, text: str | None):
+    """Add a footer comment to a page.
+
+    \b
+    Three ways to provide the comment body:
+        confluence comment 12345678 "Comment text"
+        echo "some comment" | confluence comment 12345678
+        confluence comment 12345678              # opens $EDITOR
+    """
+    client = config.client
+    try:
+        if text:
+            body = text
+        elif not sys.stdin.isatty():
+            body = sys.stdin.read().strip()
+        else:
+            body = click.edit(extension=".md")
+            if body is None:
+                click.echo("No comment (editor closed without saving).")
+                return
+            body = body.strip()
+
+        if not body:
+            raise click.ClickException("Comment cannot be empty")
+
+        body_storage = _text_to_storage(body)
+        client.add_comment(page_id, body_storage)
+        click.echo(f"Commented on page {page_id}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+# ── Label Subcommands ──────────────────────────────────
+
+
+@cli.group()
+def label():
+    """Manage page labels."""
+
+
+@label.command("list")
+@click.argument("page_id")
+def label_list(page_id: str):
+    """List labels on a page.
+
+    \b
+    Examples:
+        confluence label list 12345678
+    """
+    client = config.client
+    try:
+        labels = client.get_labels(page_id)
+        if not labels:
+            click.echo("  No labels.")
+            return
+        for lab in labels:
+            click.echo(f"  {lab.get('name', '')}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@label.command("add")
+@click.argument("page_id")
+@click.argument("labels", nargs=-1, required=True)
+def label_add(page_id: str, labels: tuple):
+    """Add labels to a page.
+
+    \b
+    Examples:
+        confluence label add 12345678 runbook deploy
+    """
+    client = config.client
+    try:
+        client.add_labels(page_id, list(labels))
+        click.echo(f"Added labels to page {page_id}: {', '.join(labels)}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@label.command("remove")
+@click.argument("page_id")
+@click.argument("label_name")
+def label_remove(page_id: str, label_name: str):
+    """Remove a label from a page.
+
+    \b
+    Examples:
+        confluence label remove 12345678 old-label
+    """
+    client = config.client
+    try:
+        client.remove_label(page_id, label_name)
+        click.echo(f"Removed label '{label_name}' from page {page_id}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+# ── Space Subcommands ──────────────────────────────────
+
+
+@cli.group()
+def space():
+    """Manage configured spaces."""
+
+
+@space.command("list")
+def space_list():
+    """List spaces (configured or from API).
+
+    \b
+    Examples:
+        confluence space list
+    """
+    client = config.client
+    raw = config.load()
+    configured = raw.get("spaces", [])
+    default = config.space()
+
+    try:
+        if configured:
+            keys = [s["key"] for s in configured]
+            spaces = client.get_spaces(keys=keys)
+        else:
+            spaces = client.get_spaces(limit=50)
+
+        if not spaces:
+            click.echo("  No spaces found.")
+            return
+
+        key_width = max(len(s.get("key", "")) for s in spaces)
+        for s in spaces:
+            key = s.get("key", "")
+            name = s.get("name", "")
+            marker = " *" if key == default else ""
+            click.echo(f"  {key:<{key_width}}  {name}{marker}")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@space.command("add")
+@click.argument("space_key")
+def space_add(space_key: str):
+    """Add a space to the configured list.
+
+    \b
+    Examples:
+        confluence space add DEV
+    """
+    client = config.client
+    try:
+        spaces = client.get_spaces(keys=[space_key.upper()])
+        if not spaces:
+            raise click.ClickException(f"Space '{space_key}' not found.")
+        found = spaces[0]
+        raw = config.load()
+        configured = raw.get("spaces", [])
+        existing_keys = {s["key"] for s in configured}
+        if found["key"] in existing_keys:
+            click.echo(f"Already configured: {found['key']}")
+            return
+        configured.append({"key": found["key"], "name": found.get("name", "")})
+        config.save({"spaces": configured})
+        click.echo(f"Added {found['key']} ({found.get('name', '')})")
+        if len(configured) == 1:
+            config.save({"default_space": found["key"]})
+            click.echo("Set as default space")
+    except ConfluenceApiError as e:
+        raise click.ClickException(str(e))
+
+
+@space.command("remove")
+@click.argument("space_key")
+def space_remove(space_key: str):
+    """Remove a space from the configured list."""
+    raw = config.load()
+    configured = raw.get("spaces", [])
+    new_spaces = [s for s in configured if s["key"].upper() != space_key.upper()]
+    if len(new_spaces) == len(configured):
+        click.echo(f"Not configured: {space_key}")
+        return
+    config.save({"spaces": new_spaces})
+    click.echo(f"Removed {space_key}")
+
+
+@space.command("default")
+@click.argument("space_key")
+def space_default(space_key: str):
+    """Set the default space.
+
+    \b
+    Examples:
+        confluence space default DEV
+    """
+    config.save({"default_space": space_key.upper()})
+    click.echo(f"Default space set to {space_key.upper()}")
+
+
+# ── Entry Point ─────────────────────────────────────────
+
+if __name__ == "__main__":
+    cli()
