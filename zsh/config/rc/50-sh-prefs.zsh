@@ -1,6 +1,6 @@
 setopt EXTENDED_GLOB
 
-export EDITOR='vi'
+export EDITOR='vim'
 export VISUAL="${EDITOR}"
 
 export PAGER="less"
