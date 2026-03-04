@@ -67,6 +67,7 @@ sudo pacman -S \
 	fzf \
 	git \
 	git-lfs \
+	github-cli \
 	inetutils \
 	jq \
 	kwallet \
@@ -76,6 +77,8 @@ sudo pacman -S \
 	openssh \
 	python \
 	python-click \
+	python-ipykernel \
+	python-pandas \
 	python-pip \
 	shfmt \
 	timeshift \
