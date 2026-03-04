@@ -1,7 +1,7 @@
 #!/usr/bin/zsh
 
 export PATH="${PATH}:$HOME/projects/aerisweather/devtools/aws"
-alias vpn-up="TMUX_WINDOW_PREV_NAME=\"\$(tmux display-message -p '#W')\"; tmux rename-window '旅AW-VPN'; sudo ~/projects/aerisweather/infra-mgmt/util/vpn/openvpn-connect ~/Documents/AerisWeather/smiller.conf; tmux rename-window \$TMUX_WINDOW_PREV_NAME"
+alias vpn-up="TMUX_WINDOW_PREV_NAME=\"\$(tmux display-message -p '#W')\"; tmux rename-window '旅AW-VPN'; sudo ~/projects/VaisalaCorp/infra-mgmt/util/vpn/openvpn-connect ~/Documents/AerisWeather/smiller.ovpn; tmux rename-window \$TMUX_WINDOW_PREV_NAME"
 alias project-coverage-open="xdg-open ./.tests-output/test-results/html/index.html"
 
 alias tmp-chown="sudo chown -R smiller:admin /tmp/*std* /tmp/*raw* /tmp/funnel*"
