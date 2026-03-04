@@ -455,4 +455,6 @@
     "terminal.integrated.defaultProfile.linux": "zsh",
     "dotfiles.installCommand": "install",
     "dotfiles.repository": "git@github.com:four43/dotfiles-aw",
+    "dev.containers.dockerCredentialHelper": false,
+    "claudeCode.useTerminal": true,
 }
