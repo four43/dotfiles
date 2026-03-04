@@ -1,0 +1,14 @@
+services:
+  app:
+    environment:
+      - MY_ENV_VAR=some_value
+    volumes:
+      # ~/.aws:/root/.aws:rw
+      - ~/.claude/plugins:/root/.claude/plugins:rw
+      - ~/.claude/skills:/root/.claude/skills:rw
+      - ~/.claude/.credentials.json:/root/.claude/.credentials.json:rw
+      - ~/.claude/settings.json:/root/.claude/settings.json:rw
+      - ~/.claude.json:/root/.claude.json:rw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
