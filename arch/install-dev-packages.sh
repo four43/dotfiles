@@ -10,6 +10,18 @@ sudo usermod -aG docker,video,audio,wheel smiller
 sudo systemctl enable systemd-timesyncd.service
 sudo systemctl start systemd-timesyncd.service
 
+# Configure NetworkManager to use systemd-resolved for DNS
+# This prevents Docker containers from losing DNS when VPN is connected
+echo "[DNS] --- Configuring NetworkManager to use systemd-resolved ---" >&2
+sudo mkdir -p /etc/NetworkManager/conf.d
+cat <<EOF | sudo tee /etc/NetworkManager/conf.d/dns.conf > /dev/null
+[main]
+dns=systemd-resolved
+EOF
+sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+sudo systemctl enable systemd-resolved.service
+sudo systemctl restart NetworkManager systemd-resolved
+
 # Configure sources automatically
 echo "[Sources List] --- Installing Reflector ---" >&2
 sudo pacman -Sy --needed reflector --noconfirm
