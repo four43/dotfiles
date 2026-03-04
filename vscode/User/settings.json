@@ -144,6 +144,7 @@
     "markdownlint.config": {
         "MD010": false,
         "MD012": false,
+        "MD024": false,
         "MD033": false,
         "MD041": false,
     },
@@ -420,7 +421,8 @@
         "Invoke-Expression": false,
         "iex": false,
         "./util/lint": true,
-        "black": true
+        "black": true,
+        "confluence": true
     },
     "workbench.colorTheme": "Nord Native",
     "githubPullRequests.pullBranch": "never",
@@ -445,7 +447,7 @@
     },
     "chat.viewSessions.orientation": "stacked",
     "azureTerraform.survey": {
-        "surveyPromptDate": "2026-01-29T02:30:29.893Z",
+        "surveyPromptDate": "never",
         "surveyPromptIgnoredCount": 0
     },
     "scm.defaultViewMode": "tree",
@@ -456,5 +458,11 @@
     "dotfiles.installCommand": "install",
     "dotfiles.repository": "git@github.com:four43/dotfiles-aw",
     "dev.containers.dockerCredentialHelper": false,
+    "claudeCode.selectedModel": "default",
     "claudeCode.useTerminal": true,
+    "files.readonlyInclude": {
+        "**/.cargo/registry/src/**/*.rs": true,
+        "**/.cargo/git/checkouts/**/*.rs": true,
+        "**/lib/rustlib/src/rust/library/**/*.rs": true,
+    },
 }
