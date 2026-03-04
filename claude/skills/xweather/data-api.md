@@ -183,6 +183,9 @@ supported actions, parameters, filters, and response fields:
 https://www.xweather.com/docs/weather-api/endpoints/{slug}
 ```
 
+The documentation is in the `<main>` element of the page. You can fetch and parse it to extract details about how to use the endpoint effectively.
+An example response is in a `<pre>` with a lot of styling, just get the text content and parse it as JSON.
+
 ### Conditions
 
 | Endpoint | Path | Description | Docs |
