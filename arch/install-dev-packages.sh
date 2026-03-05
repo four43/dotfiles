@@ -22,6 +22,8 @@ sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 sudo systemctl enable systemd-resolved.service
 sudo systemctl restart NetworkManager systemd-resolved
 
+sleep 5
+
 # Configure sources automatically
 echo "[Sources List] --- Installing Reflector ---" >&2
 sudo pacman -Sy --needed reflector --noconfirm
@@ -80,9 +82,11 @@ sudo pacman -S \
 	python-ipykernel \
 	python-pandas \
 	python-pip \
+	python-requests \
 	shfmt \
 	timeshift \
 	tmux \
+	traceroute \
 	ttf-opensans \
 	unzip \
 	uv \
