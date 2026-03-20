@@ -1,0 +1,304 @@
+#!/usr/bin/env python3
+"""Query GRIB2 Code Table 4.2 (parameter definitions).
+
+Fetches from NCEP's GRIB2 parameter tables and outputs tab-separated results
+to stdout. Results are cached locally for 30 days.
+
+Usage:
+    grib2-table 0 0 0              # Lookup by triplet (discipline, category, number)
+    grib2-table -d 0 -c 0          # List all parameters in a category
+    grib2-table -d 0               # List all categories in a discipline
+    grib2-table -s temperature      # Search by name (case-insensitive)
+    grib2-table -s "wind speed"    # Search by description
+"""
+
+import argparse
+import json
+import re
+import sys
+import urllib.request
+from pathlib import Path
+
+CACHE_DIR = Path.home() / ".cache" / "grib2-tables"
+CACHE_MAX_AGE_DAYS = 1
+
+NCEP_URL = "https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-2-{d}-{c}.shtml"
+
+DISCIPLINE_NAMES = {
+    0: "Meteorological",
+    1: "Hydrological",
+    2: "Land surface",
+    3: "Satellite remote sensing",
+    4: "Space weather",
+    10: "Oceanographic",
+    20: "Health and socioeconomic impacts",
+}
+
+CATEGORY_NAMES = {
+    0: {
+        0: "Temperature",
+        1: "Moisture",
+        2: "Momentum",
+        3: "Mass",
+        4: "Short-wave radiation",
+        5: "Long-wave radiation",
+        6: "Cloud",
+        7: "Thermodynamic stability",
+        13: "Aerosols",
+        14: "Trace gases",
+        15: "Radar",
+        16: "Forecast radar imagery",
+        17: "Electrodynamics",
+        18: "Nuclear/radiology",
+        19: "Physical atmospheric properties",
+        20: "Atmospheric chemical constituents",
+        190: "CCITT IA5 string",
+        191: "Miscellaneous",
+    },
+    1: {
+        0: "Hydrology basic",
+        1: "Hydrology probabilities",
+    },
+    2: {
+        0: "Vegetation/biomass",
+        3: "Soil",
+        4: "Fire weather",
+        5: "Glaciers and inland ice",
+    },
+    10: {
+        0: "Waves",
+        1: "Currents",
+        2: "Ice",
+        3: "Surface properties",
+        4: "Sub-surface properties",
+    },
+}
+
+
+def cache_path(discipline: int, category: int) -> Path:
+    return CACHE_DIR / f"ncep-4.2-{discipline}-{category}.json"
+
+
+def is_cache_fresh(path: Path) -> bool:
+    if not path.exists():
+        return False
+    import time
+
+    age_days = (time.time() - path.stat().st_mtime) / 86400
+    return age_days < CACHE_MAX_AGE_DAYS
+
+
+def fetch_ncep_category(discipline: int, category: int) -> list[dict]:
+    """Fetch all parameters (WMO standard + NCEP local) from NCEP HTML tables."""
+    cp = cache_path(discipline, category)
+    if is_cache_fresh(cp):
+        return json.loads(cp.read_text())
+
+    url = NCEP_URL.format(d=discipline, c=category)
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "grib2-table/1.0 (GRIB2 parameter lookup tool)"
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+    except Exception as e:
+        if cp.exists():
+            print(f"# Warning: using stale cache ({e})", file=sys.stderr)
+            return json.loads(cp.read_text())
+        print(f"Error fetching {url}: {e}", file=sys.stderr)
+        return []
+
+    params = _parse_ncep_html(html, discipline, category)
+
+    if params:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        cp.write_text(json.dumps(params, indent=2))
+
+    return params
+
+
+def _parse_ncep_html(html: str, discipline: int, category: int) -> list[dict]:
+    """Parse NCEP's HTML table into structured parameter records.
+
+    The HTML tables have varying structure but generally follow:
+    <tr><td>number</td><td>name</td><td>units</td><td>abbrev</td></tr>
+    """
+    params = []
+
+    # Strip HTML tags helper
+    def strip_tags(s: str) -> str:
+        return re.sub(r"<[^>]+>", "", s).strip()
+
+    # Find all table rows — extract <td> contents
+    # Match rows with at least 4 cells (number, name, units, abbrev)
+    row_re = re.compile(r"<tr[^>]*>(.*?)</tr>", re.IGNORECASE | re.DOTALL)
+    cell_re = re.compile(r"<td[^>]*>(.*?)</td>", re.IGNORECASE | re.DOTALL)
+
+    for row_match in row_re.finditer(html):
+        row_html = row_match.group(1)
+        # Skip header rows
+        if "<th" in row_html.lower():
+            continue
+
+        cells = cell_re.findall(row_html)
+        if len(cells) < 3:
+            continue
+
+        # First cell should be a number (or number range like "28-29")
+        num_text = strip_tags(cells[0]).strip()
+
+        # Handle single numbers
+        try:
+            number = int(num_text)
+        except ValueError:
+            # Could be a range like "28-29" or "Reserved" — skip
+            continue
+
+        name = strip_tags(cells[1])
+        # Clean up whitespace and newlines in name
+        name = re.sub(r"\s+", " ", name).strip()
+
+        units = strip_tags(cells[2]) if len(cells) > 2 else ""
+        units = re.sub(r"\s+", " ", units).strip()
+
+        abbrev = strip_tags(cells[3]).strip() if len(cells) > 3 else ""
+
+        if not name or name.lower() in ("reserved", "missing"):
+            continue
+
+        entry = {
+            "discipline": discipline,
+            "category": category,
+            "number": number,
+            "name": name,
+            "units": units,
+        }
+        if abbrev:
+            entry["abbrev"] = abbrev
+        if number >= 192:
+            entry["local"] = "NCEP"
+
+        params.append(entry)
+
+    params.sort(key=lambda p: p["number"])
+    return params
+
+
+def print_params(params: list[dict]) -> None:
+    """Print parameters as tab-separated output."""
+    if not params:
+        print("No parameters found.", file=sys.stderr)
+        return
+
+    print("number\tabbrev\tname\tunits\ttriplet")
+
+    for p in params:
+        local_tag = f" [{p['local']}]" if p.get("local") else ""
+        abbrev = p.get("abbrev", "")
+        triplet = f"({p['discipline']},{p['category']},{p['number']})"
+        print(f"{p['number']}\t{abbrev}\t{p['name']}{local_tag}\t{p['units']}\t{triplet}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Query GRIB2 Code Table 4.2 parameter definitions (from NCEP)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  grib2-table 0 0 0              # Lookup Temperature by triplet
+  grib2-table -d 0 -c 1          # List all Moisture parameters
+  grib2-table -d 0               # List categories for Meteorological
+  grib2-table -s "wind speed"    # Search by name across all categories
+  grib2-table -s precipitation   # Search by name""",
+    )
+
+    parser.add_argument(
+        "triplet",
+        nargs="*",
+        type=int,
+        help="Positional: discipline [category [number]]",
+    )
+    parser.add_argument("-d", "--discipline", type=int, help="Discipline number")
+    parser.add_argument("-c", "--category", type=int, help="Category number")
+    parser.add_argument("-n", "--number", type=int, help="Parameter number")
+    parser.add_argument(
+        "-s", "--search", type=str, help="Search parameter names (case-insensitive)"
+    )
+    parser.add_argument(
+        "--clear-cache", action="store_true", help="Clear cached table data"
+    )
+
+    args = parser.parse_args()
+
+    if args.clear_cache:
+        import shutil
+
+        if CACHE_DIR.exists():
+            shutil.rmtree(CACHE_DIR)
+            print("Cache cleared.", file=sys.stderr)
+        return
+
+    discipline = args.discipline
+    category = args.category
+    number = args.number
+
+    if args.triplet:
+        if len(args.triplet) >= 1:
+            discipline = args.triplet[0]
+        if len(args.triplet) >= 2:
+            category = args.triplet[1]
+        if len(args.triplet) >= 3:
+            number = args.triplet[2]
+
+    # Search mode: scan all known categories for a discipline
+    if args.search:
+        pattern = re.compile(re.escape(args.search), re.IGNORECASE)
+        d = discipline if discipline is not None else 0
+        cats = CATEGORY_NAMES.get(d, {})
+        results = []
+        for cat_num in sorted(cats):
+            params = fetch_ncep_category(d, cat_num)
+            for p in params:
+                searchable = f"{p.get('name', '')} {p.get('abbrev', '')}"
+                if pattern.search(searchable):
+                    results.append(p)
+        print_params(results)
+        return
+
+    # List disciplines
+    if discipline is None:
+        print("discipline\tname")
+        for d, name in sorted(DISCIPLINE_NAMES.items()):
+            print(f"{d}\t{name}")
+        return
+
+    # List categories for a discipline
+    if category is None:
+        cats = CATEGORY_NAMES.get(discipline, {})
+        if not cats:
+            print(
+                f"No category listing for discipline {discipline}. "
+                f"Try: grib2-table -d {discipline} -c <number>",
+                file=sys.stderr,
+            )
+            return
+        print("category\tname")
+        for c, name in sorted(cats.items()):
+            print(f"{c}\t{name}")
+        return
+
+    # Fetch parameters for a category
+    params = fetch_ncep_category(discipline, category)
+
+    # Filter to specific number if given
+    if number is not None:
+        params = [p for p in params if p["number"] == number]
+
+    print_params(params)
+
+
+if __name__ == "__main__":
+    main()
