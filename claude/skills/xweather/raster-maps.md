@@ -1,4 +1,4 @@
-# XWeather Raster Maps API Reference
+# Xweather Raster Maps API Reference
 
 **Base URL:** `https://maps.api.xweather.com`
 

@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# git-activity - Summarize recent git commits across multiple projects
+#
+# Usage: git-activity [OPTIONS] <projects-dir>
+#
+# Scans all git repositories in <projects-dir> for commits by the current user
+# in the past N days (default: 2). Fetches from remotes to include pushed work
+# from other machines.
+
+usage() {
+    cat <<EOF
+Usage: git-activity [OPTIONS] <projects-dir>
+
+Scan git repos in a directory for your recent commits.
+
+Options:
+  -d, --days N        Number of days to look back (default: 2)
+  -a, --author NAME   Author name/email to match (default: git config user.name)
+  -f, --fetch         Fetch from remotes before scanning (default: no fetch)
+  -h, --help          Show this help
+
+Examples:
+  git-activity ~/projects
+  git-activity --days 5 ~/projects
+  git-activity --fetch ~/projects
+  git-activity --author "seth" --days 3 ~/projects
+EOF
+    exit 0
+}
+
+DAYS=2
+AUTHOR=""
+DO_FETCH=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -d|--days)   DAYS="$2"; shift 2 ;;
+        -a|--author) AUTHOR="$2"; shift 2 ;;
+        -f|--fetch)  DO_FETCH=true; shift ;;
+        -h|--help)   usage ;;
+        -*)          echo "Unknown option: $1" >&2; exit 1 ;;
+        *)           PROJECTS_DIR="$1"; shift ;;
+    esac
+done
+
+if [[ -z "${PROJECTS_DIR:-}" ]]; then
+    echo "Error: projects directory required" >&2
+    usage
+fi
+
+if [[ ! -d "$PROJECTS_DIR" ]]; then
+    echo "Error: $PROJECTS_DIR is not a directory" >&2
+    exit 1
+fi
+
+# Resolve author
+if [[ -z "$AUTHOR" ]]; then
+    AUTHOR="$(git config user.name 2>/dev/null || true)"
+    if [[ -z "$AUTHOR" ]]; then
+        echo "Error: could not determine git author. Use --author." >&2
+        exit 1
+    fi
+fi
+
+SINCE="$(date -d "$DAYS days ago" '+%Y-%m-%d' 2>/dev/null || date -v-"${DAYS}d" '+%Y-%m-%d')"
+FOUND_ANY=false
+
+for repo_dir in "$PROJECTS_DIR"/*/; do
+    [[ -d "$repo_dir/.git" ]] || continue
+
+    repo_name="$(basename "$repo_dir")"
+
+    # Optionally fetch to pick up remote-only commits
+    if $DO_FETCH; then
+        git -C "$repo_dir" fetch --all --quiet 2>/dev/null || true
+    fi
+
+    # Check all branches (local + remote tracking) for commits by this author
+    commits="$(git -C "$repo_dir" log \
+        --all \
+        --author="$AUTHOR" \
+        --since="$SINCE" \
+        --format="%h %ad %s" \
+        --date=short \
+        --no-merges \
+        2>/dev/null || true)"
+
+    if [[ -n "$commits" ]]; then
+        FOUND_ANY=true
+        echo "## $repo_name"
+        echo ""
+        echo "$commits" | while IFS= read -r line; do
+            echo "- $line"
+        done
+        echo ""
+    fi
+done
+
+if ! $FOUND_ANY; then
+    echo "No commits by \"$AUTHOR\" in the past $DAYS day(s) under $PROJECTS_DIR"
+fi

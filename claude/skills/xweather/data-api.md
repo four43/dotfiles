@@ -1,4 +1,4 @@
-# XWeather Data API Reference
+# Xweather Data API Reference
 
 **Base URL:** `https://data.api.xweather.com`
 
@@ -176,7 +176,7 @@ https://data.api.xweather.com/batch/{location}?requests=/{endpoint1},{endpoint2}
 
 ## Endpoint Documentation
 
-Before using an endpoint, fetch its documentation page from XWeather to get the latest information on
+Before using an endpoint, fetch its documentation page from Xweather to get the latest information on
 supported actions, parameters, filters, and response fields:
 
 ```

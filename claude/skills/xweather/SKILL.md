@@ -1,18 +1,18 @@
 ---
 name: xweather
-description: Query weather data and generate weather map images using the XWeather API
+description: Query weather data and generate weather map images using the Xweather API
 ---
 
-# XWeather API Skill
+# Xweather API Skill
 
-Query weather data and generate weather map imagery using the XWeather platform.
+Query weather data and generate weather map imagery using the Xweather platform.
 
 ## Environment Requirements
 
-The following environment variables MUST be set before making any XWeather API requests:
+The following environment variables MUST be set before making any Xweather API requests:
 
-- `XWEATHER_CLIENT_ID` - Your XWeather API client ID
-- `XWEATHER_CLIENT_SECRET` - Your XWeather API client secret
+- `XWEATHER_CLIENT_ID` - Your Xweather API client ID
+- `XWEATHER_CLIENT_SECRET` - Your Xweather API client secret
 
 Before making any API call, verify these are available:
 
@@ -25,7 +25,7 @@ If either variable is missing, stop and tell the user to set them. Do NOT procee
 
 ## Two Products: When to Use Which
 
-XWeather offers two distinct products. Choose based on what the user needs:
+Xweather offers two distinct products. Choose based on what the user needs:
 
 ### Weather Data API (JSON responses)
 

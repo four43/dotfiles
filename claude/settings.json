@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/smiller/.claude/statusline-command.sh"
+  },
   "permissions": {
     "allow": [
       "Bash(aws acm-pca describe-certificate-authority:*)",
@@ -22,6 +26,12 @@
       "Bash(aws iam get-role:*)",
       "Bash(aws iam list-attached-role-policies:*)",
       "Bash(aws iam list-role-policies:*)",
+      "Bash(confluence children:*)",
+      "Bash(confluence label list:*)",
+      "Bash(confluence list:*)",
+      "Bash(confluence search:*)",
+      "Bash(confluence show:*)",
+      "Bash(confluence space list:*)",
       "Bash(df:*)",
       "Bash(docker images:*)",
       "Bash(docker logs:*)",
@@ -34,8 +44,16 @@
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git status:*)",
+      "Bash(git-activity:*)",
       "Bash(go version:*)",
       "Bash(grep:*)",
+      "Bash(jira list:*)",
+      "Bash(jira project list:*)",
+      "Bash(jira project search:*)",
+      "Bash(jira search:*)",
+      "Bash(jira show:*)",
+      "Bash(jira sprints:*)",
+      "Bash(jira team show:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(mypy:*)",
