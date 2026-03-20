@@ -15,22 +15,20 @@ wgrib2 file.grib2
 ```
 
 Output format (one line per message):
-
-```text
+```
 1:0:d=2024010100:TMP:2 m above ground:anl:
 2:4283914:d=2024010100:TMP:2 m above ground:3 hour fcst:
 3:8567828:d=2024010100:RH:2 m above ground:anl:
 ```
 
 Fields are colon-separated:
-
-```text
+```
 {msg_num}:{byte_offset}:d={init_time}:{param}:{level}:{time_step}:
     1          2              3           4       5         6
 ```
 
 | Field | Meaning |
-| ----- | ------- |
+|-------|---------|
 | `1` | Message number (1-based) |
 | `0` | Byte offset from start of file |
 | `d=2024010100` | Reference (initialization) time: YYYYMMDDHH |
@@ -296,8 +294,7 @@ wgrib2 -varX file.grib2
 ```
 
 Example output:
-
-```text
+```
 1:0:d=2026032012:TMP:2 m above ground:360 hour fcst::var0_2_1_7_0_0
 2:513114:d=2026032012:DPT:2 m above ground:360 hour fcst::var0_2_1_7_0_6
 3:1052558:d=2026032012:RH:2 m above ground:360 hour fcst::var0_2_1_7_1_1
@@ -305,8 +302,7 @@ Example output:
 ```
 
 Decoding the `-varX` field `var0_2_1_7_0_0`:
-
-```text
+```
 var{discipline}_{master_table}_{local_table}_{master_table_num}_{category}_{number}
     0              2             1             7                  0          0
 ```
@@ -343,7 +339,6 @@ wgrib2 file.grib2 -match ':TMP:2 m above ground:' -no_header -order we:ns -bin -
 ```
 
 In Python:
-
 ```python
 import numpy as np
 # Read raw float32 binary
@@ -368,7 +363,7 @@ data = data.reshape(ny, nx)  # must know grid dimensions
 ## Common Options Reference
 
 | Option | Description |
-| ------ | ----------- |
+|--------|-------------|
 | `-s` | Short inventory (compact format, good for .idx files) |
 | `-v` | Verbose inventory |
 | `-V` | Very verbose inventory |

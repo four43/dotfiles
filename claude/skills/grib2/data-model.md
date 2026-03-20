@@ -4,12 +4,12 @@ This describes how GRIB2 messages map to the conceptual data model of **variable
 
 ## The Core Equation
 
-```text
+```
 Variable = (Parameter + Statistical Processing) + Level + TimeStep
 ```
 
 | Component | What it answers | Identity or Coordinate? |
-| --------- | -------------- | ---------------------- |
+|-----------|----------------|------------------------|
 | **Parameter** | *What* is being measured? | Identity |
 | **Statistical Processing** | *How* was it derived? (instant, accum, avg) | Identity |
 | **Level** | *Where* vertically? | Coordinate |
@@ -23,7 +23,6 @@ This distinction is fundamental to correctly organizing GRIB2 data:
 - **Coordinate** defines *where/when* the quantity was sampled. Two values with the same identity but different coordinates stack along a dimension.
 
 Examples:
-
 - "TMP at 850 hPa" and "TMP at 500 hPa" → same identity, different level coordinate → stack into pressure-level dimension
 - "TMP at hour 12" and "TMP at hour 24" → same identity, different time coordinate → stack into time dimension
 - "Instantaneous TMP" and "6-hour average TMP" → **different identities** → different physical quantities, different DataArrays
@@ -33,7 +32,7 @@ Statistical processing is part of identity because it changes the physical meani
 ## Terminology
 
 | Term | Scope | Example |
-| ---- | ----- | ------- |
+|------|-------|---------|
 | **Variable** | Format-agnostic concept | "2-meter instantaneous temperature in Kelvin" |
 | **Band** | GRIB2-specific implementation | A `Band` parsed from a GRIB2 message via ecCodes + wgrib2 |
 | **Message** | GRIB2 file structure | One self-contained record in a GRIB2 file |
@@ -45,7 +44,7 @@ Statistical processing is part of identity because it changes the physical meani
 
 A `Band` is the code-level representation of a GRIB2 message's metadata:
 
-```text
+```
 Band
 ├── parameter: Parameter
 │   ├── grib2_key: (discipline, category, number)  ← canonical identity
@@ -65,7 +64,6 @@ Band
 ```
 
 A Band is constructed from two data sources:
-
 1. **ecCodes GRIB message handle** — structured metadata (triplet, level type, step range, units)
 2. **wgrib2 index line** — human-readable strings for matching and display
 
@@ -80,7 +78,7 @@ The canonical identifier: `(discipline, parameterCategory, parameterNumber)` fro
 ### Four Naming Systems
 
 | System | Example (Temperature) | Source | Pros | Cons |
-| ------ | --------------------- | ------ | ---- | ---- |
+|--------|----------------------|--------|------|------|
 | GRIB2 triplet | `(0, 0, 0)` | WMO Code Table 4.2 | Unambiguous, always present | Not human-readable; local-use (192+) is producer-specific |
 | wgrib2 / NCEP abbreviation | `TMP` | NCEP parameter tables | Human-readable, doesn't conflate level into name | NCEP-centric; verbose fallback for unknowns |
 | ecCodes paramId / shortName | `t` or `t2m` | ECMWF parameter database | Comprehensive (GRIB1 + GRIB2) | shortName bakes in level (`t2m` vs `t`); paramId=0 for unknowns |
@@ -89,7 +87,6 @@ The canonical identifier: `(discipline, parameterCategory, parameterNumber)` fro
 **Strategy**: GRIB2 triplet as ground truth, wgrib2/NCEP abbreviations as primary display names.
 
 Why wgrib2 names win for display:
-
 - We ship wgrib2 indexes alongside GRIB2 files
 - NCEP names don't conflate level into the parameter name
 - De facto standard in operational US meteorology
@@ -98,26 +95,22 @@ Why wgrib2 names win for display:
 ## Levels
 
 A level defines the vertical position. Identified by:
-
 - **Type** (`typeOfLevel`): e.g., `isobaricInhPa`, `heightAboveGround`, `surface`
 - **Value(s)**: e.g., 850, 2, 0-0.1
 
 ### Single Level vs Layer
-
 - **Single level**: One surface value — `isobaricInhPa = 850` (the 850 hPa surface)
 - **Layer**: Two surface values — `depthBelowLandLayer = 0-0.1` (0 to 10 cm depth)
 
 ### The Level-Type Problem
-
 The same physical level can be encoded differently:
-
 - "2 meters above ground" could be `heightAboveGround(2)` or `heightAboveGroundLayer(0, 2)`
 - This causes identical data to land in different tree branches
 
 ## Statistical Processing (Aggregation Type)
 
 | Type | Meaning | Example |
-| ---- | ------- | ------- |
+|------|---------|---------|
 | `instant` | Snapshot at a point in time | Temperature at hour 12 |
 | `accum` | Accumulated over interval | Total precipitation 0-6 hours |
 | `avg` | Averaged over interval | Average wind speed 0-6 hours |
@@ -129,7 +122,7 @@ In GRIB2, this comes from Code Table 4.10 (`typeOfStatisticalProcessing`) in Pro
 ## Time Step
 
 | Field | Meaning | Example |
-| ----- | ------- | ------- |
+|-------|---------|---------|
 | `range` | Start and optional end of forecast time | `(12.0, None)` = hour 12; `(0.0, 6.0)` = 0-6 hour range |
 | `time_unit` | Unit | `"hours"`, `"minutes"` |
 | `agg_type` | Statistical processing | `"instant"`, `"accum"` |
@@ -139,7 +132,7 @@ In GRIB2, this comes from Code Table 4.10 (`typeOfStatisticalProcessing`) in Pro
 
 In an xarray DataTree, variable components map to tree structure:
 
-```text
+```
 /{wgrib2_param}/{agg_type}/
     DataArray(typeOfLevel) with dims [time, level, y, x]
 ```
@@ -151,8 +144,7 @@ In an xarray DataTree, variable components map to tree structure:
 - **Time step** → coordinate dimension within each DataArray
 
 Example tree:
-
-```text
+```
 /TMP/instant/
     isobaricInhPa  [time=4, level=37, y=721, x=1440]
     heightAboveGround  [time=4, level=1, y=721, x=1440]
@@ -170,7 +162,6 @@ When wgrib2 or ecCodes can't resolve a parameter name:
 - **ecCodes output**: `paramId=0`, `name="unknown"` → `param_id=None`
 
 Sources of unknowns:
-
 1. Newer WMO master table version than the software supports
 2. Local-use parameters (192-254) from a center whose tables aren't loaded
 3. Producer-specific extensions
@@ -178,13 +169,11 @@ Sources of unknowns:
 ### ecCodes Definition Overrides
 
 Unknown parameters can be taught to ecCodes via custom definition files:
-
-```text
+```
 ENV ECCODES_DEFINITION_PATH=/MEMFS/definitions:/app/data/eccodes_definitions
 ```
 
 For each center, maintain files under `data/eccodes_definitions/grib2/localConcepts/{center}/`:
-
 - `shortName.def` — abbreviation
 - `name.def` — human-readable name
 - `units.def` — units
