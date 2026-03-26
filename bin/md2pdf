@@ -1,0 +1,73 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "markdown",
+#     "weasyprint",
+# ]
+# ///
+"""Convert a Markdown file to PDF with GitHub-flavored styling."""
+
+import argparse
+import sys
+from pathlib import Path
+
+import markdown
+from weasyprint import HTML
+
+DEFAULT_CSS = Path(__file__).resolve().parent / "md2pdf-markdown.css"
+
+
+def md_to_html(md_text: str) -> str:
+    extensions = [
+        "markdown.extensions.tables",
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.codehilite",
+        "markdown.extensions.toc",
+        "markdown.extensions.sane_lists",
+        "markdown.extensions.smarty",
+        "markdown.extensions.nl2br",
+    ]
+    extension_configs = {
+        "markdown.extensions.codehilite": {"css_class": "highlight", "guess_lang": False},
+    }
+    return markdown.markdown(md_text, extensions=extensions, extension_configs=extension_configs)
+
+
+def build_document(body_html: str, css_path: Path) -> str:
+    css = css_path.read_text()
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>{css}</style>
+</head>
+<body>
+{body_html}
+</body>
+</html>"""
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Convert Markdown to PDF")
+    parser.add_argument("input", help="Input markdown file")
+    parser.add_argument("-o", "--output", help="Output PDF file (default: <input>.pdf)")
+    parser.add_argument("--css", type=Path, default=DEFAULT_CSS, help="Custom CSS file")
+    args = parser.parse_args()
+
+    input_path = Path(args.input)
+    if not input_path.exists():
+        sys.exit(f"File not found: {input_path}")
+
+    output_path = Path(args.output) if args.output else input_path.with_suffix(".pdf")
+
+    md_text = input_path.read_text()
+    body_html = md_to_html(md_text)
+    document = build_document(body_html, args.css)
+
+    HTML(string=document, base_url=str(input_path.parent)).write_pdf(str(output_path))
+    print(f"{output_path}")
+
+
+if __name__ == "__main__":
+    main()
