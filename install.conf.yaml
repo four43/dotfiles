@@ -76,6 +76,7 @@
     ~/.gitconfig-work: git/gitconfig-work
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
+    ~/.local/bin/arch-system-update: arch/system-update.sh
     # ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
     # ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
     # ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
