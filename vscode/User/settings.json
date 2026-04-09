@@ -171,7 +171,7 @@
     "redhat.telemetry.enabled": false,
     "remote.autoForwardPortsSource": "hybrid",
     "terminal.integrated.enableMultiLinePasteWarning": "never",
-    "terminal.integrated.fontFamily": "'DejaVuSansM Nerd Font'",
+    "terminal.integrated.fontFamily": "'NotoMono Nerd Font Mono'",
     "terminal.integrated.fontWeight": "normal",
     "terminal.integrated.mouseWheelZoom": true,
     "terminal.integrated.rescaleOverlappingGlyphs": false,
@@ -424,7 +424,6 @@
         "black": true,
         "confluence": true
     },
-    "workbench.colorTheme": "Nord Native",
     "githubPullRequests.pullBranch": "never",
     "[dockercompose]": {
         "editor.insertSpaces": true,
@@ -452,7 +451,7 @@
     },
     "scm.defaultViewMode": "tree",
     "claudeCode.preferredLocation": "panel",
-    "editor.fontFamily": "'Noto Sans Mono', monospace",
+    "editor.fontFamily": "'NotoSansM Nerd Font Mono'",
     "editor.allowVariableFonts": false,
     "terminal.integrated.defaultProfile.linux": "zsh",
     "dotfiles.installCommand": "install",
@@ -465,4 +464,5 @@
         "**/.cargo/git/checkouts/**/*.rs": true,
         "**/lib/rustlib/src/rust/library/**/*.rs": true,
     },
+    "workbench.colorTheme": "Nord Native",
 }
