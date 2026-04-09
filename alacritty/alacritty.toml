@@ -26,7 +26,7 @@ foreground = "#D8DEE9"
 size = 12
 
 [font.bold]
-family = "DejaVuSansM Nerd Font Mono"
+family = "NotoSansM Nerd Font Mono"
 style = "Bold"
 
 [font.glyph_offset]
@@ -34,11 +34,11 @@ x = 0
 y = 0
 
 [font.italic]
-family = "DejaVuSansM Nerd Font Mono"
-style = "Italic"
+family = "NotoSansM Nerd Font Mono"
+style = "Medium"
 
 [font.normal]
-family = "DejaVuSansM Nerd Font Mono"
+family = "NotoSansM Nerd Font Mono"
 style = "Regular"
 
 [font.offset]
