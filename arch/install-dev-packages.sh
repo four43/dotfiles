@@ -87,7 +87,9 @@ sudo pacman -S \
 	timeshift \
 	tmux \
 	traceroute \
+	ttf-dejavu-nerd \
 	ttf-opensans \
+	ttf-noto-nerd \
 	unzip \
 	uv \
 	zsh \
