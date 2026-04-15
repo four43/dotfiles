@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-/home/smiller/projects/aerisweather/infra-mgmt/util/sensu-cli list -s
+/home/smiller/projects/VaisalaCorp/infra-mgmt/util/sensu-cli list -s
