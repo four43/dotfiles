@@ -284,6 +284,62 @@ function aws-s3-cp-latest() {
     aws s3 ls "${bucket_and_prefix}" | tail -n "${count}" | awk '{ print $4 }' | xargs -n 1 -I % aws s3 cp "${bucket_and_prefix}%" "${destination}"
 }
 
+aws-s3-ls-dirs() {
+  local s3_path="$1"
+  local depth="${2:-2}"
+
+  if [[ -z "$s3_path" ]]; then
+    echo "Usage: aws-s3-ls-dirs <s3-path> [depth]" >&2
+    echo "  e.g. aws-s3-ls-dirs my-bucket/some/prefix 3" >&2
+    return 1
+  fi
+
+  # Strip s3:// prefix if provided
+  s3_path="${s3_path#s3://}"
+
+  local bucket="${s3_path%%/*}"
+  local base_prefix="${s3_path#*/}"
+
+  # If there was no slash, there's no prefix
+  if [[ "$base_prefix" == "$bucket" ]]; then
+    base_prefix=""
+  elif [[ -n "$base_prefix" && "$base_prefix" != */ ]]; then
+    base_prefix="${base_prefix}/"
+  fi
+
+  _aws_s3_ls_dirs_recurse "$bucket" "$base_prefix" "$depth" 0
+}
+
+_aws_s3_ls_dirs_recurse() {
+  local bucket="$1"
+  local prefix="$2"
+  local max_depth="$3"
+  local current_depth="$4"
+
+  if (( current_depth >= max_depth )); then
+    return
+  fi
+
+  local indent=$(printf '%*s' $((current_depth * 2)) '')
+  local prefixes
+  prefixes=$(aws s3api list-objects-v2 \
+    --bucket "$bucket" \
+    --prefix "$prefix" \
+    --delimiter "/" \
+    --query "CommonPrefixes[].Prefix" \
+    --output text)
+
+  [[ "$prefixes" == "None" || -z "$prefixes" ]] && return
+
+  for p in $(echo "$prefixes" | tr '\t' '\n'); do
+    # Show only the trailing directory name
+    local stripped="${p%/}"
+    local name="${stripped##*/}/"
+    echo "${indent}${name}"
+    _aws_s3_ls_dirs_recurse "$bucket" "$p" "$max_depth" $((current_depth + 1))
+  done
+}
+
 function aws-efs-fs-ls() {
     aws efs describe-file-systems | jq -r '.FileSystems[] | [.Name,.SizeInBytes.Value,.FileSystemId] | @tsv' | awk '{print $1, $2/1024/1024/1024 "GB", $3}' | column -t | sort
 }
