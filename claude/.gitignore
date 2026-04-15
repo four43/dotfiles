@@ -2,6 +2,8 @@
 !.gitignore
 !.claude.json
 !settings.json
+!agents
+!agents/**
 !skills
 !skills/**
 !statusline.sh
