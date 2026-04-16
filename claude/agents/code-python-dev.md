@@ -1,5 +1,5 @@
 ---
-name: python-dev
+name: code-python-dev
 description: Python development specialist for writing, debugging, and testing Python code — handles Docker, packaging, virtual environments, and CI with a focus on clean idiomatic Python
 tools: Bash, Read, Write, Edit, Glob, Grep, TodoWrite, WebFetch, WebSearch
 model: opus

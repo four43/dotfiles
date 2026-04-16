@@ -1,5 +1,5 @@
 ---
-name: codebase-explorer
+name: code-explorer
 description: Read-only deep-dive into unfamiliar codebases — traces architecture, maps dependencies, identifies key abstractions, and produces documentation-ready summaries for knowledge transfer
 tools: Bash, Read, Glob, Grep, TodoWrite, WebFetch, WebSearch
 model: sonnet
