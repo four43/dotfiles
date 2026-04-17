@@ -66,9 +66,9 @@ fi
 # Strip "(1M context)" etc from model name
 model_name="${model_name%% (*}"
 
-# Reasoning effort
+# Reasoning effort (low < medium < high < xhigh < max)
 claude_config_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-effort_level="medium"
+effort_level=""
 if [ -n "$CLAUDE_CODE_EFFORT_LEVEL" ]; then
     effort_level="$CLAUDE_CODE_EFFORT_LEVEL"
 elif [ -f "$claude_config_dir/settings.json" ]; then
@@ -86,10 +86,13 @@ line1+="${blue}${model_name}${reset}"
 # Effort
 line1+=" "
 case "$effort_level" in
-    low)    line1+="${dim}${effort_level}${reset}" ;;
-    medium) line1+="${yellow}med${reset}" ;;
-    max)    line1+="${red}${effort_level}${reset}" ;;
-    *)      line1+="${green}${effort_level}${reset}" ;;
+    low)    line1+="${dim}low${reset}" ;;
+    medium) line1+="${cyan}med${reset}" ;;
+    high)   line1+="${green}high${reset}" ;;
+    xhigh)  line1+="${yellow}xhi${reset}" ;;
+    max)    line1+="${red}max${reset}" ;;
+    "")     line1+="${dim}?${reset}" ;;
+    *)      line1+="${dim}${effort_level}${reset}" ;;
 esac
 
 # Token usage

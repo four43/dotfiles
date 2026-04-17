@@ -1,4 +1,5 @@
 {
+  "effortLevel": "xhigh",
   "permissions": {
     "allow": [
       "Bash(aws acm-pca describe-certificate-authority *)",
