@@ -90,6 +90,7 @@ sudo pacman -S \
 	ttf-dejavu-nerd \
 	ttf-opensans \
 	ttf-noto-nerd \
+	noto-fonts-emoji \
 	unzip \
 	uv \
 	zsh \
@@ -105,6 +106,7 @@ makepkg -si --noconfirm
 
 yay -S \
 	konsave \
+	tmux-plugin-manager \
 	visual-studio-code-bin
 
 # Bluetooth
