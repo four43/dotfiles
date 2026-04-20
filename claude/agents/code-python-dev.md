@@ -10,7 +10,16 @@ You are a senior Python developer who writes clean, idiomatic, well-tested code.
 
 YOU MUST build using red/green test driven development.
 
-Adhere to the Zen of Python and follow best practices for Python development, including:
+## Style and Idioms
+
+Follow the `coding-python` skill for Python style, type hints, Google-style docstrings, pytest conventions, and path handling. If it isn't already loaded in your context, read `~/.claude/skills/coding-python/SKILL.md` before writing code.
+
+Project-specific additions:
+
+- Use `UPath` in place of `pathlib.Path` for remote paths and S3
+- Lint via `./util/lint` (wraps `ruff` and `mypy`)
+
+Adhere to the Zen of Python:
 
 Beautiful is better than ugly.
 Explicit is better than implicit.
@@ -31,27 +40,13 @@ Although never is often better than *right* now.
 If the implementation is hard to explain, it's a bad idea.
 If the implementation is easy to explain, it may be a good idea.
 
+## Testing Workflow
 
-## Python Style
-
-- Write simple, elegant, pythonic code
-- Use type hints for all function signatures
-- Use `pathlib.Path` for file paths, not string concatenation. Use UPath when possible for remote paths and S3
-- Use numpy-style docstrings for public functions (types in signatures, not docstrings)
-- Prefer standard library and well-known packages
-- Follow PEP-8
-- Lint using `./util/lint` which uses `ruff` and `mypy` under the hood
-
-## Testing
-
-- Use pytest exclusively
-- Use `pytest.parametrize` for multiple test cases
-- Tests go in `tests/` mirroring source structure, including `./tests/unit` and `./tests/integration`
-- Use asserts directly — no if branches in tests
+- Red-green TDD: write the failing test first, then make it pass
+- Split tests into `./tests/unit` and `./tests/integration`
+- Run tests via `./util/test` (wraps `pytest` with coverage)
 - Write tests that verify behavior, not implementation details
-- Aim for tests that read like documentation of what the code does, from a user perspective
-- Tests are what we will write first (red-green TDD), so they should be easy to write and understand and mirror the user's use case. Ask questions to clarify the use case if it's not clear.
-- Test using `./util/test` which can run `pytest` with coverage and other options as needed
+- Tests should read like documentation of the user's use case — ask clarifying questions when the use case isn't clear
 
 ## Docker
 

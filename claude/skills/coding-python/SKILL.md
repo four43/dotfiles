@@ -24,23 +24,17 @@ config_path = Path("config") / "settings.json"
 
 ## Docstrings
 
-Use numpy-style docstrings for public functions and classes, without types in the docstring (types go in signatures):
+Use Google-style docstrings for public functions and classes, without types in the docstring (types go in signatures):
 
 ```python
 def process_data(items: list[dict], threshold: float) -> list[dict]:
-    """
-    Filter and transform data items based on threshold.
+    """Filter and transform data items based on threshold.
 
-    Parameters
-    ----------
-    items
-        List of data dictionaries to process.
-    threshold
-        Minimum value for filtering.
+    Args:
+        items: List of data dictionaries to process.
+        threshold: Minimum value for filtering.
 
-    Returns
-    -------
-    list[dict]
+    Returns:
         Filtered and transformed items.
     """
 ```
@@ -51,6 +45,8 @@ def process_data(items: list[dict], threshold: float) -> list[dict]:
 - Use `pytest.parametrize` for multiple test cases
 - Tests go in `tests/` directory, mirroring source structure
 - Use asserts directly, avoid if branches in tests
+- Test behavior, not implementation details
+- Write tests that read like documentation of the user's use case
 
 ```python
 import pytest
@@ -64,10 +60,16 @@ def test_double(input_val, expected):
     assert double(input_val) == expected
 ```
 
-## Environment
+## Linting and Type Checking
 
-- Python environment is already configured
-- Output which packages need installation, but don't create requirements.txt or virtual environments
+- `ruff` for linting and formatting
+- `mypy` for static type checking
+
+## Packaging
+
+- Prefer `pyproject.toml` over `setup.py` for new projects
+- Use the `~=` operator for dependency versioning — allows patch updates while preventing breaking changes
+- Output which packages need installation, but don't create requirements.txt or virtual environments unless asked
 
 ## External Libraries
 
