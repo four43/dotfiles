@@ -4,8 +4,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
-    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: "Mona Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji";
   font-size: 14px;
   line-height: 1.5;
   color: #1f2328;
@@ -70,8 +71,8 @@ code {
   white-space: break-spaces;
   background-color: rgba(175, 184, 193, 0.2);
   border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
+  font-family: "Monaspace Neon", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 pre {
