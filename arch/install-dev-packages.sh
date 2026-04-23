@@ -77,6 +77,7 @@ sudo pacman -S \
 	openrgb \
 	nodejs \
 	openssh \
+	otf-monaspace-nerd \
 	python \
 	python-click \
 	python-ipykernel \
