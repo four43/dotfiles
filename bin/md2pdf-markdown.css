@@ -120,6 +120,45 @@ th {
 
 tr:nth-child(2n) { background-color: #f6f8fa; }
 
+/* GitHub-flavored alerts (Note/Tip/Important/Warning/Caution) */
+.markdown-alert {
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  border-left: 0.25em solid #d1d9e0;
+  border-radius: 6px;
+  background-color: #f6f8fa;
+}
+
+.markdown-alert > :first-child { margin-top: 0; }
+.markdown-alert > :last-child { margin-bottom: 0; }
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.markdown-alert .markdown-alert-title svg {
+  margin-right: 8px;
+}
+
+.markdown-alert-note { border-left-color: #0969da; }
+.markdown-alert-note .markdown-alert-title { color: #0969da; }
+
+.markdown-alert-tip { border-left-color: #1a7f37; }
+.markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+
+.markdown-alert-important { border-left-color: #8250df; }
+.markdown-alert-important .markdown-alert-title { color: #8250df; }
+
+.markdown-alert-warning { border-left-color: #9a6700; }
+.markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+
+.markdown-alert-caution { border-left-color: #cf222e; }
+.markdown-alert-caution .markdown-alert-title { color: #cf222e; }
+
 /* Horizontal rules */
 hr {
   height: 0.25em;
