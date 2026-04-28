@@ -1,5 +1,4 @@
 {
-  "effortLevel": "xhigh",
   "permissions": {
     "allow": [
       "Bash(aws acm-pca describe-certificate-authority *)",
@@ -82,5 +81,38 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
-  }
+  },
+  "enabledPlugins": {
+    "atlassian@xwe-ai-skills": true,
+    "git-activity@xwe-ai-skills": true,
+    "xweather@xwe-ai-skills": true,
+    "xweather-branding@xwe-ai-skills": true,
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
+    "geo-weather-analyst@xwe-ai-skills": true,
+    "xwe-project-manager@xwe-ai-skills": true,
+    "xwe-software-engineer@xwe-ai-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "xwe-ai-skills": {
+      "source": {
+        "source": "github",
+        "repo": "VaisalaCorp/xwe-ai-skills"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "theme": "dark-ansi"
 }
