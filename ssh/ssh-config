@@ -19,16 +19,19 @@ Host github.com-four43
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
 
 Host github.com-VaisalaCorp
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_rsa_vaisala
+    IdentitiesOnly yes
 
 Host bitbucket.org-VaisalaDigital
     HostName bitbucket.org
     User git
     IdentityFile ~/.ssh/id_rsa_vaisala
+    IdentitiesOnly yes
 
 # Vaisala Xweather
 Host geotiff
@@ -50,6 +53,18 @@ Host aeris-obs-summary-importer
     Hostname 10.0.35.140
     User ec2-user
     IdentityFile ~/.ssh/aerisweather/aeris-forecast.pem
+
+Host lightning-lounet-sshlp1
+    Hostname 199.33.75.246
+    Port 52022
+    User sethm
+    IdentityFile ~/.ssh/id_rsa_vaisala
+
+Host lightning-dalnet-sshlp1
+    Hostname 192.101.77.246
+    Port 52022
+    User sethm
+    IdentityFile ~/.ssh/id_rsa_vaisala
 
 # Defaults
 Host *
