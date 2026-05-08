@@ -10,11 +10,6 @@ Host ursa-minor
     Port 289
 
 # Git Hosts
-Host github.com
-    Hostname github.com
-    User git
-    IdentityFile ~/.ssh/id_rsa
-
 Host github.com-four43
     HostName github.com
     User git

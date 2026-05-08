@@ -17,6 +17,23 @@
 [safe]
     directory = *
 
+# Route VaisalaCorp/ and seth-miller_vai/ URLs through the work SSH alias
+# (defined in ssh/ssh-config). These rewrites are global, not directory-scoped,
+# so they apply to clones in tempdirs (e.g. Claude plugin marketplace) too.
+[url "git@github.com-VaisalaCorp:VaisalaCorp/"]
+    insteadOf = git@github.com:VaisalaCorp/
+    insteadOf = https://github.com/VaisalaCorp/
+
+[url "ssh://git@github.com-VaisalaCorp/VaisalaCorp/"]
+    insteadOf = ssh://git@github.com/VaisalaCorp/
+
+[url "git@github.com-VaisalaCorp:seth-miller_vai/"]
+    insteadOf = git@github.com:seth-miller_vai/
+    insteadOf = https://github.com/seth-miller_vai/
+
+[url "ssh://git@github.com-VaisalaCorp/seth-miller_vai/"]
+    insteadOf = ssh://git@github.com/seth-miller_vai/
+
 [includeIf "gitdir:~/projects/aerisweather/"]
     path = ~/.gitconfig-work
 [includeIf "gitdir:~/projects/VaisalaCorp/"]
