@@ -1,4 +1,10 @@
 # Home Network
+
+Host home
+    Hostname home.four43.com
+    User smiller
+    Port 289
+
 Host orion
     Hostname orion.four43.com
     User smiller
@@ -9,26 +15,8 @@ Host ursa-minor
     User smiller
     Port 289
 
-# Git Hosts
-Host github.com-four43
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/id_rsa
-    IdentitiesOnly yes
-
-Host github.com-VaisalaCorp
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/id_rsa_vaisala
-    IdentitiesOnly yes
-
-Host bitbucket.org-VaisalaDigital
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_rsa_vaisala
-    IdentitiesOnly yes
-
 # Vaisala Xweather
+
 Host geotiff
     Hostname ec2-35-168-223-12.compute-1.amazonaws.com
     User core
@@ -54,14 +42,17 @@ Host lightning-lounet-sshlp1
     Port 52022
     User sethm
     IdentityFile ~/.ssh/id_rsa_vaisala
+    ForwardAgent yes
 
 Host lightning-dalnet-sshlp1
     Hostname 192.101.77.246
     Port 52022
     User sethm
     IdentityFile ~/.ssh/id_rsa_vaisala
+    ForwardAgent yes
 
 # Defaults
+
 Host *
     User smiller
     StrictHostKeyChecking no
