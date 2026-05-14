@@ -1,11 +1,65 @@
 #!/bin/bash
+# Create an annotated git tag from the topmost version section in CHANGELOG.md.
+#
+# Supports two header styles:
+#   ## v1.2.3
+#   ## [1.2.3] - 2026-05-12          (Keep a Changelog)
+#
+# The git tag is always prefixed with `v` regardless of which style the
+# changelog uses (matches existing tag history).
 set -eo pipefail
-latest_version="$(cat ./CHANGELOG.md | grep -E '## v[0-9]+\.[0-9]+\.[0-9]+' | sed -E 's/^## (v[0-9]+\.[0-9]+\.[0-9]+)/\1/' | head -n 1)"
-contents="$(sed '/^## '"$latest_version"'$/,/^## v.*/!d;//d;/^$/d' ./CHANGELOG.md)"
-git tag -a "$latest_version" -m "$contents"
-echo "Created tag:
-$latest_version
-$contents
 
-To push to origin, run: git push origin tags/$latest_version
+CHANGELOG="./CHANGELOG.md"
+if [[ ! -f "$CHANGELOG" ]]; then
+  echo "No CHANGELOG.md in $(pwd)" >&2
+  exit 1
+fi
+
+# Find the first version header (top of file = most recent release)
+header_line="$(grep -nE '^## \[?v?[0-9]+\.[0-9]+\.[0-9]+\]?' "$CHANGELOG" | head -n 1)"
+if [[ -z "$header_line" ]]; then
+  echo "No version header found in $CHANGELOG" >&2
+  exit 1
+fi
+header_lineno="${header_line%%:*}"
+header_text="${header_line#*:}"
+
+# Strip "## ", optional "[", optional "v", capture X.Y.Z, ignore the rest
+bare_version="$(printf '%s\n' "$header_text" \
+  | sed -E 's/^## \[?v?([0-9]+\.[0-9]+\.[0-9]+)\]?.*/\1/')"
+tag="v$bare_version"
+
+# Body: everything after the header up to the next "## " (release header),
+# with leading/trailing blank lines trimmed. Preserves internal blank lines
+# so Added/Changed/Fixed subsections stay readable.
+contents="$(awk -v start="$header_lineno" '
+  NR > start {
+    if (/^## /) exit
+    print
+  }
+' "$CHANGELOG" | sed -e '/./,$!d' | tac | sed -e '/./,$!d' | tac)"
+
+if git rev-parse "$tag" >/dev/null 2>&1; then
+  echo "Tag $tag already exists" >&2
+  exit 1
+fi
+
+git tag -a "$tag" -m "$tag
+
+$contents"
+
+echo "Created tag:
+$tag
+
+$contents
 " >&2
+
+read -r -p "Push tag $tag to origin? [y/N] " ans
+case "$ans" in
+  y|Y|yes|YES)
+    git push origin "tags/$tag"
+    ;;
+  *)
+    echo "Skipped. To push later: git push origin tags/$tag" >&2
+    ;;
+esac
