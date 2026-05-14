@@ -24,18 +24,20 @@ mkdir -p "$target_dir"
 cat > "$target_file" <<'YAML'
 services:
   app:
-    volumes:
-      - ~/.aws:/root/.aws:rw
-      - ~/.claude/agents:/root/.claude/agents:rw
-      - ~/.claude/plugins:/root/.claude/plugins:rw
-      - ~/.claude/skills:/root/.claude/skills:rw
-      - ~/.claude/.credentials.json:/root/.claude/.credentials.json:rw
-      - ~/.claude/settings.json:/root/.claude/settings.json:rw
-      - ~/.claude.json:/root/.claude.json:rw
     environment:
       - AWS_PROFILE=vaisala-xwe-xwc-data-dev
+      - XWE_ATLASSIAN_EMAIL=${XWE_ATLASSIAN_EMAIL}
+      - XWE_ATLASSIAN_API_TOKEN=${XWE_ATLASSIAN_API_TOKEN}
+      - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
+    volumes:
+      - ~/.aws:/root/.aws:rw
+      - ~/.ssh/config:/host/home/.ssh/config:ro
+      - ~/.claude:/host/home/.claude:rw
+      - ~/.claude.json:/host/home/.claude.json:rw
+      - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
 YAML
 
 echo "wrote $target_file" >&2
