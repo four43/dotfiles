@@ -319,10 +319,10 @@
         "scminput": false
     },
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": [
-        "-n",
-        "auto"
-    ],
+    // "python.testing.pytestArgs": [
+    //     "-n",
+    //     "auto"
+    // ],
     "chat.agent.maxRequests": 50,
     "chat.tools.terminal.autoApprove": {
         "cat": true,
@@ -458,7 +458,7 @@
     "editor.allowVariableFonts": false,
     "terminal.integrated.defaultProfile.linux": "zsh",
     "dotfiles.installCommand": "install",
-    "dotfiles.repository": "git@github.com:four43/dotfiles-aw",
+    "dotfiles.repository": "git@github.com:seth-miller_vai/dotfiles-min.git",
     "dev.containers.dockerCredentialHelper": false,
     "claudeCode.selectedModel": "default",
     "claudeCode.useTerminal": true,

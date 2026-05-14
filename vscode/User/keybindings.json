@@ -204,5 +204,20 @@
             "text": "\u001b[13;2u"
         },
         "when": "terminalFocus"
+    },
+    {
+        "key": "ctrl+0",
+        "command": "workbench.action.terminal.fontZoomReset",
+        "when": "terminalFocus && terminalHasBeenCreated && terminalIsOpen || terminalFocus && terminalIsOpen && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+shift+v",
+        "command": "-markdown.togglePreview",
+        "when": "!notebookEditorFocused && resourceLangId =~ /^(markdown|prompt|instructions|chatagent|skill)$/"
+    },
+    {
+        "key": "ctrl+shift+v",
+        "command": "-notebook.cell.pasteAbove",
+        "when": "notebookEditorFocused && !inputFocus"
     }
 ]
