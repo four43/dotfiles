@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+
+force=0
+if [[ "${1:-}" == "-f" || "${1:-}" == "--force" ]]; then
+    force=1
+fi
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "error: not inside a git repository" >&2
+    exit 1
+}
+
+target_dir="$repo_root/.devcontainer"
+target_file="$target_dir/docker-compose.override.dev.yml"
+
+if [[ -e "$target_file" && $force -eq 0 ]]; then
+    echo "error: $target_file already exists (use -f to overwrite)" >&2
+    exit 1
+fi
+
+mkdir -p "$target_dir"
+
+cat > "$target_file" <<'YAML'
+services:
+  app:
+    volumes:
+      - ~/.aws:/root/.aws:rw
+      - ~/.claude/agents:/root/.claude/agents:rw
+      - ~/.claude/plugins:/root/.claude/plugins:rw
+      - ~/.claude/skills:/root/.claude/skills:rw
+      - ~/.claude/.credentials.json:/root/.claude/.credentials.json:rw
+      - ~/.claude/settings.json:/root/.claude/settings.json:rw
+      - ~/.claude.json:/root/.claude.json:rw
+    environment:
+      - AWS_PROFILE=vaisala-xwe-xwc-data-dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+YAML
+
+echo "wrote $target_file" >&2
