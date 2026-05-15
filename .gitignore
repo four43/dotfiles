@@ -21,3 +21,6 @@ vim/spell
 
 .mypy_cache
 __pycache__
+
+# Large ISO files - do not commit
+arch/install/testing/*.iso

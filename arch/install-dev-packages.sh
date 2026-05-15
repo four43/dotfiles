@@ -1,59 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Ensure user smiller is in groups docker video audio and wheel
-sudo usermod -aG docker,video,audio,wheel smiller
-
-# In order to clone the repo you will probably need git and openssh
-
-# Time
-sudo systemctl enable systemd-timesyncd.service
-sudo systemctl start systemd-timesyncd.service
-
-# Configure NetworkManager to use systemd-resolved for DNS
-# This prevents Docker containers from losing DNS when VPN is connected
-echo "[DNS] --- Configuring NetworkManager to use systemd-resolved ---" >&2
-sudo mkdir -p /etc/NetworkManager/conf.d
-cat <<EOF | sudo tee /etc/NetworkManager/conf.d/dns.conf > /dev/null
-[main]
-dns=systemd-resolved
-EOF
-sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-sudo systemctl enable systemd-resolved.service
-sudo systemctl restart NetworkManager systemd-resolved
-
-sleep 5
-
-# Configure sources automatically
-echo "[Sources List] --- Installing Reflector ---" >&2
-sudo pacman -Sy --needed reflector --noconfirm
-
-echo "[Sources List] --- Backing up current mirrorlist ---" >&2
-sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak
-
-echo "[Sources List] --- Optimizing mirrors for the US (Top 10 fastest, HTTPS) ---" >&2
-sudo reflector --country 'United States' \
-          --protocol https \
-          --latest 20 \
-          --sort rate \
-          --save /etc/pacman.d/mirrorlist
-
-echo "[Sources List] --- Configuring Weekly Auto-Updates ---" >&2
-# Edit the config file for the systemd service
-cat <<EOF | sudo tee /etc/xdg/reflector/reflector.conf > /dev/null
---save /etc/pacman.d/mirrorlist
---protocol https
---country 'United States'
---latest 20
---sort rate
-EOF
-
-# Enable and start the timer
-sudo systemctl enable --now reflector.timer
-
-echo "[Sources List] --- Mirror setup complete! ---" >&2
-echo "[Sources List] Your new mirrorlist is ready. Running a database sync..." >&2
-sudo pacman -Syy
+# Add smiller to dev/desktop groups (wheel is already granted by install-arch.sh)
+sudo usermod -aG docker,video,audio smiller
 
 sudo pacman -S \
 	alacritty \
@@ -61,22 +10,15 @@ sudo pacman -S \
 	aws-cli-v2 \
 	base-devel \
 	bluez \
-	coreutils \
-	bind \
 	docker \
 	docker-compose \
 	docker-buildx \
-	fzf \
-	git \
 	git-lfs \
 	github-cli \
-	inetutils \
-	jq \
 	kwallet \
 	kwallet-pam \
 	openrgb \
 	nodejs \
-	openssh \
 	otf-monaspace-nerd \
 	python \
 	python-click \
@@ -85,16 +27,11 @@ sudo pacman -S \
 	python-pip \
 	python-requests \
 	shfmt \
-	timeshift \
-	tmux \
-	traceroute \
 	ttf-dejavu-nerd \
 	ttf-opensans \
 	ttf-noto-nerd \
 	noto-fonts-emoji \
-	unzip \
 	uv \
-	zsh \
 	&& echo "Installed dev tools"
 
 # Install yay

@@ -1,0 +1,53 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Download ISO if not present
+iso_url = "https://fastly.mirror.pkgbuild.com/iso/2026.05.01/archlinux-2026.05.01-x86_64.iso"
+iso_path = "./archlinux-2026.05.01-x86_64.iso"
+
+unless File.exist?(iso_path)
+  puts "Downloading Arch Linux ISO..."
+  require 'open-uri'
+  File.open(iso_path, 'wb') do |file|
+    URI.open(iso_url) do |uri|
+      file.write(uri.read)
+    end
+  end
+  puts "Download complete!"
+end
+
+Vagrant.configure("2") do |config|
+  # Use generic base box (will be overridden by ISO)
+  config.vm.box = "generic/arch"
+
+  config.vm.provider :libvirt do |libvirt|
+    # VM resources
+    libvirt.cpus = 2
+    libvirt.memory = 4096
+    libvirt.graphics_type = "spice"
+    libvirt.video_type = "qxl"
+
+    # Enable UEFI boot with OVMF firmware
+    libvirt.loader = "/usr/share/OVMF/OVMF_CODE.fd"
+    libvirt.nvram = "/var/lib/libvirt/qemu/nvram/arch-live_VARS.fd"
+    libvirt.machine_type = "q35"
+
+    # Boot from live CD ISO (use SATA bus for Q35 compatibility)
+    libvirt.storage :file,
+      :device => :cdrom,
+      :path => File.expand_path(iso_path),
+      :bus => 'sata'
+
+    # Boot order - HD first (for booting installed OS)
+    libvirt.boot 'hd'
+    libvirt.boot 'cdrom'
+
+    # Create a disk for potential installation (virtio for best performance)
+    libvirt.storage :file, :size => '40G', :type => 'qcow2', :bus => 'virtio'
+  end
+
+  # Disable synced folder (doesn't work with live ISO)
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.hostname = "arch-live"
+end
