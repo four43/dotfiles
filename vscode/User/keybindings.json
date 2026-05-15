@@ -219,5 +219,10 @@
         "key": "ctrl+shift+v",
         "command": "-notebook.cell.pasteAbove",
         "when": "notebookEditorFocused && !inputFocus"
+    },
+    {
+        "key": "ctrl+shift+v",
+        "command": "-markdown.extension.closePreview",
+        "when": "activeWebviewPanelId == 'markdown.preview'"
     }
 ]

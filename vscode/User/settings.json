@@ -468,4 +468,7 @@
         "**/lib/rustlib/src/rust/library/**/*.rs": true,
     },
     "workbench.colorTheme": "Nord Native",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
 }
