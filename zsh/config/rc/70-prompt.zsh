@@ -114,10 +114,10 @@ function python_env_indicator() {
 	# Check Pipenv/venv first
 	if [[ -n "${VIRTUAL_ENV}" ]]; then
 		if [[ "$VIRTUAL_ENV" =~ \.venv ]]; then
-			env_name="$(basename "$(realpath "$VIRTUAL_ENV/../")")"
+			env_name=" $(basename "$(realpath "$VIRTUAL_ENV/../")")"
 		else
 			# Virtual env in virtualenvs folder [project-name]-[random]
-			env_name="$(echo "$VIRTUAL_ENV" | sed -E 's/^.*\/([^\/]+)-[^\-]+$/\1/')"
+			env_name="$(echo " $VIRTUAL_ENV" | sed -E 's/^.*\/([^\/]+)-[^\-]+$/\1/')"
 		fi
 		echo "${YELLOW}$env_name${CLEAR}"
 	elif [[ -n "$CONDA_DEFAULT_ENV" ]] && [[ "$CONDA_DEFAULT_ENV" != "base" ]]; then
