@@ -66,26 +66,31 @@ for ((INDEX=0; INDEX<${#KEY_ARRAY[@]}; INDEX++)); do
     continue
   fi
 
-  KEY_FILE="$TMP_DIR/key_$INDEX"
+  KEY_NAME=$(echo "$KEY_LINE" | cut -d' ' -f3-)
+  KEY_NAME="${KEY_NAME:-key_$INDEX}"
+
+  KEY_FILE="$TMP_DIR/key_$INDEX.pub"
   echo "$KEY_LINE" > "$KEY_FILE"
   chmod 600 "$KEY_FILE"
 
-  log "Trying SSH key $INDEX..."
-  ssh -i "$KEY_FILE" -o IdentitiesOnly=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=yes "$HOST" "$ORIGINAL_COMMAND"
+  log "Trying SSH key '$KEY_NAME'..."
+  STDERR_LOG="$TMP_DIR/stderr_$INDEX"
+  ssh -i "$KEY_FILE" -o IdentitiesOnly=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=yes "$HOST" "$ORIGINAL_COMMAND" 2>"$STDERR_LOG"
   EXIT_CODE=$?
 
   # Check for specific success conditions
   # Exit code 0 means complete success
   # We should also continue on permission/auth errors but not on connection errors
   if [[ $EXIT_CODE -eq 0 ]]; then
-    log "SSH operation succeeded with key $INDEX"
+    cat "$STDERR_LOG" >&2
+    log "SSH operation succeeded with key '$KEY_NAME'"
     exit 0
   elif [[ $EXIT_CODE -eq 128 ]] || [[ $EXIT_CODE -eq 1 ]]; then
-    # Git/permission errors - try next key
-    log "Key $INDEX failed with git/permission error (exit $EXIT_CODE), trying next key..."
+    # Git/permission errors - try next key (suppress remote error message)
+    log "Key '$KEY_NAME' failed with git/permission error (exit $EXIT_CODE), trying next key..."
   else
-    # Other SSH connection errors - try next key
-    log "Key $INDEX failed with SSH error (exit $EXIT_CODE), trying next key..."
+    # Other SSH connection errors - try next key (suppress remote error message)
+    log "Key '$KEY_NAME' failed with SSH error (exit $EXIT_CODE), trying next key..."
   fi
 done
 
