@@ -66,6 +66,11 @@
         type: symlink
         create: true
         force: true
+    ~/.config/plasma-workspace/env/secrets.sh:
+        path: kde/plasma-workspace-env/secrets.sh
+        type: symlink
+        create: true
+        force: true
     ~/.config/plasma-workspace/scripts/fix-monitor-on-unlock.sh:
         path: kde/plasma-workspace/scripts/fix-monitor-on-unlock.sh
         type: symlink
@@ -87,6 +92,7 @@
     # ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search
     # ~/.local/share/ulauncher/extensions/four43-confluence-search: ulauncher/extensions/confluence_search
     ~/.ssh/config: ssh/config
+    ~/.ssh/known_hosts: ssh/known_hosts
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/config
