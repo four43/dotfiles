@@ -48,6 +48,27 @@ prompt_confirm() {
 	done
 }
 
+# Read a passphrase silently, then a confirmation; loop until they match.
+# An empty passphrase (Enter pressed twice on both prompts) is a valid value
+# and returned as the empty string.
+prompt_secret() {
+	local message="$1"
+	local pass1 pass2
+	while true; do
+		echo -en "${YELLOW}[PROMPT]${NC} $message " >&2
+		read -rs pass1
+		echo >&2
+		echo -en "${YELLOW}[PROMPT]${NC} Confirm: " >&2
+		read -rs pass2
+		echo >&2
+		if [ "$pass1" = "$pass2" ]; then
+			echo "$pass1"
+			return 0
+		fi
+		echo -e "${RED}[ERROR]${NC} Passphrases do not match. Try again." >&2
+	done
+}
+
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
 	error "This script must be run as root"
@@ -111,6 +132,17 @@ info "Common keymaps: us, uk, de-latin1, fr-latin1 (press Enter for 'us')"
 KEYMAP=$(prompt "Enter console keymap (default: us):")
 KEYMAP=${KEYMAP:-us}
 
+# System role: drives package selection (desktop vs headless) and enabled services.
+info "System role:"
+info "  workstation - desktop env (KDE + sddm), bluetooth, wireless, audio firmware"
+info "  server      - headless: no desktop, no bluetooth, no audio firmware"
+ROLE=$(prompt "Enter role (workstation/server, default: workstation):")
+ROLE=${ROLE:-workstation}
+case "$ROLE" in
+	workstation | server) info "Role: $ROLE" ;;
+	*) error "Invalid role: $ROLE (must be 'workstation' or 'server')" ;;
+esac
+
 # Ask about quota limits
 info "Btrfs quota limits can prevent any single subvolume from consuming all disk space"
 if prompt_confirm "Enable quota limits for subvolumes? (recommended)"; then
@@ -151,22 +183,56 @@ parted -s "$DISK" mkpart primary 513MiB 100%
 info "Partitions created:"
 lsblk "$DISK"
 
-# Setup LUKS encryption
-info "Setting up LUKS encryption on ${LUKS_PART}..."
-warn "You will be prompted to enter a passphrase for disk encryption"
-warn "IMPORTANT: Remember this passphrase! Without it, your data cannot be recovered."
+# Disk encryption: prompt for a LUKS passphrase. An empty passphrase skips
+# encryption entirely (plaintext Btrfs on the root partition) — useful for
+# trusted hardware that needs to power-cycle unattended.
+info "Disk encryption configuration"
+warn "Enter a LUKS passphrase to encrypt the disk."
+warn "Press Enter at BOTH prompts (empty passphrase) to SKIP encryption."
+warn "IMPORTANT: Without the passphrase, encrypted data cannot be recovered."
+LUKS_PASSPHRASE=$(prompt_secret "Enter LUKS passphrase (empty to skip encryption):")
 
-cryptsetup luksFormat --type luks2 --pbkdf pbkdf2 "$LUKS_PART"
-info "Opening encrypted partition..."
-cryptsetup open "$LUKS_PART" cryptroot
+if [ -n "$LUKS_PASSPHRASE" ]; then
+	ENCRYPT=true
+	info "Setting up LUKS encryption on ${LUKS_PART}..."
+	# -q skips the interactive "Are you sure?" prompt (we already confirmed
+	# the disk wipe above). --key-file=- reads the passphrase from stdin.
+	printf '%s' "$LUKS_PASSPHRASE" | cryptsetup luksFormat -q --type luks2 --pbkdf pbkdf2 --key-file=- "$LUKS_PART"
+	info "Opening encrypted partition..."
+	printf '%s' "$LUKS_PASSPHRASE" | cryptsetup open --key-file=- "$LUKS_PART" cryptroot
+	ROOT_DEV=/dev/mapper/cryptroot
+else
+	ENCRYPT=false
+	warn "Skipping disk encryption."
+	warn "The disk will be PLAINTEXT — anyone with physical access can read all data."
+	if ! prompt_confirm "Proceed without disk encryption?"; then
+		error "Installation cancelled by user"
+	fi
+	ROOT_DEV="$LUKS_PART"
+fi
+
+# Ask about TPM2 auto-unlock (only meaningful when encryption is enabled)
+TPM2_AUTOUNLOCK=false
+if [ "$ENCRYPT" = "true" ] && [ -e /sys/class/tpm/tpm0 ]; then
+	info "TPM2 device detected at /sys/class/tpm/tpm0"
+	warn "TPM2 auto-unlock makes the disk unlock automatically on THIS hardware."
+	warn "Anyone with physical access to this machine can boot the system."
+	warn "Recommended for headless servers; NOT recommended for laptops/workstations."
+	if prompt_confirm "Enable TPM2 auto-unlock for unattended boot?"; then
+		TPM2_AUTOUNLOCK=true
+		info "TPM2 auto-unlock will be configured (binds to PCR 7 / Secure Boot state)"
+	fi
+elif [ "$ENCRYPT" = "true" ]; then
+	info "No TPM2 device detected; skipping auto-unlock option"
+fi
 
 # Create Btrfs filesystem
 info "Creating Btrfs filesystem with compression..."
-mkfs.btrfs -L MainFs /dev/mapper/cryptroot
+mkfs.btrfs -L MainFs "$ROOT_DEV"
 
 # Mount the Btrfs filesystem to create subvolumes
 info "Creating Btrfs subvolumes..."
-mount /dev/mapper/cryptroot /mnt
+mount "$ROOT_DEV" /mnt
 
 # Create subvolumes
 btrfs subvolume create /mnt/@
@@ -225,11 +291,11 @@ info "Mounting filesystems with compression and optimization..."
 # noatime - Don't update access times (better performance)
 # space_cache=v2 - Faster free space lookups
 # discard=async - TRIM support for SSDs
-mount -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@ /dev/mapper/cryptroot /mnt
-mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@home /dev/mapper/cryptroot /mnt/home
-mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@var /dev/mapper/cryptroot /mnt/var
-mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@tmp /dev/mapper/cryptroot /mnt/tmp
-mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots
+mount -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@ "$ROOT_DEV" /mnt
+mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@home "$ROOT_DEV" /mnt/home
+mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@var "$ROOT_DEV" /mnt/var
+mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@tmp "$ROOT_DEV" /mnt/tmp
+mount --mkdir -o compress=zstd:1,noatime,space_cache=v2,discard=async,subvol=@snapshots "$ROOT_DEV" /mnt/.snapshots
 mount --mkdir "$EFI_PART" /mnt/boot
 
 info "Mount points:"
@@ -241,13 +307,30 @@ info "This will take several minutes depending on your internet connection..."
 
 # Install packages
 # https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages
-pacstrap -K /mnt \
-	base linux linux-firmware efibootmgr grub \
-	intel-ucode amd-ucode sof-firmware \
-	btrfs-progs iwd sudo networkmanager power-profiles-daemon \
-	man-db man-pages texinfo cronie timeshift reflector \
-	openssh zsh git tmux bind inetutils traceroute unzip fzf jq \
-	plasma-meta sddm dolphin konsole \
+# Base packages: needed regardless of role.
+PACSTRAP_PKGS=(
+	base linux linux-firmware efibootmgr grub
+	intel-ucode amd-ucode
+	btrfs-progs sudo networkmanager
+	man-db man-pages texinfo cronie timeshift reflector
+	openssh zsh git tmux bind inetutils traceroute unzip fzf jq
+)
+
+# Workstation-only packages: desktop env, wireless, audio firmware, power mgmt.
+if [ "$ROLE" = "workstation" ]; then
+	PACSTRAP_PKGS+=(
+		sof-firmware iwd power-profiles-daemon
+		plasma-meta sddm dolphin konsole
+	)
+fi
+
+# tpm2-tss provides libtss2 (required by systemd-cryptenroll and sd-encrypt)
+# tpm2-tools is useful for inspecting/managing TPM2 state post-install
+if [ "$TPM2_AUTOUNLOCK" = "true" ]; then
+	PACSTRAP_PKGS+=(tpm2-tss tpm2-tools)
+fi
+
+pacstrap -K /mnt "${PACSTRAP_PKGS[@]}" \
 	&& info "Base packages installed successfully"
 
 # Check for NVIDIA graphics card and install drivers
@@ -296,10 +379,43 @@ env \
 	HOSTNAME="$HOSTNAME" \
 	LUKS_PART="$LUKS_PART" \
 	HAS_NVIDIA="$HAS_NVIDIA" \
+	ENCRYPT="$ENCRYPT" \
+	TPM2_AUTOUNLOCK="$TPM2_AUTOUNLOCK" \
+	ROLE="$ROLE" \
 	arch-chroot /mnt /root/configure.sh
 
 # Cleanup
 rm /mnt/root/configure.sh
+
+# Point the installed system's /etc/resolv.conf at the systemd-resolved stub.
+# Done from the host (not the chroot) because arch-chroot bind-mounts
+# /etc/resolv.conf, which blocks rm/ln with "Device or resource busy".
+# Now that arch-chroot has exited, the bind mount is gone and we can write
+# the real symlink that will be in place at first boot.
+RESOLV_TARGET=/run/systemd/resolve/stub-resolv.conf
+info "Setting /etc/resolv.conf -> $RESOLV_TARGET in installed system..."
+if [ "$(readlink /mnt/etc/resolv.conf 2>/dev/null)" != "$RESOLV_TARGET" ]; then
+	rm -f /mnt/etc/resolv.conf
+	ln -s "$RESOLV_TARGET" /mnt/etc/resolv.conf
+fi
+
+# Personal user + sshd overrides (optional, only if the script is present in
+# the dotfiles). Anyone running these scripts for someone else can delete
+# configure-user.sh / files/smiller.pub to skip this step.
+USER_SCRIPT="$SCRIPT_DIR/configure-user.sh"
+PUBKEY_FILE="$SCRIPT_DIR/files/smiller.pub"
+if [ -f "$USER_SCRIPT" ]; then
+	if [ ! -s "$PUBKEY_FILE" ]; then
+		warn "Skipping personal user setup: $PUBKEY_FILE is missing or empty."
+		warn "Drop your SSH public key there and rerun configure-user.sh in the new system."
+	else
+		info "Running personal user setup (smiller, sshd port 289)..."
+		install -m 755 "$USER_SCRIPT" /mnt/root/configure-user.sh
+		install -m 644 "$PUBKEY_FILE" /mnt/root/smiller.pub
+		env ROLE="$ROLE" arch-chroot /mnt /root/configure-user.sh
+		rm /mnt/root/configure-user.sh /mnt/root/smiller.pub
+	fi
+fi
 
 # Installation complete
 info "============================================"
@@ -307,13 +423,29 @@ info "Installation complete!"
 info "============================================"
 echo ""
 warn "IMPORTANT NOTES:"
-echo "1. Make sure you have recorded your LUKS encryption passphrase"
-echo "2. The system will require this passphrase on every boot"
+echo "Role: $ROLE"
+if [ "$ENCRYPT" = "true" ]; then
+	echo "1. Make sure you have recorded your LUKS encryption passphrase"
+	if [ "$TPM2_AUTOUNLOCK" = "true" ]; then
+		echo "2. TPM2 auto-unlock is enabled: the disk unlocks automatically on this hardware"
+		echo "   - Passphrase is still required if PCRs change (firmware/Secure Boot updates)"
+		echo "   - Re-enroll after such changes: systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=7 $LUKS_PART"
+	else
+		echo "2. The system will require the LUKS passphrase on every boot"
+	fi
+else
+	echo "1. Disk encryption is DISABLED — the disk is plaintext"
+	echo "2. The system will power on unattended; protect physical access accordingly"
+fi
 echo "3. NetworkManager has been enabled for network management"
 echo "4. Btrfs filesystem with zstd compression enabled"
 echo "5. SSD TRIM enabled (fstrim.timer + discard=async mount option)"
 echo "6. Timeshift has been installed for Btrfs snapshots"
 echo "   - Configure it after first boot with: sudo timeshift-gtk"
+if [ "$ROLE" = "workstation" ]; then
+	echo "7. Workstation packages installed (KDE/sddm). After first boot, run"
+	echo "   arch/install-dev-packages.sh as your user to install dev tools/AUR/flatpaks."
+fi
 echo ""
 info "Next steps:"
 echo "1. Review the configuration if needed"

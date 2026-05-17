@@ -35,33 +35,21 @@ echo "Command to run in VM:"
 echo "  $CURL_CMD"
 echo ""
 
-set -x
-# Try to auto-type into VM console window using xdotool
-if command -v xdotool &> /dev/null; then
-    echo "Attempting to auto-type command into VM window in 3 seconds..."
-    echo "(Make sure virt-viewer window is focused)"
-    sleep 3
-
-    # libvirt names the VM window after the directory the Vagrantfile lives in.
-    VM_WINDOW_NAME="$(basename "$SCRIPT_DIR")_default"
-	set +e
-    VM_WINDOW=$(xdotool search --name "$VM_WINDOW_NAME" 2>/dev/null | head -1)
-	set -e
-    if [ -n "$VM_WINDOW" ]; then
-        xdotool windowactivate --sync "$VM_WINDOW"
-        sleep 0.5
-        xdotool type --delay 50 "$CURL_CMD"
-        echo "Command typed into VM window!"
-    else
-        echo "VM window not found. Please manually type the command above."
-        echo "Debug: Available windows:"
-        xdotool search --name "" | while read wid; do
-            echo "  Window $wid: $(xdotool getwindowname $wid)"
-        done
-    fi
+if command -v ydotool &> /dev/null && [ -S "${YDOTOOL_SOCKET:-}" ]; then
+    echo
+    echo "================================================="
+    echo "Wait for the VM to finish booting and show the"
+    echo "root@archiso prompt, then come back here and"
+    echo "press ENTER to begin auto-typing."
+    echo "================================================="
+    read -r -p ""
+    echo "Click on the virt-viewer window — typing in 5 seconds..."
+    sleep 5
+    ydotool type --key-delay 30 -- "$CURL_CMD"
+    echo "Command typed (no Enter). Wait for the HTTP server below to"
+    echo "print 'Serving HTTP...', then press Enter in the VM yourself."
 else
-    echo "xdotool not installed. Please manually type the command above."
-    echo "Install with: sudo pacman -S xdotool"
+    echo "ydotool/ydotoold not available. Type the curl command manually (above)."
 fi
 
 echo ""

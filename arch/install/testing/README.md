@@ -18,52 +18,69 @@ This contains an install script I've written that's based on the [Arch wiki inst
 
 ## Testing in a VM
 
-You can test the install script in a VM using Vagrant and libvirt.
+A libvirt VM that boots the Arch live ISO, lets you run the installer manually inside it, then either reboots into the installed system or tears down for a clean retry. No Vagrant — just `virt-install` + `virsh`.
 
-### Host dependencies (Arch)
-
-```bash
-# Core packages
-sudo pacman -S --needed \
-    vagrant libvirt qemu-base virt-viewer virt-install \
-    dnsmasq iptables-nft \
-    xdotool python \
-    libxslt libxml2 pkgconf base-devel
-
-# libvirt daemon + group membership (log out/in after the usermod)
-sudo systemctl enable --now libvirtd.service
-sudo usermod -aG libvirt "$USER"
-```
-
-Then install the `vagrant-libvirt` plugin. The plain `vagrant plugin install vagrant-libvirt` often fails on Arch because vagrant ships its own embedded ruby. Use this incantation instead:
+### First-time host setup
 
 ```bash
-CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' \
-PKG_CONFIG_PATH=/opt/vagrant/embedded/lib/pkgconfig \
-vagrant plugin install vagrant-libvirt
+cd arch/install/testing
+./host-install.sh
 ```
 
-Verify with `vagrant plugin list` — you should see `vagrant-libvirt`.
+Idempotent. Installs packages (libvirt, qemu-desktop, virt-viewer, virt-install, ydotool, libosinfo, dnsmasq, iptables-nft), enables `libvirtd`, switches libvirt to the native nftables firewall backend, installs a libvirt network hook for Docker coexistence, adds you to the `libvirt` group, and grants `libvirt-qemu` traverse on `$HOME` via ACL.
+
+Safe to re-run any time. The network hook is overwritten on every run, so `host-install.sh` is the single source of truth.
+
+#### Docker + libvirt firewall coexistence
+
+If Docker is installed on the same host, two collisions need handling:
+
+1. **libvirt's iptables NAT rules silently fail to install** because Docker has taken over the `iptables-nft` compatibility layer. `host-install.sh` sets `firewall_backend = "nftables"` in `/etc/libvirt/network.conf` so libvirt writes its rules to its own `inet libvirt_network` table (visible via `sudo nft list table inet libvirt_network`).
+
+2. **Docker's default-DROP on the host `FORWARD` chain blocks libvirt VM traffic** even with NAT correctly in place — the VM gets DHCP, can reach `192.168.122.1`, but can't forward to the internet. There is no architectural separation here: Linux has a single global `FORWARD` chain that every daemon participates in. Docker's recommended escape hatch is the `DOCKER-USER` chain — rules added there run before Docker's defaults and Docker preserves them across daemon restarts.
+
+`host-install.sh` installs `/etc/libvirt/hooks/network` to handle this automatically. The hook fires whenever libvirt's default network starts, and adds:
+
+```
+iptables -I DOCKER-USER -i virbr0 -j ACCEPT
+iptables -I DOCKER-USER -o virbr0 -j ACCEPT
+```
+
+It removes them when the network stops. So:
+
+- **Host reboot:** Docker starts, libvirtd starts, the default network auto-starts (because `host-install.sh` set `net-autostart`), hook fires, rules added. No manual intervention.
+- **Docker daemon restart:** Docker preserves `DOCKER-USER` rules across restarts (documented behavior). Nothing breaks.
+- **`host-install.sh` re-run on an already-set-up host:** rules are re-checked and added if missing (idempotent), and the hook script is overwritten to match the version in this script.
+
+The only edge case that requires intervention: if `libvirtd` starts *before* `dockerd` at boot, the hook fires while the `DOCKER-USER` chain doesn't exist yet and exits silently. Re-run `./host-install.sh` once after Docker is up to apply the rules. On a typical desktop with both services on autostart, Docker comes up first and this isn't an issue.
+
+#### After first run
+
+If `host-install.sh` reports it added you to the `libvirt` group, **log out of your desktop session and back in** before continuing. Otherwise every `virsh` call triggers a KDE polkit auth popup.
 
 ### Running the test
 
 ```bash
-cd arch/install/testing
 ./test.sh
 ```
 
-`test.sh` will:
-1. `vagrant up --provider=libvirt` (downloads the Arch ISO on first run).
-2. Open `virt-viewer` on the VM console.
-3. Start an HTTP server in `arch/install/` and auto-type a `curl` command into the VM window via `xdotool` that fetches `install-arch.sh` and `configure-chroot.sh` into `/tmp/`.
+What it does, in order:
+1. Starts the `ydotoold` daemon (one sudo prompt per shell session — it needs root to write to `/dev/uinput`; the socket gets chowned to you).
+2. Brings up libvirt's `default` NAT network if it isn't already active.
+3. Downloads `archlinux-2026.05.01-x86_64.iso` into this directory if missing.
+4. Defines (or starts) an `arch-install-test` VM with virt-install: 4GB RAM, 2 vCPU, Q35 + UEFI, 40 GB virtio qcow2 disk, SPICE display with qxl video, virtio network on the default bridge.
+5. Opens `virt-viewer` on the VM console.
+6. Starts an HTTP server in `arch/install/` so both `install-arch.sh` and `configure-chroot.sh` are reachable.
+7. Waits for you to press Enter (do that once the VM has reached the `root@archiso` prompt).
+8. After a 5-second countdown, ydotool types the curl command into whatever window has focus — make sure that's the virt-viewer window. Enter is NOT sent automatically; press it yourself inside the VM after you see the host print `Serving HTTP...`.
 
-In the VM, run:
+In the VM:
 
 ```bash
 /tmp/install-arch.sh
 ```
 
-When you're done, `Ctrl+C` the HTTP server and `vagrant destroy` to clean up.
+When you're done, `Ctrl+C` the HTTP server on the host, then `./cleanup.sh` to destroy + undefine the VM (with its NVRAM and 40 GB disk).
 
 ## Creating a Bootable USB Drive (Debian host)
 

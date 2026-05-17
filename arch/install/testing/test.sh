@@ -1,16 +1,6 @@
 #!/bin/bash
-# Bring up the Vagrant test VM and serve the install scripts so the
-# live ISO inside the VM can curl them down to /tmp/.
-#
-# Host dependencies (Arch):
-sudo pacman -S --needed libvirt qemu-base virt-viewer virt-install dnsmasq iptables-nft xdotool python libxslt libxml2 pkgconf base-devel
-sudo systemctl enable --now libvirtd.service
-#   sudo usermod -aG libvirt "$USER"   # log out/in after this
-#   CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' \
-#     PKG_CONFIG_PATH=/opt/vagrant/embedded/lib/pkgconfig \
-#     vagrant plugin install vagrant-libvirt
-#
-# See README.md for full setup notes.
+# Bring up the Arch live ISO test VM, then serve install-arch.sh over HTTP.
+# Run ./host-install.sh once before the first invocation.
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
@@ -22,26 +12,79 @@ NC='\033[0m'
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-# vagrant-libvirt names the domain "<dirname>_<machine>"; our Vagrantfile
-# uses the default machine name, so this is what virt-viewer / virsh see.
-VM_NAME="$(basename "$SCRIPT_DIR")_default"
+export VM_NAME="arch-install-test"
+ISO_URL="https://fastly.mirror.pkgbuild.com/iso/2026.05.01/archlinux-2026.05.01-x86_64.iso"
+ISO_PATH="$SCRIPT_DIR/archlinux-2026.05.01-x86_64.iso"
+VIRSH="virsh -c qemu:///system"
 
-info "Bringing up VM '$VM_NAME' (no-op if already running)..."
-vagrant up --provider=libvirt
-
-# Open a console so the user can see the live ISO. serve-script.sh
-# will then xdotool-type the curl command into this window.
-if command -v virt-viewer >/dev/null 2>&1; then
-	if ! pgrep -f "virt-viewer.*$VM_NAME" >/dev/null 2>&1; then
-		info "Opening virt-viewer window for $VM_NAME..."
-		virt-viewer --connect qemu:///system --domain-name "$VM_NAME" >/dev/null 2>&1 &
-		sleep 2
-	else
-		info "virt-viewer already open for $VM_NAME."
+# --- Sanity check ---------------------------------------------------------
+for cmd in virt-install virsh ydotool; do
+	if ! command -v "$cmd" >/dev/null; then
+		warn "$cmd not found — run ./host-install.sh first."
+		exit 1
 	fi
-else
-	warn "virt-viewer not installed — open the VM console manually (virt-manager)."
+done
+
+# --- ydotoold (per shell session) -----------------------------------------
+# Daemon writes to /dev/uinput (root-only); socket is chowned to the user.
+YDOTOOL_SOCK="/tmp/ydotoold-$UID.sock"
+if ! pgrep -f "ydotoold.*$YDOTOOL_SOCK" >/dev/null 2>&1; then
+	info "Starting ydotoold (one sudo prompt per shell session)..."
+	sudo -b ydotoold --socket-path="$YDOTOOL_SOCK" \
+		--socket-own="$UID:$UID" --socket-perm=0600 >/dev/null 2>&1
+	for _ in 1 2 3 4 5; do
+		[[ -S $YDOTOOL_SOCK ]] && break
+		sleep 0.2
+	done
+fi
+export YDOTOOL_SOCKET="$YDOTOOL_SOCK"
+
+# --- Default libvirt network ----------------------------------------------
+if ! $VIRSH net-list --name 2>/dev/null | grep -qFx default; then
+	info "Starting libvirt default network..."
+	$VIRSH net-start default
 fi
 
-info "Starting HTTP server (Ctrl+C to stop, then 'vagrant destroy' to clean up)..."
+# --- Download ISO ---------------------------------------------------------
+if [[ ! -f $ISO_PATH ]]; then
+	info "Downloading Arch ISO to $ISO_PATH..."
+	curl -L --fail --output "$ISO_PATH" "$ISO_URL"
+fi
+
+# --- VM lifecycle (idempotent) --------------------------------------------
+if ! $VIRSH dominfo "$VM_NAME" >/dev/null 2>&1; then
+	info "Creating VM '$VM_NAME' with virt-install..."
+	virt-install \
+		--connect qemu:///system \
+		--name "$VM_NAME" \
+		--memory 4096 \
+		--vcpus 2 \
+		--osinfo archlinux \
+		--machine q35 \
+		--boot uefi,hd,cdrom \
+		--disk size=40,format=qcow2,bus=virtio \
+		--cdrom "$ISO_PATH" \
+		--network network=default,model=virtio \
+		--graphics spice \
+		--video qxl \
+		--channel spicevmc \
+		--noautoconsole \
+		--wait 0
+elif ! $VIRSH list --name | grep -qx "$VM_NAME"; then
+	info "VM '$VM_NAME' is defined but not running — starting..."
+	$VIRSH start "$VM_NAME"
+else
+	info "VM '$VM_NAME' is already running."
+fi
+
+# --- Console window -------------------------------------------------------
+if ! pgrep -f "virt-viewer.*$VM_NAME" >/dev/null 2>&1; then
+	info "Opening virt-viewer window..."
+	virt-viewer --connect qemu:///system --domain-name "$VM_NAME" >/dev/null 2>&1 &
+	sleep 2
+else
+	info "virt-viewer already open for $VM_NAME."
+fi
+
+info "Starting HTTP server (Ctrl+C to stop, then './cleanup.sh' to tear down)..."
 exec "$SCRIPT_DIR/serve-script.sh"

@@ -234,6 +234,15 @@ if prompt_confirm "Add a sidecar partition with install scripts (and optionally 
 	mkdir -p "$MOUNT_POINT/install"
 	cp "$SCRIPT_DIR/install-arch.sh" "$MOUNT_POINT/install/"
 	cp "$SCRIPT_DIR/configure-chroot.sh" "$MOUNT_POINT/install/"
+	# Personal user setup (smiller + sshd port 289). Optional: skip silently
+	# if absent — install-arch.sh also skips the step when these aren't there.
+	if [[ -f "$SCRIPT_DIR/configure-user.sh" ]]; then
+		cp "$SCRIPT_DIR/configure-user.sh" "$MOUNT_POINT/install/"
+	fi
+	if [[ -d "$SCRIPT_DIR/files" ]]; then
+		mkdir -p "$MOUNT_POINT/install/files"
+		cp -a "$SCRIPT_DIR/files/." "$MOUNT_POINT/install/files/"
+	fi
 	chmod +x "$MOUNT_POINT/install/"*.sh
 
 	if prompt_confirm "Add SSH keys to the sidecar?"; then
