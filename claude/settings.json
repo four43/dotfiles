@@ -78,6 +78,7 @@
       "WebSearch"
     ]
   },
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
@@ -85,15 +86,13 @@
   "enabledPlugins": {
     "atlassian@xwe-ai-skills": true,
     "git-activity@xwe-ai-skills": true,
-    "xweather@xwe-ai-skills": true,
     "xweather-branding@xwe-ai-skills": true,
     "frontend-design@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
@@ -103,7 +102,8 @@
     "slack@claude-plugins-official": true,
     "geo-weather-analyst@xwe-ai-skills": true,
     "xwe-project-manager@xwe-ai-skills": true,
-    "xwe-software-engineer@xwe-ai-skills": true
+    "xwe-software-engineer@xwe-ai-skills": true,
+    "xweather@xwe-ai-skills": true
   },
   "extraKnownMarketplaces": {
     "xwe-ai-skills": {
@@ -114,5 +114,27 @@
     }
   },
   "effortLevel": "xhigh",
-  "theme": "dark-ansi"
+  "theme": "dark-ansi",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify-sound.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify-sound.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -4,6 +4,8 @@
 !settings.json
 !agents
 !agents/**
+!hooks
+!hooks/**
 !skills
 !skills/**
 !statusline.sh
