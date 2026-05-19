@@ -471,4 +471,5 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
+    "accessibility.signals.terminalBell": { "sound": "on" }
 }
