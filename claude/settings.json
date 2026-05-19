@@ -28,6 +28,7 @@
       "Bash(confluence label list:*)",
       "Bash(confluence list:*)",
       "Bash(confluence search:*)",
+      "Bash(confluence space:*)",
       "Bash(confluence show:*)",
       "Bash(confluence space list:*)",
       "Bash(confluence space search:*)",
@@ -80,15 +81,38 @@
       "Bash(wc:*)",
       "Bash(whereis:*)",
       "Bash(which:*)",
+      "Skill(xwe-software-engineer:spec-driven-development)",
       "WebFetch(domain:archlinux.org)",
       "WebFetch(domain:developer.atlassian.com)",
       "WebFetch(domain:noaa.gov)",
       "WebFetch(domain:readthedocs.io)",
       "WebFetch(domain:registry.terraform.io)",
-      "WebSearch",
+      "WebSearch"
     ]
   },
   "model": "opus[1m]",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify-sound.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify-sound.sh"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
@@ -113,7 +137,8 @@
     "geo-weather-analyst@xwe-ai-skills": true,
     "xwe-project-manager@xwe-ai-skills": true,
     "xwe-software-engineer@xwe-ai-skills": true,
-    "xweather@xwe-ai-skills": true
+    "xweather@xwe-ai-skills": true,
+    "xwe-infra-engineer@xwe-ai-skills": true
   },
   "extraKnownMarketplaces": {
     "xwe-ai-skills": {
@@ -124,27 +149,5 @@
     }
   },
   "effortLevel": "xhigh",
-  "theme": "dark-ansi",
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notify-sound.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notify-sound.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "theme": "dark-ansi"
 }
