@@ -109,6 +109,12 @@ y = 10
 
 [terminal]
 
+# Audible bell: alacritty has no built-in audio, so run paplay on bell.
+# Triggered by \a from Claude Code's Stop/Notification hooks via tmux.
+[bell.command]
+program = "paplay"
+args = ["/usr/share/sounds/freedesktop/stereo/complete.oga"]
+
 [[keyboard.bindings]]
 key = "Return"
 mods = "Shift"
