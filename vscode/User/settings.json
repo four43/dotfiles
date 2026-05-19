@@ -61,10 +61,11 @@
     ],
     "debug.toolBarLocation": "docked",
     "dev.containers.defaultExtensions": [
-        // "charliermarsh.ruff",
+        "charliermarsh.ruff",
         "anthropic.claude-code",
         "coolbear.systemd-unit-file",
         "donjayamanne.githistory",
+        "github.vscode-github-actions",
         "mongodb.mongodb-vscode",
         "ms-toolsai.jupyter",
         "reduckted.vscode-gitweblinks",
