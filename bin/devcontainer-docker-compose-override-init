@@ -25,12 +25,13 @@ cat > "$target_file" <<'YAML'
 services:
   app:
     environment:
-      - AWS_PROFILE=vaisala-xwe-xwc-data-dev
+      - AWS_PROFILE=vaisala-xwe-xwc-data-dev-ro
       - XWE_ATLASSIAN_EMAIL=${XWE_ATLASSIAN_EMAIL}
       - XWE_ATLASSIAN_API_TOKEN=${XWE_ATLASSIAN_API_TOKEN}
       - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
     volumes:
-      - ~/.aws:/root/.aws:rw
+      - ~/.aws/config-ro:/root/.aws/config:ro
+      - ~/.aws/sso:/root/.aws/sso:rw
       - ~/.ssh/config:/host/home/.ssh/config:ro
       - ~/.claude:/host/home/.claude:rw
       - ~/.claude.json:/host/home/.claude.json:rw
