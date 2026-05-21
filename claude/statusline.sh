@@ -123,8 +123,11 @@ fi
 
 # Working directory + git
 if [ -n "$cwd" ]; then
-    display_dir="${cwd##*/}"
-    line2+="${cyan}${display_dir}${reset}"
+    if [ "$IN_DOCKER" = "true" ] && [ -n "$HOSTNAME" ]; then
+        line2+="${cyan} ${HOSTNAME}${reset}"
+    else
+        line2+="${cyan}${cwd##*/}${reset}"
+    fi
     git_branch=$(git -C "${cwd}" rev-parse --abbrev-ref HEAD 2>/dev/null)
     if [ -n "$git_branch" ]; then
         line2+="${dim}@${reset}${green}${git_branch}${reset}"

@@ -90,6 +90,9 @@
       "WebSearch"
     ]
   },
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  },
   "model": "opus[1m]",
   "hooks": {
     "Stop": [
