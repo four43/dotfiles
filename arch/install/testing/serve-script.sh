@@ -20,9 +20,18 @@ fi
 
 PORT=8000
 
-# Pull both scripts into /tmp/ so install-arch.sh can locate configure-chroot.sh
-# as a sibling via $BASH_SOURCE.
-CURL_CMD="curl -fsSL http://${LIBVIRT_IP}:${PORT}/install-arch.sh -o /tmp/install-arch.sh && curl -fsSL http://${LIBVIRT_IP}:${PORT}/configure-chroot.sh -o /tmp/configure-chroot.sh && chmod +x /tmp/install-arch.sh /tmp/configure-chroot.sh"
+# Bundle the installer + its siblings into a tarball so the VM only needs one
+# curl. install-arch.sh resolves siblings via $BASH_SOURCE, so the layout
+# under /tmp/ must mirror the install/ directory.
+BUNDLE=install-bundle.tar
+tar -cf "$BUNDLE" \
+	install-arch.sh \
+	configure-chroot.sh \
+	configure-user.sh \
+	files/smiller.pub \
+	files/system-update.sh
+
+CURL_CMD="curl -fsSL http://${LIBVIRT_IP}:${PORT}/${BUNDLE} | tar xC /tmp && chmod +x /tmp/install-arch.sh /tmp/configure-chroot.sh /tmp/configure-user.sh"
 
 echo "=========================================="
 echo "HTTP Server for Arch Install Script"

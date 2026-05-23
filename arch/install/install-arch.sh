@@ -314,6 +314,7 @@ PACSTRAP_PKGS=(
 	btrfs-progs sudo networkmanager
 	man-db man-pages texinfo cronie timeshift reflector
 	openssh zsh git tmux bind inetutils traceroute unzip fzf jq
+	rsync python docker
 )
 
 # Workstation-only packages: desktop env, wireless, audio firmware, power mgmt.
@@ -397,6 +398,14 @@ info "Setting /etc/resolv.conf -> $RESOLV_TARGET in installed system..."
 if [ "$(readlink /mnt/etc/resolv.conf 2>/dev/null)" != "$RESOLV_TARGET" ]; then
 	rm -f /mnt/etc/resolv.conf
 	ln -s "$RESOLV_TARGET" /mnt/etc/resolv.conf
+fi
+
+# Drop the system-update helper at a stable path so it's invocable as
+# `arch-system-update` post-boot.
+SYSUPDATE_SRC="$SCRIPT_DIR/files/system-update.sh"
+if [ -f "$SYSUPDATE_SRC" ]; then
+	info "Installing system-update.sh -> /usr/local/bin/arch-system-update..."
+	install -Dm 755 "$SYSUPDATE_SRC" /mnt/usr/local/bin/arch-system-update
 fi
 
 # Personal user + sshd overrides (optional, only if the script is present in

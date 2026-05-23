@@ -33,13 +33,21 @@ sudo pacman -Syu --noconfirm
 
 log
 log "[4/5] Updating AUR packages with yay..."
-yay -Syu --noconfirm
+if command -v yay >/dev/null 2>&1; then
+    yay -Syu --noconfirm
+else
+    log "  yay not installed — skipping AUR update."
+fi
 
 log
 log "[5/5] Updating flatpak packages..."
-flatpak update -y
-log "  Removing unused packages..."
-flatpak uninstall --unused -y
+if command -v flatpak >/dev/null 2>&1; then
+    flatpak update -y
+    log "  Removing unused packages..."
+    flatpak uninstall --unused -y
+else
+    log "  flatpak not installed — skipping flatpak update."
+fi
 
 log
 log "=== System update completed successfully! ==="

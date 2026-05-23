@@ -11,6 +11,7 @@ Scripts I rip onto a flash drive to bring up a fresh Arch box.
 | `configure-chroot.sh` | Generic in-chroot system config — timezone, locale, mkinitcpio, GRUB, services |
 | `configure-user.sh` | Personal overrides — creates `smiller`, drops SSH key, sshd on port 289 |
 | `files/smiller.pub` | My SSH public key, dropped in by `configure-user.sh` |
+| `files/system-update.sh` | Installed as `/usr/local/bin/arch-system-update` — timeshift snapshot + pacman/yay/flatpak update |
 
 `configure-chroot.sh` is generic enough that anyone could use it. `configure-user.sh` and `files/` are mine — delete them (or swap your own) to install for someone else.
 
@@ -103,6 +104,12 @@ Then log in:
 
 - **`smiller`** with the password you set during install. SSH in over port 289 with your key from another machine: `ssh -p 289 smiller@<host>`.
 - Root password works at the console only — `PermitRootLogin no` is set in the sshd drop-in.
+
+To run a full system update (timeshift snapshot + pacman, plus yay/flatpak when present):
+
+```sh
+arch-system-update
+```
 
 ### Workstation only — install dev tooling
 

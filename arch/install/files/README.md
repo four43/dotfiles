@@ -18,3 +18,9 @@ To drop in the key:
 ```sh
 cp ~/.ssh/id_ed25519.pub arch/install/files/smiller.pub
 ```
+
+## `system-update.sh`
+
+Helper script installed to `/usr/local/bin/arch-system-update` on the new
+system. Runs timeshift snapshot + pacman/yay/flatpak updates. Skipped if
+missing.

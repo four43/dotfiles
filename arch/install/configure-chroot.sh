@@ -90,6 +90,7 @@ cat > /etc/NetworkManager/conf.d/dns.conf <<'EOF'
 dns=systemd-resolved
 EOF
 
+echo "Optimizing mirrorlist for the United States..." >&2
 # Seed an optimized mirrorlist and keep it fresh via reflector.timer
 cat > /etc/xdg/reflector/reflector.conf <<'EOF'
 --save /etc/pacman.d/mirrorlist
