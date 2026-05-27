@@ -112,6 +112,8 @@ systemctl enable sshd
 systemctl enable cronie
 # Weekly mirror refresh
 systemctl enable reflector.timer
+# Docker (socket-activated, plus the daemon for boot-time autostart)
+systemctl enable docker.socket docker.service
 
 # Workstation-only services: display manager and bluetooth.
 if [ "$ROLE" = "workstation" ]; then

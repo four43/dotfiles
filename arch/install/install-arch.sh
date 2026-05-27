@@ -314,7 +314,7 @@ PACSTRAP_PKGS=(
 	btrfs-progs sudo networkmanager
 	man-db man-pages texinfo cronie timeshift reflector
 	openssh zsh git tmux bind inetutils traceroute unzip fzf jq
-	rsync python docker
+	rsync python docker docker-compose
 )
 
 # Workstation-only packages: desktop env, wireless, audio firmware, power mgmt.
