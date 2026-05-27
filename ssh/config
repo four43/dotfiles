@@ -15,6 +15,11 @@ Host ursa-minor
     User smiller
     Port 289
 
+Host tkmiller-net
+    Hostname tkmiller-home.four43.com
+    User smiller
+    Port 289
+
 # Vaisala Xweather
 
 Host geotiff
