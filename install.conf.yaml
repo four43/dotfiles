@@ -66,11 +66,6 @@
         type: symlink
         create: true
         force: true
-    ~/.config/plasma-workspace/env/secrets.sh:
-        path: kde/plasma-workspace-env/secrets.sh
-        type: symlink
-        create: true
-        force: true
     ~/.config/plasma-workspace/scripts/fix-monitor-on-unlock.sh:
         path: kde/plasma-workspace/scripts/fix-monitor-on-unlock.sh
         type: symlink
@@ -81,12 +76,38 @@
         type: symlink
         create: true
         force: true
+    ~/.config/systemd/user/keychain.service:
+        path: arch/.config/systemd/user/keychain.service
+        type: symlink
+        create: true
+        force: true
+    # gpg-agent: long cache TTL + GUI/headless-portable pinentry. Used by pass.
+    ~/.gnupg/gpg-agent.conf:
+        path: gnupg/gpg-agent.conf
+        type: symlink
+        create: true
+        force: true
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/bin/arch-system-update: arch/system-update.sh
+    ~/.local/bin/code-with-secrets: bin/code-with-secrets
+    # VS Code launcher override: pulls secrets from `pass` at GUI launch time.
+    # See pass/README.md and bin/code-with-secrets.
+    ~/.local/share/applications/code.desktop:
+        path: kde/applications/code.desktop
+        type: symlink
+        create: true
+        force: true
+    # Encrypted secret store (pass). Values are GPG-encrypted; private key is
+    # NOT committed. See pass/README.md.
+    ~/.password-store:
+        path: pass/store
+        type: symlink
+        create: true
+        force: true
     # ~/.local/share/applications/rxvt-unicode.desktop: urxvt/rxvt-unicode.desktop
     # ~/.local/share/ulauncher/extensions/four43-project-opener: ulauncher/extensions/project_opener
     # ~/.local/share/ulauncher/extensions/four43-bitbucket-search: ulauncher/extensions/bitbucket_search

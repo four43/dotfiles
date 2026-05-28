@@ -1,0 +1,20 @@
+[Unit]
+Description=Keychain SSH/GPG Agent
+Documentation=man:keychain(1)
+After=graphical-session.target
+BindsTo=graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# --noask dropped so keys are preloaded (passphrases cached) at login rather
+# than on first use. Append your GPG key id (8 or 16 hex chars, from
+# `gpg --list-secret-keys --keyid-format=long`) after the ssh keys so pass is
+# unlocked at login too, e.g.:  ... id_rsa_vaisala id_rsa ABCD1234EF567890
+ExecStart=/bin/bash -c 'eval $(/usr/bin/keychain --eval --quiet id_rsa_vaisala id_rsa B076168CE12B63E0) && systemctl --user import-environment SSH_AUTH_SOCK SSH_AGENT_PID'
+Environment=DISPLAY=:0
+Environment=SSH_ASKPASS=/usr/bin/ksshaskpass
+Environment=SSH_ASKPASS_REQUIRE=prefer
+
+[Install]
+WantedBy=graphical-session.target

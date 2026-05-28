@@ -1,3 +1,6 @@
 [submodule "dotbot"]
 	path = dotbot
 	url = https://github.com/anishathalye/dotbot
+[submodule "pass/store"]
+	path = pass/store
+	url = git@github.com:four43/pass-store.git
