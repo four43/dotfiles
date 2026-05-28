@@ -119,12 +119,21 @@ dc-claude() {
         bash -ic 'claude "$@"' _ "$@"
 }
 
+dc-mcp() {
+	_dc_ensure_up || return
+    _dc_apply_dotfiles
+    # Run through interactive bash so .bashrc loads — the dotfiles ship `claude`
+    # as a lazy-install shell function, which docker exec would otherwise miss.
+    devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
+        bash -ic 'agent-mcp' _ "$@"
+}
+
 # List running devcontainers. Pass -a to include stopped ones.
 # Filters on the `devcontainer.local_folder` label, which both
 # @devcontainers/cli and the VS Code extension stamp onto every container.
 dc-status() {
     docker ps --filter 'label=devcontainer.local_folder' \
-        --format 'table {{.ID}}\t{{.Image}}\t{{.Label "devcontainer.local_folder"}}\t{{.Status}}' \
+        --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Label "devcontainer.local_folder"}}\t{{.Status}}' \
         "$@"
 }
 
