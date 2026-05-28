@@ -92,7 +92,7 @@
     ~/.gitconfig-work: git/gitconfig-work
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
-    ~/.local/bin/arch-system-update: arch/system-update.sh
+    ~/.local/bin/arch-system-update: arch/install/files/system-update.sh
     ~/.local/bin/code-with-secrets: bin/code-with-secrets
     # VS Code launcher override: pulls secrets from `pass` at GUI launch time.
     # See pass/README.md and bin/code-with-secrets.
