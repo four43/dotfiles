@@ -36,7 +36,7 @@ prompt_confirm() {
 }
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-ARCH_MIRROR="https://archlinux.org/iso/latest"
+ARCH_MIRROR="https://fastly.mirror.pkgbuild.com/iso/latest"
 MOUNT_POINT=""
 
 cleanup() {
@@ -60,7 +60,7 @@ REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 [[ -d "$REAL_HOME" ]] || error "Could not resolve home directory for user $REAL_USER"
 ISO_CACHE_DIR="${REAL_HOME}/Downloads"
 
-for tool in lsblk sgdisk mkfs.ext4 dd curl partprobe findmnt; do
+for tool in lsblk parted blockdev mkfs.ext4 dd curl partprobe findmnt awk; do
 	command -v "$tool" >/dev/null 2>&1 || error "Required tool not found: $tool"
 done
 
@@ -207,13 +207,25 @@ done < <(lsblk -ln -o NAME "$DEV_PATH")
 # ---------- Sidecar partition ----------
 
 if prompt_confirm "Add a sidecar partition with install scripts (and optionally SSH keys)?"; then
-	info "Moving GPT backup header to end of disk to reclaim trailing free space..."
-	sgdisk -e "$DEV_PATH" >/dev/null
+	# The Arch hybrid ISO ends up as an MBR (msdos) partition table after dd, so
+	# sgdisk is the wrong tool here — use parted, which works with both MBR/GPT.
+	# Find the last used sector across all existing partitions and start the
+	# sidecar one MiB-aligned sector after it, running to the end of the disk.
+	LAST_END_SECTOR=$(parted -sm "$DEV_PATH" unit s print 2>/dev/null |
+		awk -F: '/^[0-9]+:/ { gsub(/s/, "", $3); if ($3 + 0 > max) max = $3 + 0 }
+		         END { print max + 0 }')
+	[[ "$LAST_END_SECTOR" -gt 0 ]] || error "Could not determine end of existing partitions."
+
+	START_SECTOR=$(( ((LAST_END_SECTOR + 1) + 2047) / 2048 * 2048 ))
+	DISK_SECTORS=$(blockdev --getsz "$DEV_PATH")
+	END_SECTOR=$(( DISK_SECTORS - 34 ))   # leave room for a GPT backup if present
+	[[ "$END_SECTOR" -gt "$START_SECTOR" ]] || error "No trailing free space for sidecar."
 
 	BEFORE_PARTS=$(lsblk -ln -o NAME "$DEV_PATH" | tail -n +2 | sort)
 
-	info "Creating sidecar partition (ext4, label ARCHSCRIPTS)..."
-	sgdisk -n 0:0:0 -t 0:8300 -c 0:ARCHSCRIPTS "$DEV_PATH" >/dev/null
+	info "Creating sidecar partition (ext4, label ARCHSCRIPTS) at sectors ${START_SECTOR}-${END_SECTOR}..."
+	parted -s "$DEV_PATH" mkpart primary ext4 "${START_SECTOR}s" "${END_SECTOR}s" ||
+		error "parted mkpart failed."
 	partprobe "$DEV_PATH" 2>/dev/null || true
 	sleep 2
 
