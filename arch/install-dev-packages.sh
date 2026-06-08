@@ -20,6 +20,7 @@ sudo pacman -S \
 	openrgb \
 	nodejs \
 	otf-monaspace-nerd \
+	pass \
 	python \
 	python-click \
 	python-ipykernel \
