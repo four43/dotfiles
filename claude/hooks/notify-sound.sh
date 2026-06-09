@@ -14,7 +14,7 @@ set -u
 
 if [ -e "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pulse/native" ] \
    && command -v paplay >/dev/null 2>&1; then
-    paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null && exit 0
+    paplay --volume=32768 /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null && exit 0
 fi
 
 p=$PPID
