@@ -19,4 +19,4 @@ github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+V
 [orion.four43.com]:289 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII1/s0Cf8qK7B9q18QL4lWHF87/6eblREhuW1ZVXuIFV
 # orion.four43.com:289 SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u7
 # orion.four43.com:289 SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u7
-[tkmiller-home.four43.com]:289 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcJBvFXdOmgMYDy5K4ZIbZLTzMx/0GSMFzQRep5ThaP
+[tkmiller-home.four43.com]:289 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC+eIbxdXVBj9Uo3I21H9HkxXJECC84jAb83qZvFW9V3
