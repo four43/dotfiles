@@ -31,7 +31,7 @@ tar -cf "$BUNDLE" \
 	files/smiller.pub \
 	files/system-update.sh
 
-CURL_CMD="curl -fsSL http://${LIBVIRT_IP}:${PORT}/${BUNDLE} | tar xC /tmp && chmod +x /tmp/install-arch.sh /tmp/configure-chroot.sh /tmp/configure-user.sh"
+CURL_CMD="mkdir -p /usb && curl -fsSL http://${LIBVIRT_IP}:${PORT}/${BUNDLE} | tar xC /usb && find /usb -type f -name '*.sh' -exec chmod +x {} +"
 
 echo "=========================================="
 echo "HTTP Server for Arch Install Script"
@@ -63,7 +63,7 @@ fi
 
 echo ""
 echo "Then execute the script in VM:"
-echo "  /tmp/install-arch.sh"
+echo "  /usb/install-arch.sh"
 echo ""
 echo "=========================================="
 echo "Starting HTTP server..."

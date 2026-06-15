@@ -57,9 +57,12 @@ fi
 # Regenerate initramfs
 mkinitcpio -P
 
-# Set root password
+# Set root password. Loop on failure (mismatched confirmation, too short, etc.)
+# so a typo doesn't kill the entire install — `set -e` would otherwise bail.
 echo "Setting root password..."
-passwd
+until passwd; do
+	echo "Password not set. Try again."
+done
 
 # Configure GRUB cmdline for Btrfs root.
 # - No encryption: point root= directly at the Btrfs partition by UUID.
@@ -113,7 +116,8 @@ systemctl enable cronie
 # Weekly mirror refresh
 systemctl enable reflector.timer
 # Docker (socket-activated, plus the daemon for boot-time autostart)
-systemctl enable docker.socket docker.service
+systemctl enable docker.socket
+systemctl enable docker.service
 
 # Workstation-only services: display manager and bluetooth.
 if [ "$ROLE" = "workstation" ]; then

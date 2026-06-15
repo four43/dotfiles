@@ -44,8 +44,12 @@ else
 fi
 
 # Password is used for sudo even when SSH is key-only — prompt interactively.
+# Loop on failure (mismatched confirmation, too short, etc.) so a typo doesn't
+# kill the entire install — `set -e` would otherwise bail.
 echo "Setting password for $USERNAME (used for sudo)..."
-passwd "$USERNAME"
+until passwd "$USERNAME"; do
+    echo "Password not set. Try again."
+done
 
 # Enable sudo for wheel group.
 sed -i 's/^# *%wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
