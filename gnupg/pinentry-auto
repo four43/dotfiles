@@ -1,0 +1,22 @@
+#!/bin/sh
+# Pinentry dispatcher used by gpg-agent. Picks pinentry-qt on desktop sessions
+# and pinentry-curses over SSH.
+#
+# gpg-agent forwards the *client's* DISPLAY/TTY into pinentry as command-line
+# arguments (--display=..., --ttyname=..., from the client's Assuan OPTIONs),
+# not via environment. So we MUST inspect "$@" — checking $DISPLAY would read
+# the long-lived agent's startup env (which on a systemd-supervised agent has
+# DISPLAY=:0 baked in from the graphical login), and we'd wrongly pick the GUI
+# prompt over SSH.
+#
+# Have shell rc run `gpg-connect-agent updatestartuptty /bye` so the agent
+# learns each session's TTY/DISPLAY and passes them through.
+
+for arg in "$@"; do
+    case "$arg" in
+        --display=*|--display)
+            exec /usr/bin/pinentry-qt "$@"
+            ;;
+    esac
+done
+exec /usr/bin/pinentry-curses "$@"

@@ -87,6 +87,13 @@
         type: symlink
         create: true
         force: true
+    # Pinentry dispatcher: pinentry-qt on desktop, pinentry-curses over SSH.
+    # gpg-agent.conf points at this absolute path.
+    ~/.local/bin/pinentry-auto:
+        path: gnupg/pinentry-auto
+        type: symlink
+        create: true
+        force: true
     ~/.docker/cli-plugins: docker/cli-plugins
     ~/.gitconfig: git/gitconfig
     ~/.gitconfig-work: git/gitconfig-work
