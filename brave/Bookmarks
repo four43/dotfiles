@@ -1,0 +1,2057 @@
+{
+  "roots": {
+    "bookmark_bar": {
+      "children": [
+        {
+          "date_added": "13388247566110603",
+          "guid": "c3d849b3-63bf-42fe-ba5c-fab910be90aa",
+          "id": "5",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Chat",
+          "type": "url",
+          "url": "https://m365.cloud.microsoft/chat/?auth=2"
+        },
+        {
+          "date_added": "13388950981912244",
+          "guid": "46b74c66-ebd9-40cd-8047-8a10535378bb",
+          "id": "6",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "",
+          "type": "url",
+          "url": "https://gemini.google.com/app"
+        },
+        {
+          "children": [
+            {
+              "date_added": "13427214745926139",
+              "guid": "c00ad579-241a-4710-8dd1-09e058838333",
+              "id": "235",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "AWS xwc-data-dev Login",
+              "type": "url",
+              "url": "https://vaisala.awsapps.com/start/#/console?account_id=104707020524&role_name=AWSAdministratorAccess"
+            },
+            {
+              "date_added": "13427214780243550",
+              "guid": "886a01a6-9b5f-49a3-9039-821d62d32d7e",
+              "id": "236",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "AWS xwc-data-staging Login",
+              "type": "url",
+              "url": "https://vaisala.awsapps.com/start/#/console?account_id=224039896086&role_name=AWSAdministratorAccess"
+            },
+            {
+              "date_added": "13427214725775686",
+              "guid": "87812cde-6a3e-49c5-8bd8-ba6de63b7e30",
+              "id": "234",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "AWS AerisWeather Login",
+              "type": "url",
+              "url": "https://vaisala.awsapps.com/start/#/console?account_id=827256326159&role_name=AWSAdministratorAccess"
+            },
+            {
+              "date_added": "13368634793000000",
+              "guid": "cbfa33ad-4acd-4dc9-bcec-2eb45828c597",
+              "id": "7",
+              "name": "AWS - XWE Login All",
+              "type": "url",
+              "url": "https://vaisala.awsapps.com/start/"
+            }
+          ],
+          "date_added": "13427214672816886",
+          "date_modified": "13427214788095735",
+          "guid": "a110e5b4-976a-4932-81fc-5c787850ce81",
+          "id": "233",
+          "name": "AWS",
+          "type": "folder"
+        },
+        {
+          "date_added": "13401909458823274",
+          "guid": "dffeefe7-31ef-48ae-aed0-ec6af68a03fd",
+          "id": "8",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "EC2",
+          "type": "url",
+          "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Overview:"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "95085264-feae-4ecc-87be-ba8ee5a88313",
+          "id": "9",
+          "name": "CW",
+          "type": "url",
+          "url": "https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#home:"
+        },
+        {
+          "date_added": "13277579754000000",
+          "guid": "5d7b6fb2-463f-448c-a85f-720064fc6857",
+          "id": "10",
+          "name": "λ",
+          "type": "url",
+          "url": "https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions?sb=lastModified&so=DESCENDING"
+        },
+        {
+          "date_added": "13409431204199215",
+          "guid": "763c08b0-26d7-4312-bfee-ace18da93ee2",
+          "id": "11",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "CF-XWC-Data",
+          "type": "url",
+          "url": "https://vaisala.atlassian.net/wiki/spaces/WD/overview"
+        },
+        {
+          "date_added": "13409682912627652",
+          "guid": "ab1c008c-a794-40e3-be71-86e37dc1090e",
+          "id": "12",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "JR-Data",
+          "type": "url",
+          "url": "https://vaisala.atlassian.net/jira/software/c/projects/WEAT/boards/8232?assignee=712020%3A2a5694c3-8a67-45c9-9d40-fe6f6f7592e7"
+        },
+        {
+          "date_added": "13368899462000000",
+          "guid": "f9f31e9c-c77f-4aca-95b7-92c112db6b6f",
+          "id": "13",
+          "name": "CF-DaaS",
+          "type": "url",
+          "url": "https://vaisala.atlassian.net/wiki/spaces/XDCS/overview"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "1780e6ee-c6de-4a08-8d5d-597c01dd2531",
+          "id": "14",
+          "name": "BB-HAM",
+          "type": "url",
+          "url": "https://bitbucket.org/hamweather/"
+        },
+        {
+          "date_added": "13368117212000000",
+          "guid": "d198eb2e-b929-4802-8a8d-72249b6a66ec",
+          "id": "15",
+          "name": "BB-VAI",
+          "type": "url",
+          "url": "https://bitbucket.org/vaisala-ds/workspace/projects/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "8c924d23-5df6-4622-a922-4c8b522ccd91",
+          "id": "16",
+          "name": "PD",
+          "type": "url",
+          "url": "https://aerisweather.pagerduty.com/?signed_up=false"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "667b002d-a82c-4662-92db-3e250e82529d",
+          "id": "17",
+          "name": "Sensu",
+          "type": "url",
+          "url": "https://dashboard.sensu.aerisframework.com/n/default/events?order=SEVERITY&filters=silenced%3Afalse"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "f7589fd6-df1c-4684-8337-bb46d2c8f622",
+          "id": "18",
+          "name": "mDb At",
+          "type": "url",
+          "url": "https://cloud.mongodb.com/v2/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "1df826d7-bc3d-4209-8193-766ee7cf65c7",
+          "id": "19",
+          "name": "",
+          "type": "url",
+          "url": "https://outlook.office.com/mail/inbox"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "dd843918-955d-4970-9433-ed021c13742d",
+          "id": "20",
+          "name": "",
+          "type": "url",
+          "url": "https://m365.cloud.microsoft/chat?auth=2"
+        },
+        {
+          "date_added": "13307115296000000",
+          "guid": "604c0925-bd5d-4758-93b8-cbd658ce4dfe",
+          "id": "21",
+          "name": "",
+          "type": "url",
+          "url": "https://vaisalaworks-my.sharepoint.com/personal/seth_miller_vaisala_com/_layouts/15/onedrive.aspx?login_hint=seth%2Emiller%40vaisala%2Ecom"
+        },
+        {
+          "date_added": "13345576208000000",
+          "guid": "aa9ba250-64fe-4ecf-a740-442dc35577d3",
+          "id": "22",
+          "name": "",
+          "type": "url",
+          "url": "https://teams.microsoft.com/v2/"
+        },
+        {
+          "date_added": "13413421029122610",
+          "guid": "d9bcbb6a-74f1-4f3b-a72d-95e3ce4f4bff",
+          "id": "23",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "XWC Data",
+          "type": "url",
+          "url": "https://github.com/orgs/VaisalaCorp/repositories?q=props.TEAM%3Axwe-weather-core+-archived%3Atrue"
+        },
+        {
+          "date_added": "13423327196824874",
+          "guid": "92a6b4af-f223-4eb1-919a-7952943cb6b0",
+          "id": "231",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "XWE Comm",
+          "type": "url",
+          "url": "https://github.com/orgs/VaisalaCorp/repositories?q=infra-mgmt+OR+daas-devtools"
+        },
+        {
+          "date_added": "13389800335763422",
+          "guid": "570f17fe-c844-4d6c-8ac8-2a9115797585",
+          "id": "24",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "XWE DaaS",
+          "type": "url",
+          "url": "https://github.com/orgs/VaisalaCorp/repositories?q=props.TEAM%3Axwe-daas+-archived%3Atrue"
+        },
+        {
+          "date_added": "13400264345866905",
+          "guid": "60d1af03-2396-49f1-9d81-34377ac10bef",
+          "id": "25",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "GH PRs",
+          "type": "url",
+          "url": "https://github.com/pulls/involves"
+        },
+        {
+          "children": [
+            {
+              "date_added": "13315598986000000",
+              "guid": "b34adc26-314b-415f-8d19-e49c7215eef9",
+              "id": "27",
+              "name": "Vintra",
+              "type": "url",
+              "url": "https://vaisalaworks.sharepoint.com/sites/vintra"
+            },
+            {
+              "date_added": "13366990780000000",
+              "guid": "bcf21fb4-4c7f-493a-906b-262ed64a96d5",
+              "id": "28",
+              "name": "Timesheet/Hours",
+              "type": "url",
+              "url": "https://fiori.erp.vaisala.com/sap/bc/ui2/flp"
+            },
+            {
+              "date_added": "13366991009000000",
+              "guid": "69b7832c-560c-40b0-b51c-5c95570174ea",
+              "id": "29",
+              "name": "PTO Request",
+              "type": "url",
+              "url": "https://performancemanager.successfactors.eu/xi/ui/ect/pages/absence/timeOff.xhtml"
+            },
+            {
+              "date_added": "13365611154000000",
+              "guid": "0d9387d4-ddc2-4df8-a71e-aa1be7548bb5",
+              "id": "30",
+              "name": "PTO Calendar",
+              "type": "url",
+              "url": "https://performancemanager.successfactors.eu/sf/teamabsencecalendar?_s.crb=Y%2bgmQZOVlywvs3KR8LJQQ1xSD2CwZOkR33vDCCBiS74%3d"
+            },
+            {
+              "date_added": "13369268987000000",
+              "guid": "6b066967-de6c-4497-b3fa-250746a7f039",
+              "id": "31",
+              "name": "PTO - Pending Reqs",
+              "type": "url",
+              "url": "https://performancemanager.successfactors.eu/xi/ui/ect/pages/pendingWorkflows/pendingWorkflowV12.xhtml"
+            },
+            {
+              "date_added": "13370099469000000",
+              "guid": "f6e57744-af5c-49a4-8097-89ef3ad43ba3",
+              "id": "32",
+              "name": "Access Request (MyAccess)",
+              "type": "url",
+              "url": "https://myaccess.vaisala.com/ECMv6/request/requestHome"
+            },
+            {
+              "date_added": "13417717198363647",
+              "guid": "cdfc63da-ecad-4638-ada2-be840eeb2d2a",
+              "id": "227",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Vaisala Xweather Identity Guide - Vaisala Xweather Identity",
+              "type": "url",
+              "url": "https://www.figma.com/proto/gbkOT5nFK5Kf3QSV9HYPvf/Vaisala-Xweather-Identity-Guide?node-id=2983-2506&node-type=canvas&t=KWPezrhWBL6i4ifv-0&scaling=contain&content-scaling=fixed&page-id=2983%3A1885"
+            },
+            {
+              "date_added": "13372956652267093",
+              "guid": "464aaa98-bf0d-4a59-b0d5-2a5a61f7639e",
+              "id": "33",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Support Ticket (MySupport)",
+              "type": "url",
+              "url": "https://mysupport.vaisala.com/ssc/app#/"
+            },
+            {
+              "date_added": "13376606608026210",
+              "guid": "f4a60175-7826-42f0-8fb8-00dccff02da8",
+              "id": "35",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Vaisala Status Page",
+              "type": "url",
+              "url": "https://status.vaisala.com/"
+            },
+            {
+              "date_added": "13376610501734376",
+              "guid": "6c5c0d90-50bd-4cd1-8a57-45a98ae3e20c",
+              "id": "36",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Location Helper Lat Lon Point Mapbox",
+              "type": "url",
+              "url": "https://labs.mapbox.com/location-helper/#3/40.78/-73.97"
+            },
+            {
+              "date_added": "13381451813091118",
+              "guid": "4407c5b2-4055-4c02-bc88-9a9476d93fa4",
+              "id": "37",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Espense Reports",
+              "type": "url",
+              "url": "https://xp1.mobilexpense.com/vaisala"
+            },
+            {
+              "date_added": "13384017713246258",
+              "guid": "9f5b950b-c794-4212-854d-0a8676dd269f",
+              "id": "38",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Lightning Data Feed Customers.xlsm",
+              "type": "url",
+              "url": "https://vaisalaworks.sharepoint.com/:x:/r/sites/GLD360SteeringGroup/_layouts/15/Doc.aspx?sourcedoc=%7BC9A264EC-47F6-4FC8-86AD-37503B977854%7D&file=Lightning%20Data%20Feed%20Customers.xlsm&action=default&mobileredirect=true&DefaultItemOpen=1&ct=1739544110967&wdOrigin=OFFICECOM-WEB.MAIN.EDGEWORTH&cid=b320c1bc-7cf2-4a96-ac97-ab83dd4134e4&wdPreviousSessionSrc=HarmonyWeb&wdPreviousSession=a0458e83-f8c3-43b3-aee3-aabab4a2068e"
+            },
+            {
+              "date_added": "13382748271987849",
+              "guid": "8b5b5c47-4b92-4a44-b1d3-577da9cf4706",
+              "id": "39",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Lightning - Internal GLD360 Analysis",
+              "type": "url",
+              "url": "https://internal.lightning-monitoring.xweather.com/plot-sensor-de.html#eyJwbG90IjoiLW5ldHdvcmstZGUtIiwibmV0d29ya1N0YXRlIjoib2JzZXJ2ZWQiLCJkaXN0YW5jZSI6IjUwMDAiLCJzaWQiOiIwMDEiLCJpcCI6IjEwIiwicGN0bCI6Ii01LXBlcmNlbnRpbGUifQ=="
+            },
+            {
+              "date_added": "13383681240081372",
+              "guid": "0d935f7d-c44c-40ed-b4cd-d737333cb365",
+              "id": "40",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "DATO CMS",
+              "type": "url",
+              "url": "https://xweather-website.admin.datocms.com/"
+            },
+            {
+              "date_added": "13384535517936913",
+              "guid": "794fb3a1-608b-41c1-a23a-5d5b958f1c82",
+              "id": "41",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Air Quality Dashboard (AQ Team)",
+              "type": "url",
+              "url": "https://app.datadoghq.eu/dashboard/zgj-i2n-c6b/operations-prod-monitor?fromUser=false&refresh_mode=sliding&from_ts=1740058302644&to_ts=1740061902644&live=true"
+            },
+            {
+              "date_added": "13385061049751549",
+              "guid": "6654422b-e6d0-46f0-9a18-a5dba0c18894",
+              "id": "42",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "3P Goals",
+              "type": "url",
+              "url": "https://lab.vaisala.com/pdc/my-team"
+            },
+            {
+              "date_added": "13385136426105797",
+              "guid": "46a57ecc-33c2-4cc2-b291-46699aade2a7",
+              "id": "43",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "MapsGL NEXRAD Demo",
+              "type": "url",
+              "url": "https://uat.aerisweather.com/mapsgl/nexrad/"
+            },
+            {
+              "date_added": "13386204689578652",
+              "guid": "38b1e2a1-21c3-4d12-9896-4be9c7fe6d26",
+              "id": "44",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Lightning- NOC Monitor",
+              "type": "url",
+              "url": "https://192.168.143.200/nagiosxi/login.php"
+            },
+            {
+              "date_added": "13390322818991985",
+              "guid": "ce9c7621-f1ef-459c-b0a0-c425c6c95bc4",
+              "id": "45",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Github - Vaisala",
+              "type": "url",
+              "url": "https://github.com/enterprises/vaisala/sso"
+            },
+            {
+              "date_added": "13390495395417714",
+              "guid": "09860900-4f78-4c11-99bd-0790054d6687",
+              "id": "46",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Grafana - AWS",
+              "type": "url",
+              "url": "https://grafana.us-east-1.obs.vaisala.net/login"
+            },
+            {
+              "date_added": "13374882591372087",
+              "guid": "c65757f3-74c8-4f94-a65c-1e2e5d0fb761",
+              "id": "47",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Status Page - Xweather",
+              "type": "url",
+              "url": "https://manage.statuspage.io/pages/sg8x7b16qktl/incidents#maintenances"
+            },
+            {
+              "date_added": "13394237319768291",
+              "guid": "88e3debe-a236-47db-85a1-bf3a925af3aa",
+              "id": "48",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "NALDN Map",
+              "type": "url",
+              "url": "http://199.33.75.71/ec/naldn-qa/sites.php"
+            },
+            {
+              "date_added": "13397577826046330",
+              "guid": "eac13594-a13d-40ee-bff7-93c546151757",
+              "id": "49",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "API Example",
+              "type": "url",
+              "url": "https://api.aerisapi.com/conditions/55372?client_id=wgE96YE3scTQLKjnqiMsv&client_secret=FgAocPnDMSppbFb6gvfqVQuOagtSFQPRHVtgxqZN"
+            },
+            {
+              "date_added": "13397596882063004",
+              "guid": "caa25cc3-6fb6-4c23-bed1-638f16155a68",
+              "id": "50",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Astronomer's New CEO Releases Statement Amid Coldplay Cheating Scandal",
+              "type": "url",
+              "url": "https://www.tmz.com/2025/07/21/new-ceo-astronomer-statement-on-coldplay-affair/"
+            },
+            {
+              "date_added": "13397920929671644",
+              "guid": "8a5f157a-d289-470b-a5fc-f58bd1ae178a",
+              "id": "51",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Industry Use Case Demos | Xweather",
+              "type": "url",
+              "url": "https://demos.xweather.com/data-maps/?allow=1"
+            },
+            {
+              "date_added": "13389800335763422",
+              "guid": "4173ecd6-729b-4bb0-9c08-7891a083e20e",
+              "id": "52",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Github Repos",
+              "type": "url",
+              "url": "https://github.com/orgs/VaisalaCorp/teams/xweather_daas_core_admin/repositories"
+            },
+            {
+              "children": [
+                {
+                  "date_added": "13406758673924364",
+                  "guid": "57423a8c-3a33-43d9-b02a-1fb8558b8d83",
+                  "id": "54",
+                  "meta_info": {
+                    "power_bookmark_meta": ""
+                  },
+                  "name": "XWC Execution Goals",
+                  "type": "url",
+                  "url": "https://vaisalaworks-my.sharepoint.com/:p:/r/personal/travis_hartman_vaisala_com/_layouts/15/doc2.aspx?sourcedoc=%7BA080F7AD-F1E4-46D5-B591-E3D2C6EACE11%7D&file=EP2026%20XWE-WeatherCore-ExecutionGoals.pptx&fromShare=true&action=edit&mobileredirect=true"
+                },
+                {
+                  "date_added": "13406758704482759",
+                  "guid": "dc7bfcc7-27f5-4b76-b634-c0d928d299af",
+                  "id": "55",
+                  "meta_info": {
+                    "power_bookmark_meta": ""
+                  },
+                  "name": "IT Request Xweather WeatherCore Tools Request.docx",
+                  "type": "url",
+                  "url": "https://vaisalaworks-my.sharepoint.com/:w:/g/personal/seth_miller_vaisala_com/EdePfh6eoHpDgRCn4RhaFiYBqQMrcyhXBro73_9E7jqmLA?e=zJVknS"
+                },
+                {
+                  "date_added": "13406758762202537",
+                  "guid": "4180b365-f447-414c-8787-a4dc6f8e111b",
+                  "id": "56",
+                  "meta_info": {
+                    "power_bookmark_meta": ""
+                  },
+                  "name": "Xweather Data and Forecasting Convergence.docx",
+                  "type": "url",
+                  "url": "https://vaisalaworks.sharepoint.com/:w:/s/EBU-LT/EfbbBE3E3wNJratp6ocGLTgByJBQ9zToC_W1YsA55Sb3Sg?e=qZhipT"
+                },
+                {
+                  "date_added": "13406758802860309",
+                  "guid": "7ac30874-d90b-43f8-85fa-f5228ee12314",
+                  "id": "57",
+                  "meta_info": {
+                    "power_bookmark_meta": ""
+                  },
+                  "name": "WxCore Intro All Hands Oct2025.pptx",
+                  "type": "url",
+                  "url": "https://vaisalaworks-my.sharepoint.com/:p:/r/personal/travis_hartman_vaisala_com/_layouts/15/Doc.aspx?sourcedoc=%7BE4E7D932-3883-4F6A-A7EE-59A7B27C18BD%7D&file=WxCore-AH-Oct2025.pptx&action=edit&mobileredirect=true"
+                },
+                {
+                  "date_added": "13406853044277587",
+                  "guid": "a8b8e223-ded3-4e2d-895d-69e60df267f2",
+                  "id": "58",
+                  "meta_info": {
+                    "power_bookmark_meta": ""
+                  },
+                  "name": "re:Invent Parties 2025 – Unofficial list of AWS re:Invent 2025 Conference and Vendor Parties",
+                  "type": "url",
+                  "url": "https://conferenceparties.com/reinvent2025/"
+                }
+              ],
+              "date_added": "13406758695995392",
+              "date_modified": "13406853044277587",
+              "guid": "b47edd9e-f9f2-454a-8fe6-34df9d5dd7d6",
+              "id": "53",
+              "name": "XWC",
+              "type": "folder"
+            },
+            {
+              "date_added": "13409764770258145",
+              "guid": "d644dd89-9ba5-4fad-ac5b-ceb4e7d1951b",
+              "id": "59",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Pay Stubs (dayforce)",
+              "type": "url",
+              "url": "https://www.dayforcehcm.com/mydayforce/login.aspx"
+            },
+            {
+              "date_added": "13416089677170683",
+              "guid": "56fcab67-ea25-431e-a8bf-42a077971fbc",
+              "id": "225",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "MyHub",
+              "type": "url",
+              "url": "https://performancemanager.successfactors.eu/login?company=vaisalaoyj"
+            },
+            {
+              "date_added": "13417887255792160",
+              "guid": "31b40aa1-0ca4-4902-af3d-3407770234f5",
+              "id": "229",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Xweather brand assets & guidelines",
+              "type": "url",
+              "url": "https://vaisalaworks.sharepoint.com/sites/vintra-xweather/SitePages/Xweather-brand-guidelines(1).aspx"
+            }
+          ],
+          "date_added": "13371251301817580",
+          "date_modified": "13423327196824874",
+          "guid": "beaa9e07-e4f8-408f-938a-9f0088956db3",
+          "id": "26",
+          "name": "Vaisala",
+          "type": "folder"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "9d82e2d7-fac1-4fe2-be5e-57be1c7b9f7b",
+          "id": "60",
+          "name": "NOAA Status (NCEP)",
+          "type": "url",
+          "url": "https://www.nco.ncep.noaa.gov/status/messages/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "e218b6ae-6208-4d6f-b01d-231d8b9d92f6",
+          "id": "61",
+          "name": "IAM Reference (AWS Permissions)",
+          "type": "url",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_actions-resources-contextkeys.html"
+        },
+        {
+          "date_added": "13295466279000000",
+          "guid": "84f87ba1-a65c-4678-9f28-e7ce0ccd74db",
+          "id": "62",
+          "name": "Lambda News",
+          "type": "url",
+          "url": "https://aws.amazon.com/blogs/aws/category/compute/aws-lambda/"
+        },
+        {
+          "date_added": "13269445127000000",
+          "guid": "81e3b94d-b5c7-4443-980a-7f04c97895a5",
+          "id": "63",
+          "name": "Cheatsheets Bash",
+          "type": "url",
+          "url": "https://devhints.io/bash"
+        },
+        {
+          "children": [
+            {
+              "date_added": "13383195571538420",
+              "guid": "b078d3b5-e3c5-44c1-bbf5-15e680f05705",
+              "id": "65",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "business-strategy - Documents - All Documents",
+              "type": "url",
+              "url": "https://electricweave.sharepoint.com/sites/business-strategy/Shared%20Documents/Forms/AllItems.aspx"
+            },
+            {
+              "date_added": "13385268562184550",
+              "guid": "736fee10-75be-4100-9650-0fddc7ca5a94",
+              "id": "66",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "EW Latency Test",
+              "type": "url",
+              "url": "https://www.electricweave.com/6ZAycpRmsNDjElKHZY7Vh8h7posZJMtp/latency-ui/"
+            },
+            {
+              "date_added": "13389845227449636",
+              "guid": "973bfc4f-36cb-45ca-904d-5dbb3a1010f0",
+              "id": "67",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "AWS SSO Login",
+              "type": "url",
+              "url": "https://d-9a676459cf.awsapps.com/start/#/?tab=accounts"
+            }
+          ],
+          "date_added": "13383195583757706",
+          "date_modified": "13389845227449636",
+          "guid": "ca76e5bb-c418-4ca0-a551-7ee073db42ad",
+          "id": "64",
+          "name": "Electric Weave",
+          "type": "folder"
+        },
+        {
+          "date_added": "13271350838000000",
+          "guid": "20081baf-3ad9-4bd0-9446-f953fad983d9",
+          "id": "68",
+          "name": "Statuspage AerisWeather",
+          "type": "url",
+          "url": "https://manage.statuspage.io/pages/sg8x7b16qktl/components"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "a64580d9-0fb1-489a-94d0-f69f27c6e2a6",
+          "id": "69",
+          "name": "Deep Learning - Udacity",
+          "type": "url",
+          "url": "https://classroom.udacity.com/courses/ud730"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "aa613aec-185a-4fb2-b519-ab5d7188392e",
+          "id": "70",
+          "name": "space - How to keep humans pilots instead of AI in sci-fi future? - Worldbuilding Stack Exchange",
+          "type": "url",
+          "url": "https://worldbuilding.stackexchange.com/questions/17043/how-to-keep-humans-pilots-instead-of-ai-in-sci-fi-future/87875#87875"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "11422888-2268-44a3-95d6-05e0cf056f2c",
+          "id": "71",
+          "name": "ImgOps",
+          "type": "url",
+          "url": "javascript:(function(){url='http://imgops.com/imgops.js';document.body.appendChild(document.createElement('script')).src=url+'?%27+new%20Date().getTime();})();"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "b61554be-f232-46f0-8b01-fa8c6dbc86ed",
+          "id": "72",
+          "name": "FlowingData | Data Visualization, Infographics, and Statistics",
+          "type": "url",
+          "url": "http://flowingdata.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "c46521e9-17ba-40f3-88b0-01f84fd82d8e",
+          "id": "73",
+          "name": "httpstat.us",
+          "type": "url",
+          "url": "http://httpstat.us/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "e4c62a70-cabe-4515-9428-edcca2eff630",
+          "id": "74",
+          "name": "Git - Git Objects",
+          "type": "url",
+          "url": "http://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "3d07003a-66f7-4824-8aea-b525974e4f1f",
+          "id": "75",
+          "name": "Shields.io: Quality metadata badges for open source projects",
+          "type": "url",
+          "url": "http://shields.io/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "5e784d09-76d7-4538-bc11-fad103eca1eb",
+          "id": "76",
+          "name": "Aeris Weather Stats Dashboard",
+          "type": "url",
+          "url": "http://uat.aerisweather.com/dashboard/amp-overview"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "ca8e59dd-e017-4dff-aff0-a934a0526821",
+          "id": "77",
+          "name": "petebunting / rsgis_scripts / source / GDAL / subsetImage2Image.py — Bitbucket",
+          "type": "url",
+          "url": "https://bitbucket.org/petebunting/rsgis_scripts/src/c999df5483d3ed988feac016008f7623a28a484e/GDAL/subsetImage2Image.py?at=default&fileviewer=file-view-default"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "6d2acf2e-fe90-4c3d-9777-406f10dee0cd",
+          "id": "78",
+          "name": "Planning Center Online",
+          "type": "url",
+          "url": "https://accounts.planningcenteronline.com/?return=Services%2Fdashboard%2F0"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "39586eb6-6152-4ae8-bf1d-a12e7af3022d",
+          "id": "79",
+          "name": "mongod ip-10-67-165-214",
+          "type": "url",
+          "url": "http://mongodb03.hamweather.net:28017/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "4c37fbd9-fc4d-4906-98b4-dd9e21dc6b6c",
+          "id": "80",
+          "name": "Nick Ramps",
+          "type": "url",
+          "url": "http://apollo.urban10.net/aeris/maps/colorramp/legend.php?t=wave-heights&i=1&li=5&cell=10x20&nc=1&format=rgb&output={value}%20{r}%20{g}%20{b}%20{a}&int=0"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "9b8befaf-e9ed-4d3b-af8f-7bbf9cd5b6f3",
+          "id": "81",
+          "name": "Gamma Matching and Image Correction",
+          "type": "url",
+          "url": "http://samwrx.surge.sh/graphics/2015/12/30/gammamatch.html"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "8c420aea-1b28-4cb0-8da4-f92a1fe248ff",
+          "id": "82",
+          "name": "Grav - A Modern Flat-File CMS | Grav",
+          "type": "url",
+          "url": "https://getgrav.org/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "5ea347b5-51c8-4581-9008-fb23cf4a1ad4",
+          "id": "83",
+          "name": "Deep Learning - Udacity",
+          "type": "url",
+          "url": "https://classroom.udacity.com/courses/ud730"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "519068b7-81fa-4f7b-a6e0-167acf2a35dc",
+          "id": "84",
+          "name": "Lodash-ify",
+          "type": "url",
+          "url": "javascript:(function(){var%20el=document.createElement(%22div%22),b=document.getElementsByTagName(%22body%22)[0],otherlib=false,msg=%22%22;el.style.position=%22fixed%22;el.style.height=%2232px%22;el.style.width=%22220px%22;el.style.marginLeft=%22-110px%22;el.style.top=%220%22;el.style.left=%2250%25%22;el.style.padding=%225px%2010px%22;el.style.zIndex=1001;el.style.fontSize=%2212px%22;el.style.color=%22%23222%22;el.style.backgroundColor=%22%23f99%22;if(typeof%20_!=%22undefined%22){msg=%22This%20page%20already%20using%20Lo-Dash%20v%22+_.VERSION;return%20showMsg()}else%20if(typeof%20_==%22function%22)otherlib=true;function%20getScript(url,success){var%20script=document.createElement(%22script%22);script.src=url;var%20head=document.getElementsByTagName(%22head%22)[0],done=false;script.onload=script.onreadystatechange=function(){if(!done%26%26(!this.readyState||this.readyState==%22loaded%22||this.readyState==%22complete%22)){done=true;success();script.onload=script.onreadystatechange=null;head.removeChild(script)}};head.appendChild(script)}getScript(%22http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.0.0/lodash.compat.js%22,function(){if(typeof%20_==%22undefined%22)msg=%22Sorry,%20but%20Lo-Dash%20wasn't%20able%20to%20load%22;else{msg=%22This%20page%20is%20now%20Lo-Dashified%20with%20v%22+_.VERSION;if(otherlib)msg+=%22%20and%20noConflict().%20Use%20lodash(),not%20_().%22}return%20showMsg()});function%20showMsg(){el.innerHTML=msg;b.appendChild(el);window.setTimeout(function(){if(typeof%20_==%22undefined%22)b.removeChild(el);else{b.removeChild(el);if(otherlib)lodash=_.noConflict()}},2500)}})();"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "1ac5990a-aac2-4d72-937e-290b914b650d",
+          "id": "85",
+          "name": "reddit: the front page of the internet",
+          "type": "url",
+          "url": "https://www.reddit.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "7cff4f52-dd5d-4028-b747-235321290f3b",
+          "id": "86",
+          "name": "Himiwari 8 Satellite Analysis",
+          "type": "url",
+          "url": "https://link.springer.com/article/10.1007/s12145-017-0316-4"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "9f2cc435-c161-4350-af5e-b660123ad145",
+          "id": "87",
+          "name": "NCO 4.7.5-alpha04 User Guide",
+          "type": "url",
+          "url": "http://nco.sourceforge.net/nco.html#ncpdq-netCDF-Permute-Dimensions-Quickly"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "647fc86b-98b4-4661-8de9-617938e93f5e",
+          "id": "88",
+          "name": "S&P 500 Map, S and P, Stock Chart",
+          "type": "url",
+          "url": "https://finviz.com/map.ashx"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "baf46220-ff27-4000-90ea-21fa3e63700c",
+          "id": "89",
+          "name": "Outlook - Office - Email",
+          "type": "url",
+          "url": "https://outlook.office.com/owa/?realm=aerisweather.com&exsvurl=1&ll-cc=1033&modurl=0"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "6ee26dc7-45d9-4401-8a44-8144f9a894bc",
+          "id": "90",
+          "name": "Timesheet – AerisWeather – Harvest",
+          "type": "url",
+          "url": "https://aerisweather.harvestapp.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "d8624d2a-7106-48aa-b0d3-64f9adc9385a",
+          "id": "91",
+          "name": "npm - aerisweather",
+          "type": "url",
+          "url": "https://www.npmjs.com/org/aerisweather"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "2bd79b88-0457-4cde-b5c3-09866c532e85",
+          "id": "92",
+          "name": "dysfunc/ascii-emoji: Essential Emoji Lenny faces",
+          "type": "url",
+          "url": "https://github.com/dysfunc/ascii-emoji"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "4843abe2-c140-474e-acab-4aa3c0eb034f",
+          "id": "93",
+          "name": "Amazon Leadership",
+          "type": "url",
+          "url": "https://www.amazon.jobs/en/principles"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "922a52ff-3019-4a37-907c-104ec2b2525f",
+          "id": "94",
+          "name": "Data Transfer: NCEP GFS Forecasts (0.25 degree grid)",
+          "type": "url",
+          "url": "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=%2Fgfs.2019032412"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "98e16942-130c-4681-9d99-886b378de29d",
+          "id": "95",
+          "name": "Python3 strftime strptime format",
+          "type": "url",
+          "url": "https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "cafbf4c9-7894-4b57-b957-15b0564399dd",
+          "id": "96",
+          "name": "Satellite Status Page GOES-17 GOES-16",
+          "type": "url",
+          "url": "https://www.ospo.noaa.gov/Operations/messages.html"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "c7ee6078-6f52-407c-939f-7d5c94fd1089",
+          "id": "97",
+          "name": "Get Docker Engine - Community for Ubuntu | Docker Documentation",
+          "type": "url",
+          "url": "https://docs.docker.com/install/linux/docker-ce/ubuntu/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "373d32ef-c5c8-4e60-9646-0f18fcf3b5fb",
+          "id": "98",
+          "name": "RealEarth™ SSEC Wisconsin Weather",
+          "type": "url",
+          "url": "https://realearth.ssec.wisc.edu/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "197af5c9-5181-4375-be6c-97691111b15a",
+          "id": "99",
+          "name": "https://www.aerisweather.com/data/account/signup/",
+          "type": "url",
+          "url": "https://www.aerisweather.com/data/account/signup/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "f9e5030b-a287-4702-a4ee-57f79f2da656",
+          "id": "100",
+          "name": "PD",
+          "type": "url",
+          "url": "https://aerisweather.pagerduty.com/incidents"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "84dad2cc-8b95-4ce1-b180-bfd0915c822d",
+          "id": "101",
+          "name": "Microsimulation of Traffic Flow: Onramp",
+          "type": "url",
+          "url": "https://traffic-simulation.de/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "2248b88d-e8dc-4d22-9f9e-3007c778e70c",
+          "id": "102",
+          "name": "REGEX Metar",
+          "type": "url",
+          "url": "https://regex101.com/r/Yhjbk0/1/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "2eb75ef4-2ab6-49a2-ae42-54c93708afe3",
+          "id": "103",
+          "name": "502 Bad Gateway",
+          "type": "url",
+          "url": "http://192.168.121.81/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "3d057047-3132-462d-a5c9-a4f9727f0342",
+          "id": "104",
+          "name": "NFLX Options Chart Open Interest|Volume|Max Pain",
+          "type": "url",
+          "url": "http://www.opricot.com/ticker/NFLX/optiongraphs"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "556d1933-a6fa-4a2d-b0e0-7c3ffe99247e",
+          "id": "105",
+          "name": "Large Cap Earnings",
+          "type": "url",
+          "url": "https://markets.businessinsider.com/earnings-calendar#date=02/24/2020-03/01/2020&name=&countries=&eventtypes=103,99&tab=L"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "8f917dae-c8ec-4be4-9f43-6f007321f1de",
+          "id": "106",
+          "name": "Firewatch Wallpapers",
+          "type": "url",
+          "url": "https://wallpaperaccess.com/firewatch"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "16c46bf4-1ed0-41e5-980f-db139737298e",
+          "id": "107",
+          "name": "Wallpapers Photos | Unsplash",
+          "type": "url",
+          "url": "https://unsplash.com/t/wallpapers"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "9ba14245-7644-44be-b52d-88f21d2e8ff2",
+          "id": "108",
+          "name": "amos - A half-hour to learn Rust",
+          "type": "url",
+          "url": "https://fasterthanli.me/blog/2020/a-half-hour-to-learn-rust/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "d8ba49c9-8c28-48c0-99cc-ab47f9e952a3",
+          "id": "109",
+          "name": "Elegant Figures - Subtleties of Color (Part 1 of 6)",
+          "type": "url",
+          "url": "https://earthobservatory.nasa.gov/blogs/elegantfigures/2013/08/05/subtleties-of-color-part-1-of-6/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "718fa9fa-7406-46de-8686-8e5cc5550390",
+          "id": "110",
+          "name": "100 Little Ideas · Collaborative Fund",
+          "type": "url",
+          "url": "https://www.collaborativefund.com/blog/100-little-ideas/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "06641f68-fb77-4f5e-87c3-1cc32d7b981a",
+          "id": "111",
+          "name": "Hurricane Electric Hosted DNS - Dynamic",
+          "type": "url",
+          "url": "https://dns.he.net/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "3675393b-e8c0-428b-85d6-d26a4cd0a885",
+          "id": "112",
+          "name": "Ansible Variables Facts Built In",
+          "type": "url",
+          "url": "https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variables-discovered-from-systems-facts"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "3f3a62ec-2230-400d-b12a-2080060b05dd",
+          "id": "113",
+          "name": "wxPython Control Widget Gallery List",
+          "type": "url",
+          "url": "https://wxpython.org/Phoenix/docs/html/gallery.html"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "ca18bc72-c8ba-40d9-b70b-e5526780f9b1",
+          "id": "114",
+          "name": "Mini Crossword Puzzle NYT",
+          "type": "url",
+          "url": "https://www.nytimes.com/crosswords/game/mini"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "ff82d4bc-7ef5-4076-afd2-5cddb5fe3526",
+          "id": "115",
+          "name": "NOAA NCEP Status",
+          "type": "url",
+          "url": "https://www.nco.ncep.noaa.gov/status/messages/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "0caa8ceb-dc88-4c70-a9bd-59723e4ef8d7",
+          "id": "116",
+          "name": "I Hate Coordinate Systems!",
+          "type": "url",
+          "url": "https://ihatecoordinatesystems.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "839e04b4-f77d-4d20-b8df-2ed10e6ab812",
+          "id": "117",
+          "name": "List of aircraft manufacturers by ICAO name - Wikipedia",
+          "type": "url",
+          "url": "https://en.wikipedia.org/wiki/List_of_aircraft_manufacturers_by_ICAO_name"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "5ed2096f-a07e-483c-8dc5-5efaf923349a",
+          "id": "118",
+          "name": "Unreal Engine 4 UE4 materials Julio Sillet 3D Art",
+          "type": "url",
+          "url": "https://gumroad.com/juliosillet?sort=page_layout"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "21ea8b43-1b1c-49ef-a8ec-421bce2b565e",
+          "id": "119",
+          "name": "Dancing With the Boys Gif mahliari dance",
+          "type": "url",
+          "url": "https://i.imgur.com/t55uVPw.mp4"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "210f91ff-aaca-4754-a5f7-0f018ed6db1d",
+          "id": "120",
+          "name": "GOES-East - Latest Full Disk Images - NOAA / NESDIS / STAR",
+          "type": "url",
+          "url": "https://www.star.nesdis.noaa.gov/GOES/fulldisk.php?sat=G16"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "e8d11299-b35f-464e-a98d-3dfda16fffe7",
+          "id": "121",
+          "name": "R-tree Spatial Indexing with Python – Geoff Boeing",
+          "type": "url",
+          "url": "https://geoffboeing.com/2016/10/r-tree-spatial-index-python/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "5c84f41d-ac7c-4c38-9ab6-f942962b61d2",
+          "id": "122",
+          "name": "The many lies about reducing complexity part 2: Cloud | Hacker News",
+          "type": "url",
+          "url": "https://news.ycombinator.com/item?id=25714822"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "990ae408-613a-4b39-bc83-3bc4af397e81",
+          "id": "123",
+          "name": "Software Engineer Reviews",
+          "type": "url",
+          "url": "https://blog.pragmaticengineer.com/performance-reviews-for-software-engineers/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "c22b927f-e9ae-4aa7-a757-078667909463",
+          "id": "124",
+          "name": "The documentation system — Documentation system documentation",
+          "type": "url",
+          "url": "https://documentation.divio.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "ab8d1d3c-2440-449e-bb90-71a92919c688",
+          "id": "125",
+          "name": "Map tiles slippy maps example zoom levels",
+          "type": "url",
+          "url": "https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "56ce46ba-8559-4951-8c36-3a8193db1364",
+          "id": "126",
+          "name": "MRMS Viewer NSSL",
+          "type": "url",
+          "url": "https://mrms.nssl.noaa.gov/qvs/product_viewer/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "780ea934-916f-486e-8c9d-8a1592c5e112",
+          "id": "127",
+          "name": "GitHub - jordaneremieff/mangum: AWS Lambda & API Gateway support for ASGI",
+          "type": "url",
+          "url": "https://github.com/jordaneremieff/mangum"
+        },
+        {
+          "date_added": "13155770014000000",
+          "guid": "2f4740c0-1ce0-4921-b512-edb6856cbdd9",
+          "id": "128",
+          "name": "AWS Management Console",
+          "type": "url",
+          "url": "https://console.aws.amazon.com/console/home?region=us-east-1"
+        },
+        {
+          "date_added": "13156352589000000",
+          "guid": "60364e93-75e8-41c2-b75b-13a27a1a0782",
+          "id": "129",
+          "name": "Sentinel Dashboard",
+          "type": "url",
+          "url": "http://sentinel.aerisframework.com/dashboard#filter=prod"
+        },
+        {
+          "date_added": "13271293022000000",
+          "guid": "e18b2a76-6944-4b85-a5a7-2f83f4ef65d8",
+          "id": "130",
+          "name": "Indeed Candidates",
+          "type": "url",
+          "url": "https://employers.indeed.com/c#candidates?id=62b4cb73ff30&sort=datedefault&order=desc&statusName=0"
+        },
+        {
+          "date_added": "13277838706000000",
+          "guid": "fb83ee1e-a126-4247-a3ed-798b0b5269d8",
+          "id": "131",
+          "name": "xarray.open_dataset",
+          "type": "url",
+          "url": "http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html"
+        },
+        {
+          "date_added": "13280108984000000",
+          "guid": "850b6dc4-89a3-4c31-ac4f-3f4144da15ab",
+          "id": "132",
+          "name": "LearningPath-ML-Data-Scientist_May2020 - LearningPath_ML_DataScientist.pdf",
+          "type": "url",
+          "url": "https://d1.awsstatic.com/training-and-certification/Learning_Paths/LearningPath_ML_DataScientist.pdf"
+        },
+        {
+          "date_added": "13283102982000000",
+          "guid": "0f61d47a-e9ae-4b99-bfc7-a9a0bdce6d03",
+          "id": "133",
+          "name": "drag duplicate inkscape - Google Search",
+          "type": "url",
+          "url": "https://www.google.com/search?channel=fs&client=ubuntu&q=drag+duplicate+inkscape"
+        },
+        {
+          "date_added": "13284072810000000",
+          "guid": "8bef7a56-d01f-4558-9265-9097da4fb8ae",
+          "id": "134",
+          "name": "Internet Outages Map Infrastructure Backbone Monitor",
+          "type": "url",
+          "url": "https://www.thousandeyes.com/outages/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "a9d9e21c-d6b8-41ae-91c1-ee9ac723e774",
+          "id": "135",
+          "name": "BB",
+          "type": "url",
+          "url": "https://bitbucket.org/dashboard/overview"
+        },
+        {
+          "date_added": "13290799840000000",
+          "guid": "208aefef-adef-417f-8e44-a07acd699ffc",
+          "id": "136",
+          "name": "Tokyo Night - Visual Theme",
+          "type": "url",
+          "url": "https://marketplace.visualstudio.com/items?itemName=enkia.tokyo-night"
+        },
+        {
+          "date_added": "13292481225000000",
+          "guid": "0a9b8ee8-e74a-4e5f-b0fe-4a378e8c1a3a",
+          "id": "137",
+          "name": "own",
+          "type": "url",
+          "url": "about:newtab"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "6681dc85-54ce-4e08-b729-45775f4b31c0",
+          "id": "138",
+          "name": "KB",
+          "type": "url",
+          "url": "https://94e694b2d2df4a78c6316c94e457439a.us-east-1.aws.found.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-4h,mode:quick,to:now))&_a=(columns:!(_source),index:'data-flow-messages-*',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))"
+        },
+        {
+          "date_added": "13295506864000000",
+          "guid": "ffe23f47-5e3f-4c8f-b0ca-0f1c56fc00ee",
+          "id": "139",
+          "name": "Idle Breakout | Online Idle Brick Breaking at Coolmath Games",
+          "type": "url",
+          "url": "https://www.coolmathgames.com/0-idle-breakout"
+        },
+        {
+          "date_added": "13297791837000000",
+          "guid": "af61afa7-a4f2-43f5-bfdc-c3e5d0fdff67",
+          "id": "140",
+          "name": "PagerDuty Full-Service Ownership Documentation",
+          "type": "url",
+          "url": "https://ownership.pagerduty.com/"
+        },
+        {
+          "date_added": "13297791848000000",
+          "guid": "99618651-1d9a-4a28-ae71-c0d5596441eb",
+          "id": "141",
+          "name": "Introduction - PagerDuty Full-Service Ownership Documentation",
+          "type": "url",
+          "url": "https://ownership.pagerduty.com/introduction/"
+        },
+        {
+          "date_added": "13301007902000000",
+          "guid": "17e6daf8-4683-490f-b7da-79e67c85ca1f",
+          "id": "142",
+          "name": "EC2 Management Console",
+          "type": "url",
+          "url": "https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstances:ami=ami-0a3d74c8e4b191bb3"
+        },
+        {
+          "date_added": "13302243821000000",
+          "guid": "d9634eb8-6261-44d2-b37f-77e2a4022982",
+          "id": "143",
+          "name": "HTML5 UP! Responsive HTML5 and CSS3 Site Templates",
+          "type": "url",
+          "url": "https://html5up.net/"
+        },
+        {
+          "date_added": "13303435563000000",
+          "guid": "09ee5e56-91fc-43db-9547-07fc2cb5ff31",
+          "id": "144",
+          "name": "Sonarr",
+          "type": "url",
+          "url": "http://192.168.1.103:8989/"
+        },
+        {
+          "date_added": "13306943201000000",
+          "guid": "f3e1034a-6edd-4bf0-9d99-897dd686d62d",
+          "id": "145",
+          "name": "JSON Crack - Crack your data into pieces",
+          "type": "url",
+          "url": "https://jsoncrack.com/"
+        },
+        {
+          "date_added": "13310174160000000",
+          "guid": "b5cbb433-c98c-421f-bd83-df12a12b8071",
+          "id": "146",
+          "name": "Certificate Signing and Revocation Online PKI tools",
+          "type": "url",
+          "url": "https://pkitools.net/pages/ca/ca.html"
+        },
+        {
+          "date_added": "13292461153000000",
+          "guid": "81418bcc-eca1-4e1a-ab03-2e4a50225b3a",
+          "id": "147",
+          "name": "JIRA-MAPGL",
+          "type": "url",
+          "url": "https://medialogicgroup.atlassian.net/jira/software/c/projects/MAPSGLAPI/boards/63/roadmap"
+        },
+        {
+          "date_added": "13319735486000000",
+          "guid": "1b96eb0a-6337-4746-aec6-6b94d5c6ae9d",
+          "id": "148",
+          "name": "AerisWeather API - Example Conditions",
+          "type": "url",
+          "url": "https://api.aerisapi.com/conditions/closest?p=44.7,-93.4&radius=100km&limit=1000&client_id=wgE96YE3scTQLKjnqiMsv&client_secret=FgAocPnDMSppbFb6gvfqVQuOagtSFQPRHVtgxqZN"
+        },
+        {
+          "date_added": "13319740370000000",
+          "guid": "2d421884-78b9-49e0-b306-e28f45eb902f",
+          "id": "149",
+          "name": "List of ISO 3166 country codes tlds ",
+          "type": "url",
+          "url": "https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes"
+        },
+        {
+          "date_added": "13321047672000000",
+          "guid": "b171441c-3581-474b-976c-17ecd9739930",
+          "id": "150",
+          "name": "Feedback voting public",
+          "type": "url",
+          "url": "https://fider.io/"
+        },
+        {
+          "date_added": "13332472512000000",
+          "guid": "1bb658fb-c694-4548-b9b5-70a1f3904e99",
+          "id": "151",
+          "name": "Slippy map tilenames - OpenStreetMap Wiki",
+          "type": "url",
+          "url": "https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames"
+        },
+        {
+          "date_added": "13333143558000000",
+          "guid": "4d1a9baf-377d-483f-aced-0efb67176ebc",
+          "id": "152",
+          "name": "Zola - Static Site Generator Website Maker",
+          "type": "url",
+          "url": "https://www.getzola.org/"
+        },
+        {
+          "date_added": "13333149844000000",
+          "guid": "5f4e9d19-cbb7-4fc4-93e6-741b2c567ef7",
+          "id": "153",
+          "name": "Let's remove Quaternions from every 3D Engine (An Interactive Introduction to Rotors from Geometric Algebra) - Marc ten Bosch",
+          "type": "url",
+          "url": "https://marctenbosch.com/quaternions/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "e73231ae-bc55-4ed7-96c9-00962eef756a",
+          "id": "154",
+          "name": "Road",
+          "type": "url",
+          "url": "https://medialogicgroup.atlassian.net/jira/software/projects/APM/boards/59/roadmap"
+        },
+        {
+          "date_added": "13336065654000000",
+          "guid": "f3751a1e-ddd0-47fa-b023-97f346a238c1",
+          "id": "155",
+          "name": "Lighting white screen background plain",
+          "type": "url",
+          "url": "https://www.whitescreen.online/zoom-lighting/"
+        },
+        {
+          "date_added": "13336780058000000",
+          "guid": "1870bf41-31cb-4006-8b60-d1214dd6af16",
+          "id": "156",
+          "name": "AerisWeather Support Bot",
+          "type": "url",
+          "url": "http://uat.aerisweather.com/nimbus/"
+        },
+        {
+          "date_added": "13347042289000000",
+          "guid": "6a87b006-2d47-4531-8e2c-d341ef67e911",
+          "id": "157",
+          "name": "Bing Chat",
+          "type": "url",
+          "url": "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx"
+        },
+        {
+          "date_added": "13353374318000000",
+          "guid": "8b3504c0-f921-469c-90d5-a2c4789a5454",
+          "id": "158",
+          "name": "systemd by example - Part 1: Minimization - Sebastian Jambor's blog",
+          "type": "url",
+          "url": "https://seb.jambor.dev/posts/systemd-by-example-part-1-minimization/"
+        },
+        {
+          "date_added": "13354322250000000",
+          "guid": "58a0f1d2-c161-4654-9c81-69f9e90d6699",
+          "id": "159",
+          "name": "MapsGL API - Prod",
+          "type": "url",
+          "url": "https://prod.v1.api.mapsgl.aerisapi.com/docs#/tile/data_set_metadata_tile__get"
+        },
+        {
+          "date_added": "13356712499000000",
+          "guid": "d72430c0-f3bb-4d50-82ed-0736af67e20d",
+          "id": "160",
+          "name": "Employee comp update",
+          "type": "url",
+          "url": "https://performancemanager.successfactors.eu/acme?bplte_company=vaisalaoyj&fbacme_o=my_forms&myf%5fos=fldx&myf%5fss=Un%2dFiled&myf%5fmode=v&inbox%5ffbfl%5fftype=Compensation&cmplt%5fos=list&reqOrig=pm&page%5fno=1&cmplt%5ffbfl%5fflist%5fact=open%5fform&inbox%5ffbfl%5fftype=Compensation&cmplt%5ffbfl%5fflist%5ffmid=34010&itrModule=rewarding&_s.crb=P6vjhwtbk6uiORZVAa3mlAHeFoNgv7Z7%2bA4ag%2fnz1Ws%3d"
+        },
+        {
+          "date_added": "13357805399000000",
+          "guid": "2473c8a3-0731-4c0d-b349-68bd35cc6ed1",
+          "id": "161",
+          "name": "Vaisala Stock Images Branding Photos Material Hub",
+          "type": "url",
+          "url": "https://materialhub.vaisala.com/browse/categories/most_viewed"
+        },
+        {
+          "date_added": "13357805404000000",
+          "guid": "6a8c018d-102d-4746-9a20-5bd9b2ba801f",
+          "id": "162",
+          "name": "Vaisala Brand Book",
+          "type": "url",
+          "url": "https://brand.vaisala.com/"
+        },
+        {
+          "date_added": "13368815996000000",
+          "guid": "263ba4ce-99a2-4b3b-a77e-d057b65cdfcd",
+          "id": "163",
+          "name": "How to easily configure WireGuard - Stavros' Stuff",
+          "type": "url",
+          "url": "https://www.stavros.io/posts/how-to-configure-wireguard/"
+        },
+        {
+          "date_added": "13369154625000000",
+          "guid": "bf19a112-cebd-453c-b7d8-c2ef1cf07638",
+          "id": "164",
+          "name": "Gridded Satellite GOES (GridSat-GOES) East and West Full Disk and CONUS Coverage, Version 1",
+          "type": "url",
+          "url": "https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ncdc:C00993"
+        },
+        {
+          "date_added": "13369254525000000",
+          "guid": "e8a023a8-a824-492a-b51b-e5f0d91453c2",
+          "id": "165",
+          "name": "DataHub - Vaisala Environmental Data Metadata Store",
+          "type": "url",
+          "url": "https://datahub.casd.vaisala.io/settings/tokens"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "date_added": "13297278981000000",
+                  "guid": "1a6e3791-1ef6-429b-8b3f-0f876e2b2a99",
+                  "id": "168",
+                  "name": "Get Help",
+                  "type": "url",
+                  "url": "https://support.mozilla.org/products/firefox"
+                },
+                {
+                  "date_added": "13297278981000000",
+                  "guid": "0ef43371-5845-4778-81fc-3ee1159ce445",
+                  "id": "169",
+                  "name": "Customize Firefox",
+                  "type": "url",
+                  "url": "https://support.mozilla.org/kb/customize-firefox-controls-buttons-and-toolbars?utm_source=firefox-browser&utm_medium=default-bookmarks&utm_campaign=customize"
+                },
+                {
+                  "date_added": "13297278981000000",
+                  "guid": "ee72ddf1-6b7e-4023-9b54-67f52496f76d",
+                  "id": "170",
+                  "name": "Get Involved",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/contribute/"
+                },
+                {
+                  "date_added": "13297278981000000",
+                  "guid": "3890a97c-68b7-4af6-99b6-80514a33930a",
+                  "id": "171",
+                  "name": "About Us",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/about/"
+                },
+                {
+                  "date_added": "13266374163000000",
+                  "guid": "a1cbff2d-23be-4543-9ff2-ef265ae993d6",
+                  "id": "172",
+                  "name": "Get Help",
+                  "type": "url",
+                  "url": "https://support.mozilla.org/en-US/products/firefox"
+                },
+                {
+                  "date_added": "13190843899000000",
+                  "guid": "328ed69d-3115-4592-85c1-574556639ee6",
+                  "id": "173",
+                  "name": "Customize Firefox",
+                  "type": "url",
+                  "url": "https://support.mozilla.org/en-US/kb/customize-firefox-controls-buttons-and-toolbars?utm_source=firefox-browser&utm_medium=default-bookmarks&utm_campaign=customize"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "a8a6aaa1-5d76-4f17-a8b9-102e3586d108",
+                  "id": "174",
+                  "name": "Get Involved",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/en-US/contribute/"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "d9219940-37e0-4782-bf9a-06cdff27a55f",
+                  "id": "175",
+                  "name": "About Us",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/en-US/about/"
+                },
+                {
+                  "date_added": "13138249801000000",
+                  "guid": "0bece2f6-3e1e-430b-bb51-8a6440609535",
+                  "id": "176",
+                  "name": "Help and Tutorials",
+                  "type": "url",
+                  "url": "https://support.mozilla.org/en-US/products/firefox"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "e4706a41-891e-4eb8-a62b-c09315e1687d",
+                  "id": "177",
+                  "name": "Customize Firefox",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/en-US/firefox/customize/"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "6923abb1-946c-4bec-9002-4ca6924482d2",
+                  "id": "178",
+                  "name": "Help and Tutorials",
+                  "type": "url",
+                  "url": "https://www.mozilla.org/en-US/firefox/help/"
+                }
+              ],
+              "date_added": "13371311570894635",
+              "date_modified": "13371311570894635",
+              "guid": "dee9e0fe-869f-4811-ac48-ef9f230776c7",
+              "id": "167",
+              "name": "Mozilla Firefox",
+              "type": "folder"
+            },
+            {
+              "children": [
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "3fa5d40e-b15b-453f-b020-6032511ce71d",
+                  "id": "180",
+                  "name": "Ubuntu",
+                  "type": "url",
+                  "url": "http://www.ubuntu.com/"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "87bab335-ffaf-4385-ae71-a5a2bc9590e2",
+                  "id": "181",
+                  "name": "Ubuntu Wiki (community-edited website)",
+                  "type": "url",
+                  "url": "http://wiki.ubuntu.com/"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "9d55604b-9f4b-4154-b2cd-b83ee09d926c",
+                  "id": "182",
+                  "name": "Make a Support Request to the Ubuntu Community",
+                  "type": "url",
+                  "url": "https://answers.launchpad.net/ubuntu/+addquestion"
+                },
+                {
+                  "date_added": "13106176417000000",
+                  "guid": "3f27d75a-ef1c-4ce9-8e3f-aa37efc69a03",
+                  "id": "183",
+                  "name": "Debian (Ubuntu is based on Debian)",
+                  "type": "url",
+                  "url": "http://www.debian.org/"
+                }
+              ],
+              "date_added": "13371311570894838",
+              "date_modified": "13371311570894838",
+              "guid": "6d0f6698-19ee-4e01-8b7e-f6cc1e9dea0b",
+              "id": "179",
+              "name": "Ubuntu and Free Software links",
+              "type": "folder"
+            },
+            {
+              "children": [],
+              "date_added": "13371311570894966",
+              "date_modified": "13371311570894966",
+              "guid": "45e3d7c1-a647-42d6-a34b-bd7e113c6b41",
+              "id": "184",
+              "name": "Ubuntu and Free Software links",
+              "type": "folder"
+            },
+            {
+              "date_added": "13314300230000000",
+              "guid": "13bbcac0-00d6-4121-8b67-2399cad56ff5",
+              "id": "185",
+              "name": "Vaisala Xweather launch in San Francisco - YouTube",
+              "type": "url",
+              "url": "https://www.youtube.com/watch?v=OY-OWzsiarc"
+            },
+            {
+              "date_added": "13320780653000000",
+              "guid": "0931e2f9-2e8d-4e0e-9574-0d93146e782d",
+              "id": "186",
+              "name": "PDF Editor Adobe",
+              "type": "url",
+              "url": "https://acrobat.adobe.com/link/acrobat/fillsign?x_api_client_id=adobe_com&x_api_client_location=fillsign"
+            },
+            {
+              "children": [
+                {
+                  "date_added": "13274652388000000",
+                  "guid": "1190c3df-b31b-4517-9c9c-1650d6320ef7",
+                  "id": "188",
+                  "name": "F1 Streams",
+                  "type": "url",
+                  "url": "https://racingfk.com/formula-1-round-12-rolex-belgian-grand-prix-2021/"
+                },
+                {
+                  "date_added": "13341515518000000",
+                  "guid": "437d8940-bec6-42c2-a302-e2d37dc12239",
+                  "id": "189",
+                  "name": "Texas Representative on being a christian",
+                  "type": "url",
+                  "url": "https://www.reddit.com/r/PublicFreakout/comments/175cjzc/texas_state_representative_james_talarico/"
+                },
+                {
+                  "date_added": "13344559195000000",
+                  "guid": "76f697a2-ec30-4976-9955-923b53f9b500",
+                  "id": "190",
+                  "name": "Litho - Prod",
+                  "type": "url",
+                  "url": "https://prod.v1.api.litho.aerisframework.com/demo/"
+                }
+              ],
+              "date_added": "13371311570895026",
+              "date_modified": "13371311570895026",
+              "guid": "f756e7e4-7a72-48c6-be69-922350cc657e",
+              "id": "187",
+              "name": "Other Bookmarks",
+              "type": "folder"
+            }
+          ],
+          "date_added": "13371311570894621",
+          "date_modified": "13371311570894621",
+          "guid": "10c1be93-6e48-47e1-9947-bccb3994510b",
+          "id": "166",
+          "name": "Imported",
+          "type": "folder"
+        },
+        {
+          "date_added": "13277579754000000",
+          "guid": "ced05665-0bed-4b9c-aa97-f6250bbcc32e",
+          "id": "191",
+          "name": "λ",
+          "type": "url",
+          "url": "https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions"
+        },
+        {
+          "date_added": "13382490119931058",
+          "guid": "41748b66-edab-4e28-b71d-37ec87f01fbf",
+          "id": "192",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "POTUS Tracker - Executive Orders, Presidential Schedule, Signed Legislation - Mobile notifications via web",
+          "type": "url",
+          "url": "https://potustracker.us/"
+        },
+        {
+          "date_added": "13382502802136659",
+          "guid": "dbc04c21-433e-4419-824d-96aac5044f47",
+          "id": "193",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "PJM LMP Node Location",
+          "type": "url",
+          "url": "https://chatgpt.com/c/67983586-d61c-8007-8869-803c1908bc13"
+        },
+        {
+          "children": [
+            {
+              "date_added": "13385833755451992",
+              "guid": "40f12fcd-690e-4545-aa3f-eaf5fa5e7dbd",
+              "id": "195",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Grafana - Home",
+              "type": "url",
+              "url": "http://ursa-minor:3000/login"
+            }
+          ],
+          "date_added": "13385833776872232",
+          "date_modified": "13385833776872232",
+          "guid": "e98d9238-308b-423f-b416-2d261750e354",
+          "id": "194",
+          "name": "Home Systems",
+          "type": "folder"
+        },
+        {
+          "children": [
+            {
+              "date_added": "13387663772479349",
+              "guid": "0ffe9a7c-e79e-4a2d-a274-4c5cc5f3c5b6",
+              "id": "197",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "disease | Arcade Nights",
+              "type": "url",
+              "url": "https://arcadenights.bandcamp.com/track/disease"
+            }
+          ],
+          "date_added": "13387663796165518",
+          "date_modified": "13387663796165518",
+          "guid": "cbef1378-a346-4c08-bd15-0327988280a0",
+          "id": "196",
+          "name": "Music",
+          "type": "folder"
+        },
+        {
+          "date_added": "13390945025387047",
+          "guid": "9c7d783c-cfca-4aac-a7c7-617a402d6405",
+          "id": "198",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Using Canonical Log Lines for Online Visibility — brandur.org",
+          "type": "url",
+          "url": "https://brandur.org/canonical-log-lines"
+        },
+        {
+          "date_added": "13391284302909819",
+          "guid": "e4b1c30a-4844-451a-b15e-8d41b4c473be",
+          "id": "199",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Hiring - Candidates for Lightning",
+          "type": "url",
+          "url": "https://performancemanager.successfactors.eu/xi/ui/rcmworkbench/pages/candidateWorkbench.xhtml?jobReq=6193&_s.crb=BKsv2jYggl%252fS7xW3X0ec9y75O3XXI7iFaLNYhctBzhg%253d"
+        },
+        {
+          "date_added": "13400012337306537",
+          "guid": "1886bda9-ad66-4cde-a497-8667c3e4e6dd",
+          "id": "200",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "infra-mgmt Repo Github",
+          "type": "url",
+          "url": "https://github.com/VaisalaCorp/infra-mgmt"
+        },
+        {
+          "date_added": "13409970763064927",
+          "guid": "f57d4496-b4d1-4f22-9769-5aed0c476e49",
+          "id": "201",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "SVG Animation",
+          "type": "url",
+          "url": "https://animejs.com/learn/"
+        },
+        {
+          "date_added": "13412879714061234",
+          "guid": "2c50f1d9-befc-4366-8512-a281fb21564b",
+          "id": "202",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Dashboard Icons - Free Tech Icons Businesses",
+          "type": "url",
+          "url": "https://dashboardicons.com/"
+        },
+        {
+          "date_added": "13266374178000000",
+          "guid": "dc5f6fc3-d06c-4510-b7ae-b23fa6e82655",
+          "id": "203",
+          "name": "JIRA",
+          "type": "url",
+          "url": "https://medialogicgroup.atlassian.net/secure/RapidBoard.jspa?rapidView=46&assignee=557058%3A6a1b93f9-a9ad-4154-9c84-cd9fd02ddc91"
+        },
+        {
+          "date_added": "13409682912627652",
+          "guid": "d079f6e0-c3da-4677-92cf-0496d240e8cd",
+          "id": "204",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "JR-Data",
+          "type": "url",
+          "url": "https://vaisala.atlassian.net/jira/software/c/projects/WASA/boards/8535?assignee=712020%3A2a5694c3-8a67-45c9-9d40-fe6f6f7592e7"
+        },
+        {
+          "date_added": "13413479741482818",
+          "guid": "bdc385e6-dbd8-48f5-ad29-0b4f04147d18",
+          "id": "205",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Claude",
+          "type": "url",
+          "url": "https://claude.ai/new"
+        },
+        {
+          "date_added": "13415903780709510",
+          "guid": "0c4dd591-59dc-47e7-aa48-3ab2b3b2c0f6",
+          "id": "223",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "[Markdown] An option to highlight a \"Note\" and \"Warning\" using blockquote (Beta) · community · Discussion #16925",
+          "type": "url",
+          "url": "https://github.com/orgs/community/discussions/16925"
+        }
+      ],
+      "date_added": "13413764579282715",
+      "date_modified": "13427214678441942",
+      "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+      "id": "1",
+      "name": "Bookmarks bar",
+      "type": "folder"
+    },
+    "other": {
+      "children": [
+        {
+          "date_added": "13374874364037486",
+          "guid": "b72c144f-a0e0-4e1f-bf98-b76e9daa9e61",
+          "id": "206",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Weather",
+          "type": "url",
+          "url": "https://www.aerisweather.com/weather/local/us/mn/prior%20lake"
+        },
+        {
+          "date_added": "13375379157798413",
+          "guid": "8629ef35-f609-454c-9a4b-91325fc4ba3f",
+          "id": "207",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Microsoft Word - Data License Agreement Data Miner 2",
+          "type": "url",
+          "url": "https://www.pjm.com/-/media/etools/edatafeed/data-license-agreement-edata-feed-data-miner-2.ashx"
+        },
+        {
+          "date_added": "13383357834478955",
+          "guid": "b5c6f350-bb6e-4d8b-a95b-f60dcf12e90d",
+          "id": "208",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Docker Compose Reference (Service)",
+          "type": "url",
+          "url": "https://docs.docker.com/reference/compose-file/services/#restart"
+        },
+        {
+          "date_added": "13384229707327081",
+          "guid": "7ceb37d7-6607-42ab-a93c-1cb36492b761",
+          "id": "209",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Chilly ATC - Music Chill Aircraft",
+          "type": "url",
+          "url": "https://www.chillyatc.com/"
+        },
+        {
+          "date_added": "13384229723955275",
+          "guid": "db90e0f3-d74c-4582-85eb-dac9778af245",
+          "id": "210",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "uchū demo - design colors",
+          "type": "url",
+          "url": "https://uchu.style/"
+        },
+        {
+          "date_added": "13384232476763348",
+          "guid": "991ae105-4011-4695-91b5-5a4b9b51f4f1",
+          "id": "211",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "SomaFM - Web music stream vibes chill",
+          "type": "url",
+          "url": "https://somafm.com/groovesalad/"
+        },
+        {
+          "date_added": "13386781966071495",
+          "guid": "4c1c5b4d-fc62-4546-9d76-7e663d28e9ee",
+          "id": "212",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Iconify Vector Icons Open Source",
+          "type": "url",
+          "url": "https://iconify.design/getting-started/"
+        },
+        {
+          "date_added": "13387397973413239",
+          "guid": "08973fa2-7d9d-4782-a86e-d582bb02f617",
+          "id": "213",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Pagefind | Pagefind — Static low-bandwidth search at scale",
+          "type": "url",
+          "url": "https://pagefind.app/"
+        },
+        {
+          "date_added": "13401300247560552",
+          "guid": "bd5f568e-ee41-4f7a-bef9-5cefe507ba03",
+          "id": "214",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Brinkley - RV Travel Awesome setup desk",
+          "type": "url",
+          "url": "https://www.brinkleyrv.com/rvs/fifth-wheels/model-z/3515/"
+        },
+        {
+          "date_added": "13408145526999898",
+          "guid": "4d1ce27b-53d7-4a94-be66-a69bcb16b997",
+          "id": "215",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "Rive — a new way to design, build, and ship user interfaces design svg animation",
+          "type": "url",
+          "url": "https://rive.app/"
+        }
+      ],
+      "date_added": "13413764579282715",
+      "date_modified": "13408145526999898",
+      "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+      "id": "2",
+      "name": "Other bookmarks",
+      "type": "folder"
+    },
+    "synced": {
+      "children": [
+        {
+          "date_added": "13387428977630307",
+          "guid": "6b369f46-2042-4629-a63b-10fd3e306525",
+          "id": "216",
+          "name": "HN Popularity Contest · Personal tech blogs - Refactoring English",
+          "type": "url",
+          "url": "https://refactoringenglish.com/tools/hn-popularity/"
+        },
+        {
+          "date_added": "13391663521003569",
+          "guid": "e5883440-d384-4937-a42f-7b74daa56ba4",
+          "id": "217",
+          "name": "The Wisdom of James Mickens | James Mickens Funny Professor Processor branching ",
+          "type": "url",
+          "url": "https://mickens.seas.harvard.edu/wisdom-james-mickens"
+        },
+        {
+          "date_added": "13393017975333874",
+          "guid": "726cbe2f-7510-4b9d-a879-538816a0f9ee",
+          "id": "218",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "",
+          "type": "url",
+          "url": "https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports"
+        },
+        {
+          "date_added": "13393959284382304",
+          "guid": "f61b22ce-dd81-4601-983b-1a3584ad023e",
+          "id": "219",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "",
+          "type": "url",
+          "url": "https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie"
+        },
+        {
+          "date_added": "13399817500563171",
+          "guid": "7ea4319e-49ba-406a-81bf-88ca74e3921c",
+          "id": "220",
+          "name": "AI Art and Vibe Coding Show HN: I built an offline, open‑source desktop Pixel Art Editor in Python | Hacker News",
+          "type": "url",
+          "url": "https://news.ycombinator.com/item?id=44870137"
+        },
+        {
+          "date_added": "13402328052418642",
+          "guid": "3befa884-3369-494e-b67b-313a490cbaaa",
+          "id": "221",
+          "name": "Why you’d issue a branded stablecoin | Hacker News",
+          "type": "url",
+          "url": "https://news.ycombinator.com/item?id=45237035"
+        }
+      ],
+      "date_added": "13413764579282715",
+      "date_modified": "13402328052418642",
+      "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+      "id": "3",
+      "name": "Mobile bookmarks",
+      "type": "folder"
+    }
+  },
+  "version": 1
+}

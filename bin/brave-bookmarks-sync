@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# brave-bookmarks-sync -- copy Brave bookmarks between the live Flatpak
+# profile and this dotfiles repo.
+#
+# Brave's Bookmarks file is JSON. The volatile `checksum` and per-bookmark
+# `date_last_used` fields update on every browsing session, so on export we
+# strip them to keep diffs to actual bookmark changes. Brave regenerates the
+# checksum on next save; `date_last_used` is click-tracking only.
+#
+# Usage:
+#   brave-bookmarks-sync --export    # live -> repo
+#   brave-bookmarks-sync --import    # repo -> live (requires Brave closed)
+
+set -euo pipefail
+
+LIVE="$HOME/.var/app/com.brave.Browser/config/BraveSoftware/Brave-Browser/Default/Bookmarks"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+REPO="$SCRIPT_DIR/../brave/Bookmarks"
+
+die() { printf 'brave-bookmarks-sync: %s\n' "$*" >&2; exit 1; }
+
+brave_running() {
+	flatpak ps --columns=application 2>/dev/null | grep -qx com.brave.Browser
+}
+
+cmd_export() {
+	[[ -r "$LIVE" ]] || die "live bookmarks not found: $LIVE"
+	command -v jq >/dev/null || die "jq is required"
+	mkdir -p "$(dirname "$REPO")"
+	jq 'del(.checksum) | walk(if type == "object" then del(.date_last_used) else . end)' \
+		"$LIVE" > "$REPO.tmp"
+	mv "$REPO.tmp" "$REPO"
+	printf 'exported -> %s\n' "$REPO"
+}
+
+cmd_import() {
+	[[ -r "$REPO" ]] || die "repo bookmarks not found: $REPO"
+	! brave_running || die "Brave is running -- close it before importing"
+	mkdir -p "$(dirname "$LIVE")"
+	if [[ -e "$LIVE" ]]; then
+		cp -a "$LIVE" "$LIVE.pre-sync.$(date +%Y%m%d-%H%M%S)"
+	fi
+	install -m 0600 "$REPO" "$LIVE"
+	# Drop the stale crash-recovery backup so Brave regenerates from the new file.
+	rm -f "$LIVE.bak"
+	printf 'imported %s -> live\n' "$REPO"
+}
+
+case "${1:-}" in
+	--export) cmd_export ;;
+	--import) cmd_import ;;
+	-h|--help|"") printf 'usage: %s --export | --import\n' "$(basename "$0")"; exit 0 ;;
+	*) die "unknown option: $1" ;;
+esac
