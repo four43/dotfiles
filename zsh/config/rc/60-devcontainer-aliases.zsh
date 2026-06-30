@@ -119,13 +119,13 @@ dc-claude() {
         bash -ic 'claude "$@"' _ "$@"
 }
 
-dc-mcp() {
+dc-sshd() {
 	_dc_ensure_up || return
     _dc_apply_dotfiles
     # Run through interactive bash so .bashrc loads — the dotfiles ship `claude`
     # as a lazy-install shell function, which docker exec would otherwise miss.
     devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
-        bash -ic 'agent-mcp' _ "$@"
+        bash -ic 'start-sshd' _ "$@"
 }
 
 # List running devcontainers. Pass -a to include stopped ones.
