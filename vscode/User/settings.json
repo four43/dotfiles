@@ -167,7 +167,7 @@
             "name": ""
         }
     ],
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "standard",
     "python.analysis.userFileIndexingLimit": -1,
     "python.experiments.enabled": false,
     "python.languageServer": "Pylance",
@@ -472,5 +472,16 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
-    "accessibility.signals.terminalBell": { "sound": "on" }
+    "accessibility.signals.terminalBell": {
+        "sound": "on"
+    },
+    "chat.remoteAgentHosts": [],
+    "workbench.editorAssociations": {
+        "*.md": "vscode.markdown.preview.editor"
+    },
+    "chat.tools.urls.autoApprove": {
+        "https://code.visualstudio.com": true,
+        "https://github.com/microsoft/vscode/wiki/*": true,
+        "https://earthkit-regrid.readthedocs.io": true
+    }
 }
