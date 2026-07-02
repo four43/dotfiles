@@ -4,16 +4,19 @@ Host home
     Hostname home.four43.com
     User smiller
     Port 289
+    ForwardAgent yes
 
 Host orion
     Hostname orion.four43.com
     User smiller
     Port 289
+    ForwardAgent yes
 
 Host ursa-minor
     Hostname ursa-minor.four43.com
     User smiller
     Port 289
+    ForwardAgent yes
 
 Host tkmiller-net
     Hostname tkmiller-home.four43.com
