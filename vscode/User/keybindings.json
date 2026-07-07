@@ -224,5 +224,14 @@
         "key": "ctrl+shift+v",
         "command": "-markdown.extension.closePreview",
         "when": "activeWebviewPanelId == 'markdown.preview'"
+    },
+    {
+        "key": "ctrl+shift+/",
+        "command": "-workbench.action.chat.focusTip",
+        "when": "inChat || inChat && inChatTip"
+    },
+    {
+        "key": "ctrl+shift+/",
+        "command": "workbench.action.createTerminalEditor"
     }
 ]
