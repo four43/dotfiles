@@ -128,6 +128,94 @@ dc-sshd() {
         bash -ic 'start-sshd' _ "$@"
 }
 
+# Initialize or regenerate docker-compose.override.dev.yml with Xweather dev settings.
+# Pass -f/--force to overwrite if file exists.
+dc-init-override-dev() {
+    local force=0
+    if [[ "${1:-}" == "-f" || "${1:-}" == "--force" ]]; then
+        force=1
+    fi
+
+    local repo_root
+    repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+        print -u2 "error: not inside a git repository"
+        return 1
+    }
+
+    local target_dir="$repo_root/.devcontainer"
+    local target_file="$target_dir/docker-compose.override.dev.yml"
+
+    if [[ -e "$target_file" && $force -eq 0 ]]; then
+        print -u2 "error: $target_file already exists (use -f to overwrite)"
+        return 1
+    fi
+
+    mkdir -p "$target_dir"
+
+    cat > "$target_file" <<'YAML'
+services:
+  app:
+    environment:
+      - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
+    volumes:
+      - ~/.claude:/host/home/.claude:rw
+      - ~/.claude.json:/host/home/.claude.json:rw
+      - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+YAML
+
+    print -u2 "wrote $target_file"
+}
+
+# Initialize or regenerate docker-compose.override.dev.yml with Xweather dev settings.
+# Pass -f/--force to overwrite if file exists.
+dc-init-override-dev-full() {
+    local force=0
+    if [[ "${1:-}" == "-f" || "${1:-}" == "--force" ]]; then
+        force=1
+    fi
+
+    local repo_root
+    repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+        print -u2 "error: not inside a git repository"
+        return 1
+    }
+
+    local target_dir="$repo_root/.devcontainer"
+    local target_file="$target_dir/docker-compose.override.dev.yml"
+
+    if [[ -e "$target_file" && $force -eq 0 ]]; then
+        print -u2 "error: $target_file already exists (use -f to overwrite)"
+        return 1
+    fi
+
+    mkdir -p "$target_dir"
+
+    cat > "$target_file" <<'YAML'
+services:
+  app:
+    environment:
+      - AWS_PROFILE=vaisala-xwe-xwc-data-dev-ro
+      - XWE_ATLASSIAN_EMAIL=${XWE_ATLASSIAN_EMAIL}
+      - XWE_ATLASSIAN_API_TOKEN=${XWE_ATLASSIAN_API_TOKEN}
+      - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
+    volumes:
+      - ~/.aws/config-ro:/root/.aws/config:ro
+      - ~/.aws/sso:/root/.aws/sso:rw
+      - ~/.ssh/config:/host/home/.ssh/config:ro
+      - ~/.claude:/host/home/.claude:rw
+      - ~/.claude.json:/host/home/.claude.json:rw
+      - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+YAML
+
+    print -u2 "wrote $target_file"
+}
+
 # List running devcontainers. Pass -a to include stopped ones.
 # Filters on the `devcontainer.local_folder` label, which both
 # @devcontainers/cli and the VS Code extension stamp onto every container.
