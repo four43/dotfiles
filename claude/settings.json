@@ -1,4 +1,9 @@
 {
+  "env": {
+    "DISABLE_AUTOUPDATER": "1",
+    "PLAYWRIGHT_MCP_BROWSER": "chrome",
+    "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/usr/bin/chromium"
+  },
   "permissions": {
     "allow": [
       "Bash(./util/lint:*)",
@@ -60,6 +65,7 @@
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(mypy:*)",
+      "Bash(node --check:*)",
       "Bash(node --version)",
       "Bash(npm list:*)",
       "Bash(npm outdated:*)",
@@ -90,10 +96,6 @@
       "WebSearch"
     ]
   },
-  "env": {
-    "DISABLE_AUTOUPDATER": "1"
-  },
-  "model": "opus[1m]",
   "hooks": {
     "Stop": [
       {
@@ -132,6 +134,7 @@
     "frontend-design@claude-plugins-official": true,
     "geo-weather-analyst@xwe-ai-skills": true,
     "git-activity@xwe-ai-skills": true,
+    "playwright@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
