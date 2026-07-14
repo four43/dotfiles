@@ -64,18 +64,18 @@ _dc_apply_dotfiles() {
     [[ -r "$settings" ]] || return 0
 
     local cfg
-    cfg=$(python3 - "$settings" <<'PY' 2>/dev/null
-import json, re, sys
-src = open(sys.argv[1]).read().lstrip("﻿")
-src = re.sub(r"^\s*//.*$", "", src, flags=re.M)
-src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
-src = re.sub(r",(\s*[}\]])", r"\1", src)
-s = json.loads(src)
+    if ! cfg=$(python3 - "$settings" <<'PY'
+import json5, sys
+with open(sys.argv[1]) as f:
+    s = json5.load(f)
 print(s.get("dotfiles.repository", ""))
 print(s.get("dotfiles.targetPath", "~/dotfiles"))
 print(s.get("dotfiles.installCommand", ""))
 PY
-) || return 0
+    ); then
+        print -u2 "_dc_apply_dotfiles: could not parse $settings — dotfiles not applied"
+        return 1
+    fi
 
     local lines=("${(@f)cfg}")
     local repo="${lines[1]}" target="${lines[2]}" install="${lines[3]}"
@@ -105,7 +105,7 @@ PY
                 fi
             fi
             printf "%s" "$DC_REPO" > "$sentinel"
-        ' || print -u2 "dc-claude: dotfiles install failed (continuing)"
+        ' || print -u2 "_dc_apply_dotfiles: install script failed (continuing)"
 }
 
 # Run Claude Code inside the devcontainer. Starts it if needed, applies your
@@ -125,7 +125,7 @@ dc-sshd() {
     # Run through interactive bash so .bashrc loads — the dotfiles ship `claude`
     # as a lazy-install shell function, which docker exec would otherwise miss.
     devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
-        bash -ic 'start-sshd' _ "$@"
+        bash -ic 'sshd-start' _ "$@"
 }
 
 # Initialize or regenerate docker-compose.override.dev.yml with Xweather dev settings.
@@ -158,8 +158,11 @@ services:
     environment:
       - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
     volumes:
+      # Claude
       - ~/.claude:/host/home/.claude:rw
       - ~/.claude.json:/host/home/.claude.json:rw
+      # SSH Key for XWE Meta containers
+      - ~/.ssh/xwe-meta-sshd.pub:/opt/sshd/xwe-meta-sshd.pub:ro
       - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -202,11 +205,15 @@ services:
       - XWE_ATLASSIAN_API_TOKEN=${XWE_ATLASSIAN_API_TOKEN}
       - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
     volumes:
+      # AWS
       - ~/.aws/config-ro:/root/.aws/config:ro
       - ~/.aws/sso:/root/.aws/sso:rw
       - ~/.ssh/config:/host/home/.ssh/config:ro
+      # Claude
       - ~/.claude:/host/home/.claude:rw
       - ~/.claude.json:/host/home/.claude.json:rw
+      # SSH Key for XWE Meta containers
+      - ~/.ssh/xwe-meta-sshd.pub:/opt/sshd/xwe-meta-sshd.pub:ro
       - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
