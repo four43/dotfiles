@@ -1,5 +1,6 @@
 {
   "env": {
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "DISABLE_AUTOUPDATER": "1",
     "PLAYWRIGHT_MCP_BROWSER": "chrome",
     "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/usr/bin/chromium"
