@@ -1,3 +1,3 @@
-export NVM_DIR="/opt/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# Arch's nvm package. Sourcing init-nvm.sh lets NVM_DIR default to
+# ~/.nvm (writable) and sets up the nvm.sh/nvm-exec symlinks it expects.
+[ -s /usr/share/nvm/init-nvm.sh ] && source /usr/share/nvm/init-nvm.sh
