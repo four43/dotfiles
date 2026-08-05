@@ -30,6 +30,7 @@
       "Bash(aws iam get-role:*)",
       "Bash(aws iam list-attached-role-policies:*)",
       "Bash(aws iam list-role-policies:*)",
+      "Bash(aws s3 ls:*)",
       "Bash(confluence children:*)",
       "Bash(confluence label list:*)",
       "Bash(confluence list:*)",
@@ -97,6 +98,7 @@
       "WebSearch"
     ]
   },
+  "model": "opus[1m]",
   "hooks": {
     "Stop": [
       {
@@ -146,7 +148,8 @@
     "xwe-project-manager@xwe-ai-skills": true,
     "xwe-software-engineer@xwe-ai-skills": true,
     "xweather-branding@xwe-ai-skills": true,
-    "xweather@xwe-ai-skills": true
+    "xweather@xwe-ai-skills": true,
+    "mattpocock-skills@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "xwe-ai-skills": {
@@ -157,5 +160,6 @@
     }
   },
   "effortLevel": "xhigh",
+  "tui": "default",
   "theme": "dark-ansi"
 }
