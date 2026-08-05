@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+command -v docker >/dev/null 2>&1 || exit 0
+
+mapfile -t rows < <(docker ps -a --format '{{.Names}}|{{.Status}}|{{.State}}' 2>/dev/null || true)
+
+if [ ${#rows[@]} -eq 0 ]; then
+  echo "no containers"
+  exit 0
+fi
+
+declare -A counts
+for r in "${rows[@]}"; do
+  IFS='|' read -r _ _ state <<<"$r"
+  counts[$state]=$(( ${counts[$state]:-0} + 1 ))
+done
+
+summary=()
+for s in running restarting paused exited dead; do
+  [ -n "${counts[$s]:-}" ] && summary+=("${counts[$s]} $s")
+done
+if (( ${#summary[@]} > 0 )); then
+  printf '%s' "${summary[0]}"
+  (( ${#summary[@]} > 1 )) && printf ', %s' "${summary[@]:1}"
+  printf '\n'
+fi
+
+name_w=30
+{
+  for filter in running restarting paused; do
+    case "$filter" in
+      running)    sym="✓" ;;
+      restarting) sym="⟳" ;;
+      paused)     sym="◐" ;;
+    esac
+    for r in "${rows[@]}"; do
+      IFS='|' read -r name status state <<<"$r"
+      [ "$state" = "$filter" ] || continue
+      if (( ${#name} > name_w )); then
+        display="${name:0:$((name_w-1))}…"
+      else
+        display="$name"
+      fi
+      printf '%s\t%s\t%s\n' "$sym" "$display" "$status"
+    done
+  done
+} | column -t -s $'\t'

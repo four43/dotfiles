@@ -1,0 +1,39 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": { "type": "small" },
+  "display": {
+    "percent": { "type": 3 },
+    "bar": {
+      "width": 15,
+      "char": { "elapsed": "█", "total": "░" },
+      "border": { "left": "[", "right": "]" }
+    }
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "kernel",
+    "uptime",
+    "loadavg",
+    "memory",
+
+    {
+      "type": "command",
+      "key": "Storage",
+      "text": "{ df -h --output=used,size,pcent / | awk 'NR==2 {printf \"%s / %s (%s)\\n\", $1, $2, $3}'; df-btrfs | tail -n +2 | sed 's/^/  /'; } | awk 'NR==1{print; next} {print \"                  \" $0}'"
+    },
+
+    {
+      "type": "command",
+      "key": "Updates",
+      "text": "checkupdates 2>/dev/null | wc -l | awk '{print $1==0 ? \"up to date\" : $1 \" available\"}'"
+    },
+
+    {
+      "type": "command",
+      "key": "Docker",
+      "text": "docker-status | awk 'NR==1{print; next} {print \"                    \" $0}'"
+    }
+  ]
+}
