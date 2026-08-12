@@ -16,9 +16,23 @@ dc-down() {
     print "$ids" | xargs docker rm -f
 }
 
-# Forward the host SSH agent into the container by default. `up` accepts --mount
-# (only honored at container creation), `exec` only --remote-env. Populated each
-# call so it tracks the current host SSH_AUTH_SOCK. Opt out with DC_SKIP_SSH=1.
+# Forward the host SSH agent into the container ourselves. @devcontainers/cli
+# does NOT do this — grep its bundle for SSH_AUTH_SOCK and you get zero hits.
+# Only the VS Code Dev Containers extension forwards an agent, and it does so by
+# proxying /tmp/vscode-ssh-auth-<uuid>.sock over its own RPC channel, which
+# exists only while VS Code is attached. Anything CLI-driven (dc-shell,
+# dc-claude, dc-sshd) gets nothing unless we mount it.
+#
+# `up` accepts --mount (only honored at container creation), `exec` only
+# --remote-env. Populated each call so it tracks the current host SSH_AUTH_SOCK.
+# Opt out with DC_SKIP_SSH=1.
+#
+# Note the socket is bound by inode at create time: if the host agent restarts,
+# the container keeps pointing at the dead one and every ssh call in there fails
+# with "Connection refused" until the container is recreated. The host socket is
+# kept at a stable, systemd-socket-activated path (see
+# arch/.config/environment.d/ssh_auth_sock.conf) so a rotated agent reuses the
+# same socket file rather than minting a new one.
 _dc_up_ssh_args=()
 _dc_exec_ssh_args=()
 _dc_set_ssh_args() {
@@ -38,14 +52,18 @@ dc-up() {
     devcontainer up --workspace-folder . "${_dc_up_ssh_args[@]}" "$@"
 }
 
-# Start the devcontainer for $PWD if no matching one is already running, and
-# populate _dc_exec_ssh_args either way for downstream `devcontainer exec` use.
+# Start the devcontainer for $PWD if no matching one is already running.
+# Applies dotfiles here rather than in each caller so every entry point that
+# brings a container up gets them — dc-shell used to be the one path that
+# didn't. `|| true` because callers guard on `_dc_ensure_up &&`: a malformed
+# settings.json shouldn't cost you a shell.
 _dc_ensure_up() {
     _dc_set_ssh_args
     local cid
     cid=$(docker ps --filter "label=devcontainer.local_folder=$PWD" \
                     --format '{{.ID}}' | head -n1)
     [[ -n "$cid" ]] || devcontainer up --workspace-folder . "${_dc_up_ssh_args[@]}"
+    _dc_apply_dotfiles || true
 }
 
 # Drop into the devcontainer (bash if available, else sh). Starts it if needed.
@@ -55,9 +73,12 @@ dc-shell() {
 }
 
 # Mirror VS Code's dotfiles.* feature inside the running devcontainer: clone the
-# configured repo and run its install command. Idempotent via a sentinel that
-# records the repo URL, so changing the URL re-applies on next run. Skip with
-# DC_SKIP_DOTFILES=1.
+# configured repo and run its install command. Called from _dc_ensure_up, so it
+# runs for dc-shell/dc-claude/dc-sshd alike. Applying it in-container (rather
+# than via the CLI's --dotfiles-repository, which only fires during container
+# create) means an already-running container still gets retrofitted. Idempotent
+# via a sentinel that records the repo URL, so changing the URL re-applies on
+# next run. Skip with DC_SKIP_DOTFILES=1.
 _dc_apply_dotfiles() {
     [[ -z "$DC_SKIP_DOTFILES" ]] || return 0
     local settings="${VSCODE_SETTINGS:-$HOME/.config/Code/User/settings.json}"
@@ -108,11 +129,10 @@ PY
         ' || print -u2 "_dc_apply_dotfiles: install script failed (continuing)"
 }
 
-# Run Claude Code inside the devcontainer. Starts it if needed, applies your
-# VS Code dotfiles on first entry, then passes extra args through.
+# Run Claude Code inside the devcontainer. Starts it if needed (which applies
+# your VS Code dotfiles), then passes extra args through.
 dc-claude() {
     _dc_ensure_up || return
-    _dc_apply_dotfiles
     # Run through interactive bash so .bashrc loads — the dotfiles ship `claude`
     # as a lazy-install shell function, which docker exec would otherwise miss.
     devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
@@ -120,10 +140,9 @@ dc-claude() {
 }
 
 dc-sshd() {
-	_dc_ensure_up || return
-    _dc_apply_dotfiles
-    # Run through interactive bash so .bashrc loads — the dotfiles ship `claude`
-    # as a lazy-install shell function, which docker exec would otherwise miss.
+    _dc_ensure_up || return
+    # Run through interactive bash so .bashrc loads — sshd-start ships in the
+    # dotfiles as a shell function, which docker exec would otherwise miss.
     devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
         bash -ic 'sshd-start' _ "$@"
 }
@@ -201,8 +220,6 @@ services:
   app:
     environment:
       - AWS_PROFILE=vaisala-xwe-xwc-data-dev-ro
-      - XWE_ATLASSIAN_EMAIL=${XWE_ATLASSIAN_EMAIL}
-      - XWE_ATLASSIAN_API_TOKEN=${XWE_ATLASSIAN_API_TOKEN}
       - GIT_SSH_COMMAND=/host/home/git-ssh-key-rotation.sh
     volumes:
       # AWS
@@ -212,6 +229,12 @@ services:
       # Claude
       - ~/.claude:/host/home/.claude:rw
       - ~/.claude.json:/host/home/.claude.json:rw
+      # Atlassian CLIs: credentials live in these config files, not env vars.
+      # Compose `environment:` values are visible via `docker inspect`; a
+      # read-only mount is not. post-create.sh links these into
+      # $XDG_CONFIG_HOME (or $HOME/.config), which is where jira/confluence look.
+      - ~/.config/jira:/host/home/.config/jira:ro
+      - ~/.config/confluence:/host/home/.config/confluence:ro
       # SSH Key for XWE Meta containers
       - ~/.ssh/xwe-meta-sshd.pub:/opt/sshd/xwe-meta-sshd.pub:ro
       - ~/.dotfiles/git/git-ssh-key-rotation.sh:/host/home/git-ssh-key-rotation.sh:ro
