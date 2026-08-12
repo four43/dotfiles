@@ -30,6 +30,21 @@
         type: symlink
         create: true
         force: true
+    # Pin SSH_AUTH_SOCK to the stable, systemd-managed ssh-agent.socket so
+    # graphical + SSH login sessions share one agent at a known path.
+    ~/.config/environment.d/ssh_auth_sock.conf:
+        path: arch/.config/environment.d/ssh_auth_sock.conf
+        type: symlink
+        create: true
+        force: true
+    # Non-secret Xweather resource ids for GUI apps + the devcontainers they
+    # spawn. Replaces the old kde/plasma-workspace-env/secrets.sh, which pushed
+    # plaintext ~/.zshenv.secret vars session-wide into systemd/dbus.
+    ~/.config/environment.d/xwe.conf:
+        path: arch/.config/environment.d/xwe.conf
+        type: symlink
+        create: true
+        force: true
     ~/.config/konsave/conf.yaml:
         path: kde/settings-sync/konsave.conf.yaml
         type: symlink
@@ -61,11 +76,6 @@
         type: symlink
         create: true
         force: true
-    ~/.config/plasma-workspace/env/ssh-agent.sh:
-        path: kde/plasma-workspace-env/ssh-agent.sh
-        type: symlink
-        create: true
-        force: true
     ~/.config/plasma-workspace/scripts/fix-monitor-on-unlock.sh:
         path: kde/plasma-workspace/scripts/fix-monitor-on-unlock.sh
         type: symlink
@@ -73,11 +83,6 @@
         force: true
     ~/.config/systemd/user/fix-monitor-on-unlock.service:
         path: arch/systemd/user/fix-monitor-on-unlock.service
-        type: symlink
-        create: true
-        force: true
-    ~/.config/systemd/user/keychain.service:
-        path: arch/.config/systemd/user/keychain.service
         type: symlink
         create: true
         force: true

@@ -6,4 +6,4 @@
 sleep 1
 
 # Add your SSH keys
-ssh-add ~/.ssh/id_rsa ~/.ssh/id_rsa_vaisala 2>/dev/null
+ssh-add ~/.ssh/id_rsa_vaisala ~/.ssh/id_rsa 2>/dev/null
