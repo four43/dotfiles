@@ -15,6 +15,16 @@ done
 pathmunge "$DOTFILE_DIR/bin"
 [[ -d "$HOME/bin" ]] && pathmunge "$HOME/bin"
 
+# The ssh-agent socket path is stable (systemd-managed, socket-activated), but
+# environment.d only feeds `systemd --user` -- graphical sessions inherit
+# SSH_AUTH_SOCK, SSH login sessions don't. Set it here too. Guarded so `ssh -A`
+# into this host keeps its own forwarded socket.
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+    _agent_sock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ssh-agent.socket"
+    [[ -S "$_agent_sock" ]] && export SSH_AUTH_SOCK="$_agent_sock"
+    unset _agent_sock
+fi
+
 host_specific_env="$DOTFILE_DIR/zsh/config/hostenv/$(hostname -s)"
 if [[ -d "$host_specific_env" ]]; then
     for f in "$host_specific_env"/*.zsh; do
