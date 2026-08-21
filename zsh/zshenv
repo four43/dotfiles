@@ -7,6 +7,23 @@ VIM_RUNTIME_DIR="$DOTFILE_DIR/vim/config"
 
 export DOTFILE_DIR TERMINAL EDITOR VIM_RUNTIME_DIR
 
+# Fall back to the systemd-managed agent when we weren't handed a live socket.
+# environment.d/ssh_auth_sock.conf cannot cover this on its own: the systemd
+# user manager's environment does not reach an sshd-spawned shell, so an SSH
+# login gets either nothing or sshd's own per-connection forwarded socket
+# (OpenSSH >= 10 puts it in ~/.ssh/agent/, older releases in /tmp/ssh-*/).
+# sshd deletes that socket at disconnect, so anything outliving the connection
+# -- notably a tmux server and every pane it spawns -- keeps a dangling path,
+# and `docker buildx --ssh default` stats it and fails the build.
+#
+# Only override a missing or dead socket, so genuine agent forwarding still
+# wins and devcontainers keep their bind-mounted /tmp/dc-ssh-agent.sock.
+systemd_ssh_agent="${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-agent.socket"
+if [[ ! -S "$SSH_AUTH_SOCK" && -S "$systemd_ssh_agent" ]]; then
+    export SSH_AUTH_SOCK="$systemd_ssh_agent"
+fi
+unset systemd_ssh_agent
+
 # Configure a basic path if there is not one. Should be fine for most use cases.
 [[ -z "$PATH" ]] && PATH="/usr/bin:/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/local/sbin"
 for f in "$DOTFILE_DIR"/zsh/config/rc/*lib.zsh; do
