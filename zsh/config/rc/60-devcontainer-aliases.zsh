@@ -139,6 +139,12 @@ dc-claude() {
         bash -ic 'claude "$@"' _ "$@"
 }
 
+dc-cy() {
+    _dc_ensure_up || return
+    devcontainer exec --workspace-folder . "${_dc_exec_ssh_args[@]}" \
+        bash -ic 'claude --dangerously-skip-permissions "$@"' _ "$@"
+}
+
 dc-sshd() {
     _dc_ensure_up || return
     # Run through interactive bash so .bashrc loads — sshd-start ships in the
