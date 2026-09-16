@@ -12,6 +12,8 @@ Scripts I rip onto a flash drive to bring up a fresh Arch box.
 | `configure-user.sh` | Personal overrides — creates `smiller`, drops SSH key, sshd on port 289 |
 | `files/smiller.pub` | My SSH public key, dropped in by `configure-user.sh` |
 | `files/system-update.sh` | Installed as `/usr/local/bin/arch-system-update` — timeshift snapshot + pacman/yay/flatpak update |
+| `install-lts-fallback.sh` | One-time post-install: adds `linux-lts` as a rescue kernel + switches NVIDIA to `nvidia-open-dkms` so both kernels have GPU accel |
+| `reinstall-bootloader.sh` | Rescue: re-runs `grub-install` + `mkinitcpio -P` from a live USB after a motherboard/CPU swap |
 
 `configure-chroot.sh` is generic enough that anyone could use it. `configure-user.sh` and `files/` are mine — delete them (or swap your own) to install for someone else.
 
@@ -110,6 +112,16 @@ To run a full system update (timeshift snapshot + pacman, plus yay/flatpak when 
 ```sh
 arch-system-update
 ```
+
+### Recommended: install the LTS rescue kernel
+
+Timeshift can't snapshot the FAT32 ESP, so a bad `linux` upgrade that removes the old kernel modules can leave a snapshot-restored system with nothing to boot. Adding `linux-lts` as a second kernel gives an always-available rescue path. Run once per machine:
+
+```sh
+~/projects/dotfiles/arch/install/install-lts-fallback.sh
+```
+
+This also switches from `nvidia-open` to `nvidia-open-dkms` so both kernels get GPU acceleration.
 
 ### Workstation only — install dev tooling
 
