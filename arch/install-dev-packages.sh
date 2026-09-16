@@ -24,6 +24,7 @@ sudo pacman -S \
 	python \
 	python-click \
 	python-ipykernel \
+	python-json5 \
 	python-pandas \
 	python-pip \
 	python-requests \
