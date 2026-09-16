@@ -1,0 +1,11 @@
+# Allow `df-btrfs` (bin/df-btrfs) to run `btrfs qgroup show` without a password.
+# Motivation: fastfetch shows this on SSH login, where there is no TTY to
+# prompt for a sudo password. `qgroup show` is read-only.
+#
+# Install:
+#   sudo install -m 0440 -o root -g root \
+#     ~/.dotfiles/arch/sudoers.d/df-btrfs /etc/sudoers.d/df-btrfs
+#   sudo visudo -c   # validate all sudoers files
+#
+# Tighten the user or path if you copy this to another host.
+smiller ALL=(root) NOPASSWD: /usr/bin/btrfs qgroup show -pcre /
