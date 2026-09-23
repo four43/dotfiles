@@ -4,3 +4,5 @@
 [submodule "pass/store"]
 	path = pass/store
 	url = git@github.com:four43/pass-store.git
+	branch = main
+	update = merge
