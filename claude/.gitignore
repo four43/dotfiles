@@ -8,4 +8,5 @@
 !hooks/**
 !skills
 !skills/**
+skills/synced
 !statusline.sh

@@ -100,6 +100,18 @@
   },
   "model": "opus[1m]",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/require-tag-approval.sh",
+            "statusMessage": "Checking release gate..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
