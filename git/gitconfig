@@ -13,7 +13,10 @@
     process = git-lfs filter-process
     required = true
 [init]
-    defaultBranch = master
+    defaultBranch = main
+[worktree]
+	useRelativePaths = true
+
 [safe]
     directory = *
 [includeIf "gitdir:~/projects/aerisweather/"]
