@@ -49,6 +49,17 @@
               "url": "https://vaisala.awsapps.com/start/#/console?account_id=224039896086&role_name=AWSAdministratorAccess"
             },
             {
+              "date_added": "13434078145860379",
+              "guid": "5c386f3d-c1c2-419e-b2c3-fcb9560a034f",
+              "id": "240",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "AWS xwc-data-prod Login",
+              "type": "url",
+              "url": "https://vaisala.awsapps.com/start/#/console?account_id=349227884048&role_name=AWSAdministratorAccess"
+            },
+            {
               "date_added": "13427214725775686",
               "guid": "87812cde-6a3e-49c5-8bd8-ba6de63b7e30",
               "id": "234",
@@ -66,10 +77,21 @@
               "name": "AWS - XWE Login All",
               "type": "url",
               "url": "https://vaisala.awsapps.com/start/"
+            },
+            {
+              "date_added": "13429653879826046",
+              "guid": "32828457-c9a9-4848-b579-f30795e056a6",
+              "id": "238",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "Grafana TLP",
+              "type": "url",
+              "url": "https://g-ad5e6efe86.grafana-workspace.us-west-2.amazonaws.com/login"
             }
           ],
           "date_added": "13427214672816886",
-          "date_modified": "13427214788095735",
+          "date_modified": "13434078155003468",
           "guid": "a110e5b4-976a-4932-81fc-5c787850ce81",
           "id": "233",
           "name": "AWS",
@@ -100,18 +122,7 @@
           "id": "10",
           "name": "λ",
           "type": "url",
-          "url": "https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions?sb=lastModified&so=DESCENDING"
-        },
-        {
-          "date_added": "13409431204199215",
-          "guid": "763c08b0-26d7-4312-bfee-ace18da93ee2",
-          "id": "11",
-          "meta_info": {
-            "power_bookmark_meta": ""
-          },
-          "name": "CF-XWC-Data",
-          "type": "url",
-          "url": "https://vaisala.atlassian.net/wiki/spaces/WD/overview"
+          "url": "https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions?sb=FunctionName&so=ascending"
         },
         {
           "date_added": "13409682912627652",
@@ -123,6 +134,17 @@
           "name": "JR-Data",
           "type": "url",
           "url": "https://vaisala.atlassian.net/jira/software/c/projects/WEAT/boards/8232?assignee=712020%3A2a5694c3-8a67-45c9-9d40-fe6f6f7592e7"
+        },
+        {
+          "date_added": "13409431204199215",
+          "guid": "763c08b0-26d7-4312-bfee-ace18da93ee2",
+          "id": "11",
+          "meta_info": {
+            "power_bookmark_meta": ""
+          },
+          "name": "CF-XWC-Data",
+          "type": "url",
+          "url": "https://vaisala.atlassian.net/wiki/spaces/WD/overview"
         },
         {
           "date_added": "13368899462000000",
@@ -289,6 +311,17 @@
               "name": "PTO - Pending Reqs",
               "type": "url",
               "url": "https://performancemanager.successfactors.eu/xi/ui/ect/pages/pendingWorkflows/pendingWorkflowV12.xhtml"
+            },
+            {
+              "date_added": "13416089677170683",
+              "guid": "56fcab67-ea25-431e-a8bf-42a077971fbc",
+              "id": "225",
+              "meta_info": {
+                "power_bookmark_meta": ""
+              },
+              "name": "MyHub",
+              "type": "url",
+              "url": "https://performancemanager.successfactors.eu/login?company=vaisalaoyj"
             },
             {
               "date_added": "13370099469000000",
@@ -595,17 +628,6 @@
               "url": "https://www.dayforcehcm.com/mydayforce/login.aspx"
             },
             {
-              "date_added": "13416089677170683",
-              "guid": "56fcab67-ea25-431e-a8bf-42a077971fbc",
-              "id": "225",
-              "meta_info": {
-                "power_bookmark_meta": ""
-              },
-              "name": "MyHub",
-              "type": "url",
-              "url": "https://performancemanager.successfactors.eu/login?company=vaisalaoyj"
-            },
-            {
               "date_added": "13417887255792160",
               "guid": "31b40aa1-0ca4-4902-af3d-3407770234f5",
               "id": "229",
@@ -618,7 +640,7 @@
             }
           ],
           "date_added": "13371251301817580",
-          "date_modified": "13423327196824874",
+          "date_modified": "13432224873150732",
           "guid": "beaa9e07-e4f8-408f-938a-9f0088956db3",
           "id": "26",
           "name": "Vaisala",
@@ -1862,7 +1884,7 @@
         }
       ],
       "date_added": "13413764579282715",
-      "date_modified": "13427214678441942",
+      "date_modified": "13431815266050111",
       "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
       "id": "1",
       "name": "Bookmarks bar",
