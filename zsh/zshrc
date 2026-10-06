@@ -1,11 +1,3 @@
 for f in "$DOTFILE_DIR"/zsh/config/rc/*.zsh; do
     source "$f"
 done
-
-# Jira CLI completion (added by xwe-ai-skills setup)
-eval "$(_JIRA_COMPLETE=zsh_source jira)"
-# Confluence CLI completion (added by xwe-ai-skills setup)
-eval "$(_CONFLUENCE_COMPLETE=zsh_source confluence)"
-# >>> xwe-data completion >>>
-eval "$(_XWE_DATA_COMPLETE=zsh_source xwe-data)"
-# <<< xwe-data completion <<<
