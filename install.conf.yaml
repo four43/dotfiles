@@ -126,6 +126,7 @@
     # ~/.local/share/ulauncher/extensions/four43-confluence-search: ulauncher/extensions/confluence_search
     ~/.ssh/config: ssh/config
     ~/.ssh/known_hosts: ssh/known_hosts
+    ~/.ssh/rc: ssh/rc
     ~/.terraformrc: terraform/config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.vim: vim/config

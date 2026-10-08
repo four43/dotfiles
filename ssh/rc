@@ -1,0 +1,12 @@
+#!/bin/sh
+# sshd runs this on every login (VS Code Remote-SSH included). Point a stable
+# path at this connection's forwarded agent socket, whose path sshd picks at
+# random and deletes at disconnect. zsh/zshenv exports SSH_AUTH_SOCK as the
+# stable path, so long-lived shells -- tmux panes especially -- recover on the
+# next login instead of holding a dangling socket.
+#
+# Note: the presence of this file stops sshd from running xauth itself. Add
+# the xauth stanza from `man sshd` (SSHRC) if X11 forwarding is ever needed.
+if [ -S "$SSH_AUTH_SOCK" ]; then
+    ln -sfn "$SSH_AUTH_SOCK" "/run/user/$(id -u)/ssh-auth.sock"
+fi

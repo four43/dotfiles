@@ -18,6 +18,15 @@ export DOTFILE_DIR TERMINAL EDITOR VIM_RUNTIME_DIR
 #
 # Only override a missing or dead socket, so genuine agent forwarding still
 # wins and devcontainers keep their bind-mounted /tmp/dc-ssh-agent.sock.
+#
+# Preferred over both: the stable link ssh/rc points at the newest login's
+# forwarded socket, so a tmux pane recovers on the next login.
+stable_ssh_sock="${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-auth.sock"
+if [[ -S "$stable_ssh_sock" ]]; then
+    export SSH_AUTH_SOCK="$stable_ssh_sock"
+fi
+unset stable_ssh_sock
+
 systemd_ssh_agent="${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-agent.socket"
 if [[ ! -S "$SSH_AUTH_SOCK" && -S "$systemd_ssh_agent" ]]; then
     export SSH_AUTH_SOCK="$systemd_ssh_agent"
