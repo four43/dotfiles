@@ -110,6 +110,16 @@
             "statusMessage": "Checking release gate..."
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "remote-dev hooks hold",
+            "_source": "remote-dev"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -120,6 +130,24 @@
             "command": "~/.claude/hooks/notify-sound.sh"
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "remote-dev hooks release",
+            "_source": "remote-dev"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/tmux-state.sh clear"
+          }
+        ]
       }
     ],
     "Notification": [
@@ -128,6 +156,55 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/notify-sound.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/tmux-state.sh waiting"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "remote-dev hooks hold",
+            "_source": "remote-dev"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/tmux-state.sh working"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/tmux-state.sh working"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/tmux-state.sh clear"
           }
         ]
       }
@@ -173,5 +250,6 @@
   },
   "effortLevel": "xhigh",
   "tui": "default",
-  "theme": "dark-ansi"
+  "theme": "dark-ansi",
+  "preferredNotifChannel": "terminal_bell"
 }
