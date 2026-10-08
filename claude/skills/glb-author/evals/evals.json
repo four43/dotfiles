@@ -1,0 +1,50 @@
+{
+  "skill": "glb-author",
+  "notes": "Run each prompt with and without the skill in a fresh agent and a scratch dir. Objective checks run through scripts/validate.mjs + inspect.mjs; 'judged' items are a pairwise look at the geo/anim sheets vs the no-skill baseline.",
+  "evals": [
+    {
+      "id": "rigid-prop-sockets",
+      "prompt": "Make wheelbarrow.glb for a three.js farm game: about 1.4 m long, one front wheel that can spin, two handles at the back, a tray, and an attachment point where the load sits. Add a looping Roll clip that turns the wheel.",
+      "assert": ["validate PASS", "a node whose name contains 'wheel' has its origin at the wheel axle (inspect: world y ~= wheel radius)", "an empty socket node exists", "bbox z length 1.4 +/- 0.15", "Roll is a loop clip with LOOP_SEAM absent and the wheel track not STATIC"],
+      "judged": "Reads as a wheelbarrow; front (wheel) faces +Z"
+    },
+    {
+      "id": "node-rigged-animal",
+      "prompt": "Make a dog (dog.glb), ~0.9 m long, with Idle (tail wags, head tilts) and Walk (looping walk cycle) clips and an attachment point on the collar.",
+      "assert": ["validate PASS (warnings explained)", "clips Idle and Walk exist; Walk loops", "all node names match [A-Za-z0-9_-]", "a socket exists under the head/neck chain", "no BELOW_GROUND warning"],
+      "judged": "Walk filmstrip shows alternating legs; dog faces +Z"
+    },
+    {
+      "id": "skinned-bend",
+      "prompt": "Make a snake (snake.glb), ~2 m long when straight, as one skinned mesh with at least 5 bones and a looping Slither clip where the body waves side to side.",
+      "assert": ["exactly one skinned mesh at scene root", "khronos 0 errors 0 warnings", "skin has >= 5 joints", "no COLLAPSE warning", "Slither loops"],
+      "judged": "Body visibly bends in an S curve across frames"
+    },
+    {
+      "id": "textured",
+      "prompt": "Make crate.glb, a 1 m wooden crate with a plank texture (generated, not a flat colour) and a darker frame around each face.",
+      "assert": ["validate PASS", "1 texture, power of two", "bbox ~1 x 1 x 1 m, grounded"],
+      "judged": "Plank pattern visible, not black or stretched"
+    },
+    {
+      "id": "repair",
+      "prompt": "This GLB (evals/files/broken.glb, spec evals/files/broken.spec.json) loads wrong in our game. Find everything wrong with it and fix it.",
+      "setup": "node evals/files/make-broken.mjs (from the skill dir)",
+      "assert": ["reports dotted names, non-root skinned mesh, weights summing to 0.8, zero-weight joints, missing normals, inside-out crate, missing Socket_Hat", "fixed file passes validate with the spec"],
+      "judged": "-"
+    },
+    {
+      "id": "edit-locality",
+      "prompt": "Make the wheels of the wheelbarrow from the first eval 20% bigger and keep it sitting on the ground.",
+      "assert": ["only wheel parts and things positioned from the wheel radius changed (inspect diff)", "still grounded, validate PASS"],
+      "judged": "-"
+    }
+  ],
+  "trigger_negatives": [
+    "fix the tractor physics jitter",
+    "load a Kenney GLB into the scene and add a collider",
+    "make a 2D sprite sheet for the chicken",
+    "tune the camera follow distance",
+    "write a shader for grass sway"
+  ]
+}

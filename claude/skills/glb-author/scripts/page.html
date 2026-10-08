@@ -1,0 +1,209 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// Render page driven by look.mjs. Options arrive in window.LOOK = { sheet, clip, t, frames, zoom, view, tile }.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const O = window.LOOK;
+const T = O.tile || 400;
+const R = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+R.setPixelRatio(1);
+const gltf = await new GLTFLoader().loadAsync('/model.glb');
+const model = gltf.scene;
+const scene = new THREE.Scene();
+scene.add(model);
+scene.add(new THREE.HemisphereLight('#ffffff', '#8a8070', 1.6));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2); sun.position.set(3, 6, 4); scene.add(sun);
+const fill = new THREE.DirectionalLight('#ffffff', 0.6); fill.position.set(-4, 2, -3); scene.add(fill);
+
+const mixer = new THREE.AnimationMixer(model);
+const clip = O.clip ? gltf.animations.find(c => c.name === O.clip) : null;
+if (O.clip && !clip) throw new Error(`no clip "${O.clip}"; clips: ${gltf.animations.map(c => c.name).join(', ') || 'none'}`);
+if (clip) mixer.clipAction(clip).play();
+const pose = t => { if (clip) mixer.setTime(t); model.updateMatrixWorld(true); model.traverse(o => o.isSkinnedMesh && o.skeleton.update()); };
+
+function boxOf(obj) { // posed world bbox, skinned meshes included
+  const b = new THREE.Box3(); obj.updateMatrixWorld(true);
+  obj.traverse(o => {
+    if (!o.isMesh) return;
+    if (o.isSkinnedMesh) { o.computeBoundingBox(); b.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
+    else b.expandByObject(o, true);
+  });
+  if (b.isEmpty()) { const p = new THREE.Vector3(); obj.getWorldPosition(p); b.setFromCenterAndSize(p, new THREE.Vector3(0.2, 0.2, 0.2)); }
+  return b;
+}
+
+// ---- materials for passes ----
+const orig = new Map(); model.traverse(o => o.isMesh && orig.set(o, o.material));
+for (const o of orig.keys()) if (!o.isSkinnedMesh) {
+  const w = new THREE.LineSegments(new THREE.WireframeGeometry(o.geometry), new THREE.LineBasicMaterial({ color: '#202020' }));
+  w.visible = false; w.userData.helper = true; o.add(w); o.userData.__wire = w;
+}
+const skinned = o => !!o.isSkinnedMesh;
+const hidden = new Set(); // meshes hidden by --zoom (by material, so their children still render)
+const NONE = new THREE.MeshBasicMaterial({ visible: false });
+const PALETTE = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#9a6324', '#000075', '#808000', '#469990'];
+const weightMats = new Map();
+const setPass = pass => model.traverse(o => {
+  if (!o.isMesh || o.userData.helper) return;
+  if (pass === 'weights') { // skinned: color = strongest bone; others ghosted
+    if (o.isSkinnedMesh) {
+      if (!weightMats.has(o)) {
+        const si = o.geometry.attributes.skinIndex, sw = o.geometry.attributes.skinWeight, col = new Float32Array(si.count * 3), c = new THREE.Color();
+        for (let v = 0; v < si.count; v++) { let best = 0; for (let k = 1; k < 4; k++) if (sw.getComponent(v, k) > sw.getComponent(v, best)) best = k; c.set(PALETTE[si.getComponent(v, best) % PALETTE.length]); col.set([c.r, c.g, c.b], v * 3); }
+        o.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        weightMats.set(o, new THREE.MeshBasicMaterial({ vertexColors: true }));
+      }
+      o.material = weightMats.get(o);
+    } else o.material = new THREE.MeshStandardMaterial({ color: '#c8c2b8', transparent: true, opacity: 0.3, depthWrite: false });
+  }
+  if (pass === 'lit') o.material = orig.get(o);
+  if (pass === 'faces-back') { // inside of faces: red unless the original material is double-sided
+    const ds = [].concat(orig.get(o)).some(m => m.side === THREE.DoubleSide);
+    o.material = new THREE.MeshBasicMaterial({ color: ds ? '#a8a29a' : '#ff0000', side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  }
+  if (pass === 'faces-front') o.material = new THREE.MeshStandardMaterial({ color: '#c8c2b8', roughness: 0.9, flatShading: true, side: THREE.FrontSide });
+  if (pass === 'clay') o.material = new THREE.MeshStandardMaterial({ color: '#c8c2b8', roughness: 0.9, flatShading: true });
+  if (pass === 'ghost') o.material = new THREE.MeshStandardMaterial({ color: '#c8c2b8', roughness: 0.9, transparent: true, opacity: 0.35, depthWrite: false });
+  // material.wireframe draws garbage for non-indexed geometry here, so use explicit line segments over white faces
+  // (hidden lines removed). Skinned meshes can't carry static lines, so they get faceted clay.
+  if (pass === 'wire') o.material = o.isSkinnedMesh ? new THREE.MeshStandardMaterial({ color: '#9a948a', flatShading: true })
+    : new THREE.MeshBasicMaterial({ color: '#ffffff', polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  if (o.userData.__wire) o.userData.__wire.visible = pass === 'wire' && !hidden.has(o);
+  if (hidden.has(o)) o.material = NONE;
+});
+
+// ---- scene furniture: grid at y=0 (shows floating/sinking), bbox outline ----
+pose(O.t ?? 0);
+const focus = O.zoom ? (model.getObjectByName(O.zoom) || (() => { throw new Error(`no node "${O.zoom}"`); })()) : model;
+const modelBox = boxOf(model), modelBig = Math.max(...modelBox.getSize(new THREE.Vector3()).toArray(), 0.05);
+let focusHasMesh = false; focus.traverse(o => { if (o.isMesh) focusHasMesh = true; });
+if (O.zoom && focusHasMesh) { // isolate: hide meshes outside the zoomed node so nothing blocks the view
+  const keep = new Set(); focus.traverse(o => keep.add(o));
+  model.traverse(o => { if (o.isMesh && !keep.has(o)) hidden.add(o); });
+}
+// an empty (socket/pivot): frame the area around it and keep the whole model visible for context
+let box = O.zoom && !focusHasMesh ? new THREE.Box3().setFromCenterAndSize(focus.getWorldPosition(new THREE.Vector3()), new THREE.Vector3(1, 1, 1).multiplyScalar(modelBig * 0.35)) : boxOf(focus);
+if (O.sheet === 'anim' && clip) { // frame over every sampled pose so the camera doesn't move between frames
+  for (let i = 0; i <= 16; i++) { pose(clip.duration * i / 16); box.union(boxOf(focus)); }
+  pose(0);
+}
+if (O.zoom && !focusHasMesh) { // mark the empty itself: a small magenta ball drawn on top of everything
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(modelBig * 0.012, 12, 8), new THREE.MeshBasicMaterial({ color: '#ff00ff', depthTest: false }));
+  ball.renderOrder = 20; ball.userData.helper = true; focus.add(ball);
+  const ax = new THREE.AxesHelper(modelBig * 0.06); ax.material.depthTest = false; ax.renderOrder = 20; ax.userData.helper = true; focus.add(ax);
+}
+const size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+const big = Math.max(size.x, size.y, size.z, 0.05);
+const cell = [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10].find(c => big / c <= 16) || 10;
+const gridN = Math.ceil((big * 1.6) / cell) * 2;
+const grid = new THREE.GridHelper(gridN * cell, gridN, '#777', '#bbb');
+grid.position.set(Math.round(ctr.x / cell) * cell, 0, Math.round(ctr.z / cell) * cell);
+const furniture = [grid];
+const outline = new THREE.Box3Helper(box.clone(), '#ff8c00');
+scene.add(grid); if (!O.zoom && O.sheet !== 'anim') { scene.add(outline); furniture.push(outline); }
+
+// ---- cameras ----
+// glTF: the model faces +Z, so ITS left side is +X and its right side is -X
+const DIRS = { front: [0, 0, 1], back: [0, 0, -1], left: [1, 0, 0], right: [-1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0], '34': [1, 0.75, 1.15], '34back': [-1, 0.75, -1.15] };
+const LABEL = { front: 'FRONT (cam +Z; screen-right = +X)', back: 'BACK (cam -Z; screen-right = -X)', left: "model's LEFT (cam +X; front is <-)", right: "model's RIGHT (cam -X; front is ->)", top: 'TOP (front at bottom; +X right)', bottom: 'BOTTOM (cam -Y; front at bottom; +X left)', '34': '3/4 front-left (cam +X+Y+Z)', '34back': '3/4 back-right (cam -X+Y-Z)' };
+function camera(view) {
+  const d = new THREE.Vector3(...DIRS[view]).normalize();
+  const persp = view.startsWith('34');
+  // half-size of the bbox as seen from this view, so the subject fills the tile
+  const hw = view === 'front' || view === 'back' ? [size.x, size.y] : view === 'right' || view === 'left' ? [size.z, size.y] : view === 'top' || view === 'bottom' ? [size.x, size.z] : [Math.hypot(size.x, size.z), Math.max(size.y, Math.hypot(size.x, size.z) * 0.6)];
+  const half = Math.max(hw[0], hw[1]) * 0.58 + big * 0.04;
+  let cam;
+  if (persp) { cam = new THREE.PerspectiveCamera(30, 1, big * 0.01, big * 100); cam.position.copy(ctr).addScaledVector(d, half / Math.tan(15 * Math.PI / 180) * 1.05); }
+  else { cam = new THREE.OrthographicCamera(-half, half, half, -half, big * 0.01, big * 100); cam.position.copy(ctr).addScaledVector(d, big * 10); }
+  if (view === 'top' || view === 'bottom') cam.up.set(0, 0, -1); // front (+Z) at the bottom of the tile
+  cam.lookAt(ctr); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+  return cam;
+}
+
+// ---- tiles ----
+const tiles = []; // { view, pass, label, t, helpers }
+const sheet = O.sheet || 'geo';
+const views = (O.view || '').split(',').filter(Boolean);
+for (const v of views) if (!DIRS[v]) throw new Error(`--view ${v}: use ${Object.keys(DIRS).join(', ')}`);
+const hasSkin = (() => { let s = false; model.traverse(o => { if (o.isSkinnedMesh) s = true; }); return s; })();
+if (sheet === 'geo') for (const v of views.length ? views : ['front', 'left', '34', 'back', 'right', 'top']) tiles.push({ view: v, pass: 'lit', label: LABEL[v] });
+if (sheet === 'diag') tiles.push(
+  { view: '34', pass: 'faces', label: 'FACES 3/4 front (red = inside showing: hole/flipped)' },
+  { view: '34back', pass: 'faces', label: 'FACES 3/4 back-left' },
+  hasSkin ? { view: '34', pass: 'weights', label: 'SKIN WEIGHTS 3/4 (color = strongest bone)', helpers: true, weights: true } : { view: 'front', pass: 'clay', label: 'CLAY front' },
+  { view: '34', pass: 'wire', label: 'WIREFRAME 3/4 (skinned meshes: faceted)' },
+  { view: '34', pass: 'ghost', label: 'NODES 3/4 (axes: R=X G=Y B=Z)', helpers: true },
+  { view: views[0] || 'right', pass: 'ghost', label: `NODES ${LABEL[views[0] || 'right']}`, helpers: true });
+if (sheet === 'anim') {
+  if (!clip) throw new Error(`--sheet anim needs --clip; clips: ${gltf.animations.map(c => c.name).join(', ') || 'none'}`);
+  const n = O.frames || 8;
+  for (let i = 0; i < n; i++) { const t = clip.duration * i / n; tiles.push({ view: views[0] || 'right', pass: 'lit', t, label: `${clip.name} t=${t.toFixed(2)}s (${i + 1}/${n})` }); }
+}
+const cols = sheet === 'anim' ? Math.min(4, tiles.length) : 3, rows = Math.ceil(tiles.length / cols);
+const TW = sheet === 'anim' ? Math.round(1200 / cols) : T, FOOT = 26;
+R.setSize(TW * cols, TW * rows); R.setScissorTest(true);
+
+// helpers: axes + labels on empties, sockets and bones
+const marks = [];
+model.traverse(o => { if (o !== model && !o.isMesh && o.name && !o.userData.helper) marks.push(o); }); // empties: pivots, sockets, bones
+const axes = marks.map(o => { const a = new THREE.AxesHelper(big * 0.12); a.material.depthTest = false; a.renderOrder = 10; o.add(a); return a; });
+const skelHelpers = []; model.traverse(o => { if (o.isSkinnedMesh) { const h = new THREE.SkeletonHelper(o.skeleton.bones[0]); h.material.depthTest = false; scene.add(h); skelHelpers.push(h); } });
+const skinBones = []; model.traverse(o => { if (o.isSkinnedMesh) for (const b of o.skeleton.bones) if (!skinBones.includes(b)) skinBones.push(b); });
+const showHelpers = on => { axes.forEach(a => (a.visible = on)); skelHelpers.forEach(h => (h.visible = on)); };
+
+const labels = []; // drawn later in 2D
+const bg = { lit: '#e9eef2', clay: '#e9eef2', wire: '#ffffff', ghost: '#ffffff', faces: '#e9eef2', weights: '#ffffff' };
+tiles.forEach((tile, i) => {
+  const cx = (i % cols) * TW, cyTop = Math.floor(i / cols) * TW, cy = (rows - 1 - Math.floor(i / cols)) * TW;
+  if (tile.t != null) pose(tile.t); else pose(O.t ?? 0);
+  setPass(tile.pass); showHelpers(!!tile.helpers);
+  furniture.forEach(f => (f.visible = tile.view !== 'bottom'));
+  scene.background = new THREE.Color(bg[tile.pass]);
+  const cam = camera(tile.view);
+  R.setViewport(cx, cy, TW, TW); R.setScissor(cx, cy, TW, TW);
+  if (tile.pass === 'faces') { // back faces first (pushed back in depth), then front faces over them
+    setPass('faces-back'); R.render(scene, cam); R.autoClear = false;
+    // a Color background makes render() clear even with autoClear off, so drop it for the second pass
+    const bgc = scene.background; scene.background = null;
+    setPass('faces-front'); R.render(scene, cam); R.autoClear = true; scene.background = bgc;
+  } else R.render(scene, cam);
+  if (O.zoom && !focusHasMesh) { const p = focus.getWorldPosition(new THREE.Vector3()).project(cam); labels.push({ x: cx + (p.x + 1) / 2 * TW, y: cyTop + (1 - p.y) / 2 * TW, text: focus.name + ' (magenta)', right: cx + TW, rank: -1 }); }
+  if (tile.helpers) for (const o of marks) {
+    const p = o.getWorldPosition(new THREE.Vector3()).project(cam);
+    const x = cx + (p.x + 1) / 2 * TW, y = cyTop + (1 - p.y) / 2 * TW;
+    if (x < cx || x > cx + TW || y < cyTop + 26 || y > cyTop + TW) continue; // off this tile
+    const rank = o.userData.socket || /^socket/i.test(o.name) ? 0 : o.isBone ? 1 : 2;
+    const boneIdx = tile.weights ? skinBones.indexOf(o) : -1;
+    labels.push({ x, y, text: o.name, bone: o.isBone, right: cx + TW, rank, fill: boneIdx >= 0 ? PALETTE[boneIdx % PALETTE.length] : null });
+  }
+});
+
+// ---- compose: labels, borders, footer ----
+const out = document.createElement('canvas'); out.width = TW * cols; out.height = TW * rows + FOOT;
+const c = out.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, out.width, out.height); c.drawImage(R.domElement, 0, 0);
+c.font = 'bold 14px sans-serif'; c.textBaseline = 'top';
+tiles.forEach((tile, i) => {
+  const x = (i % cols) * TW, y = Math.floor(i / cols) * TW;
+  c.strokeStyle = '#555'; c.lineWidth = 1; c.strokeRect(x + 0.5, y + 0.5, TW - 1, TW - 1);
+  const w = c.measureText(tile.label).width; c.fillStyle = 'rgba(255,255,255,0.85)'; c.fillRect(x + 4, y + 4, w + 8, 20); c.fillStyle = '#000'; c.fillText(tile.label, x + 8, y + 7);
+});
+c.font = '12px sans-serif';
+labels.sort((a, b) => a.rank - b.rank); // sockets first, then bones, then other empties
+for (const l of labels) { // spaced labels only: skip ones that would overlap an earlier label
+  if (labels.some(o => o !== l && o.drawn && Math.abs(o.x - l.x) < 70 && Math.abs(o.y - l.y) < 14)) continue;
+  const w = c.measureText(l.text).width; l.x = Math.min(l.x, l.right - w - 12); c.fillStyle = l.fill || (l.rank === 0 ? 'rgba(180,255,180,0.95)' : l.bone ? 'rgba(255,240,200,0.9)' : 'rgba(210,240,255,0.9)');
+  c.fillRect(l.x + 4, l.y - 7, w + 6, 15); c.fillStyle = '#000'; c.fillText(l.text, l.x + 7, l.y - 6); l.drawn = true;
+}
+let triCount = 0; // drawn triangles
+model.traverse(o => { if (o.isMesh && !o.userData.helper) triCount += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
+const f = v => v.toFixed(2);
+c.font = '13px monospace'; c.fillStyle = '#000';
+c.fillText(`${O.name} | ${O.zoom ? 'zoom ' + O.zoom + ' ' : ''}bbox ${f(size.x)} x ${f(size.y)} x ${f(size.z)} m | grid cell ${cell} m at y=0 | ${triCount} tris | clips: ${gltf.animations.map(a => a.name).join(', ') || 'none'}${clip && sheet !== 'anim' ? ` | posed ${clip.name} t=${O.t ?? 0}` : ''}`, 6, TW * rows + 6);
+const gl = R.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
+window.__done = { png: out.toDataURL('image/png'), renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '?', bbox: { min: box.min.toArray(), max: box.max.toArray() }, cell, tris: triCount, labels: labels.filter(l => l.drawn).length + '/' + labels.length, droppedSockets: labels.filter(l => !l.drawn && l.rank === 0).map(l => l.text) };
+</script>
+</body></html>

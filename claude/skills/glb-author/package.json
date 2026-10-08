@@ -1,0 +1,19 @@
+{
+  "name": "glb-author-tools",
+  "private": true,
+  "type": "module",
+  "description": "Scripts for the glb-author skill. Run `npm install` here once.",
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "gltf-validator": "^2.0.0-dev.3.10",
+    "pixelmatch": "^7.1.0",
+    "playwright": "1.64",
+    "pngjs": "^7.0.0",
+    "three": "^0.186.1"
+  },
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

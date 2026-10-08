@@ -1,0 +1,245 @@
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: workbench — model list rail on the left, a turntable stage filling the rest; rail becomes a chip strip on phones */
+:root {
+  --bg: #e9edf0;
+  --panel: #f8fafb;
+  --stage: #dfe5e9;
+  --fg: #1b2227;
+  --muted: #5a6670;
+  --line: #c9d2d8;
+  --accent: #d9661a;      /* the orange the render sheets use for bounding boxes */
+  --pass: #2f7d4f;
+  --warn: #9a6a00;
+  --fail: #b3322b;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14181b; --panel: #1b2024; --stage: #20262b; --fg: #e4e9ec; --muted: #94a0a8; --line: #2e363c;
+    --accent: #f08a3c; --pass: #5cc489; --warn: #e0b04a; --fail: #f07a72; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14181b; --panel: #1b2024; --stage: #20262b; --fg: #e4e9ec; --muted: #94a0a8; --line: #2e363c;
+  --accent: #f08a3c; --pass: #5cc489; --warn: #e0b04a; --fail: #f07a72; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: 290px minmax(0, 1fr); height: 100%; }
+.rail { border-right: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
+h1 { font-family: var(--display); font-weight: 600; font-size: 26px; letter-spacing: 0.01em; margin: 0; line-height: 1.1; text-wrap: balance; }
+.lede { color: var(--muted); font-size: 13.5px; margin: 4px 0 0; }
+.group { display: flex; flex-direction: column; gap: 6px; }
+.group h2 { font-family: var(--display); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 2px; }
+.model { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline; text-align: left; width: 100%;
+  background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 7px 9px; color: var(--fg); font: inherit; cursor: pointer; }
+.model:hover { border-color: var(--line); }
+.model:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.model[aria-pressed="true"] { border-color: var(--accent); background: var(--bg); }
+.model .nm { font-weight: 600; }
+.model .sub { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
+.verdict { font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; white-space: nowrap; }
+.verdict.pass { color: var(--pass); } .verdict.warn { color: var(--warn); } .verdict.fail { color: var(--fail); }
+.stagewrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; min-height: 0; }
+.head { padding: 16px 20px 10px; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; border-bottom: 1px solid var(--line); }
+.head h3 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 0; }
+.head .file { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.head p { flex-basis: 100%; margin: 0; max-width: 72ch; color: var(--muted); font-size: 14px; }
+.stage { position: relative; background: var(--stage); min-height: 0; }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+[hidden] { display: none !important; }
+#groups { display: flex; flex-direction: column; gap: 18px; }
+.status { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); font-size: 13px; pointer-events: none; }
+.hint { position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--muted); pointer-events: none; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 12px 20px 16px; border-top: 1px solid var(--line); background: var(--panel); }
+.ctl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ctl > span { font-family: var(--display); font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-right: 2px; }
+.chip { font: 500 13px var(--body); padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stats { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); font-size: 13px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .rail { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; overflow-x: auto; overflow-y: hidden; gap: 14px; padding: 12px 16px; }
+  .rail .intro { display: none; }
+  #groups { flex-direction: row; gap: 14px; }
+  .group { flex-direction: row; align-items: center; flex-shrink: 0; }
+  .group h2 { writing-mode: horizontal-tb; margin: 0 4px 0 0; }
+  .model { width: auto; white-space: nowrap; }
+  .model .sub { display: none; }
+  .head, .controls { padding-inline: 16px; }
+  .stagewrap { grid-template-rows: auto minmax(260px, 1fr) auto; }
+}
+@media (prefers-reduced-motion: reduce) { .chip, .model { transition: none; } }
+</style>
+
+<div class="app">
+  <nav class="rail" aria-label="Models">
+    <div class="intro">
+      <h1>__TITLE__</h1>
+      <p class="lede">__LEDE__</p>
+    </div>
+    <div id="groups"></div>
+  </nav>
+  <main class="stagewrap">
+    <div class="head">
+      <h3 id="title"></h3><span class="file" id="file"></span>
+      <p id="note"></p>
+    </div>
+    <div class="stage" id="stage">
+      <div class="status" id="status">Loading…</div>
+      <div class="hint">Drag to orbit · scroll or pinch to zoom</div>
+    </div>
+    <div class="controls">
+      <div class="ctl" id="clips"><span>Clip</span></div>
+      <div class="ctl"><span>Show</span>
+        <button class="chip" id="t-marks" aria-pressed="true">Sockets &amp; pivots</button>
+        <button class="chip" id="t-bones" aria-pressed="false">Bones</button>
+        <button class="chip" id="t-spin" aria-pressed="false">Turntable</button>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </main>
+</div>
+
+<script src="models.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const MODELS = window.GLB_MODELS?.groups ?? []; // written by scripts/showcase.mjs into models.js
+
+// ---- rail ----
+const groupsEl = document.getElementById('groups');
+const buttons = new Map();
+for (const g of MODELS) {
+  const div = document.createElement('div'); div.className = 'group';
+  div.innerHTML = `<h2>${g.group}</h2>`;
+  for (const m of g.items) {
+    const b = document.createElement('button'); b.className = 'model'; b.type = 'button'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = `<span class="nm">${m.name}</span><span class="verdict ${m.v}">${m.verdict}</span><span class="sub">${m.file}</span>`;
+    b.addEventListener('click', () => show(m));
+    buttons.set(m, b); div.appendChild(b);
+  }
+  groupsEl.appendChild(div);
+}
+
+// ---- stage ----
+const stageEl = document.getElementById('stage'), statusEl = document.getElementById('status');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+stageEl.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight('#ffffff', '#8a8070', 1.7));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2); sun.position.set(3, 6, 4); scene.add(sun);
+const fill = new THREE.DirectionalLight('#ffffff', 0.6); fill.position.set(-4, 2, -3); scene.add(fill);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 200);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
+const clock = new THREE.Clock();
+let current = null; // { root, mixer, actions, helpers, grid, bones }
+
+function cssColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888'; }
+function applyTheme() {
+  scene.background = new THREE.Color(cssColor('--stage'));
+}
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+function resize() {
+  const r = stageEl.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / Math.max(r.height, 1); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stageEl); resize();
+
+const loader = new GLTFLoader();
+const toggles = { marks: document.getElementById('t-marks'), bones: document.getElementById('t-bones'), spin: document.getElementById('t-spin') };
+for (const b of Object.values(toggles)) b.addEventListener('click', () => { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); syncHelpers(); });
+const on = k => toggles[k].getAttribute('aria-pressed') === 'true';
+
+function syncHelpers() {
+  if (!current) return;
+  current.helpers.forEach(h => (h.visible = on('marks')));
+  current.bones.forEach(h => (h.visible = on('bones')));
+  controls.autoRotate = on('spin');
+}
+
+async function show(m) {
+  for (const [mm, b] of buttons) b.setAttribute('aria-pressed', mm === m ? 'true' : 'false');
+  document.getElementById('title').textContent = m.name;
+  document.getElementById('file').textContent = m.file;
+  document.getElementById('note').textContent = m.note;
+  statusEl.textContent = 'Loading…'; statusEl.hidden = false;
+  if (current) { scene.remove(current.root, current.grid, ...current.bones); current.mixer?.stopAllAction(); current = null; }
+  let gltf;
+  try {
+    const b64 = window.GLB_MODELS?.data?.[m.file]; if (!b64) throw new Error('model data missing');
+    const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    gltf = await loader.parseAsync(bin.buffer, '');
+  }
+  catch (e) { statusEl.textContent = `Could not load ${m.file}: ${e.message}`; return; }
+  const root = gltf.scene; scene.add(root);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root, true), size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+  const big = Math.max(size.x, size.y, size.z, 0.1);
+  // grid at y = 0, cell size picked from the model's size
+  const cell = [0.05, 0.1, 0.25, 0.5, 1].find(c => big / c <= 14) || 1, n = Math.ceil(big * 2.4 / cell) * 2;
+  const grid = new THREE.GridHelper(n * cell, n, cssColor('--muted'), cssColor('--line')); scene.add(grid);
+  // markers on empties (sockets in accent, other pivots small)
+  const helpers = [];
+  root.traverse(o => {
+    if (o === root || o.isMesh || o.isBone || !o.name) return;
+    const sock = o.userData.socket || /socket|attach|perch/i.test(o.name);
+    const ax = new THREE.AxesHelper(big * (sock ? 0.12 : 0.06)); ax.material.depthTest = false; ax.renderOrder = 10; o.add(ax); helpers.push(ax);
+    if (sock) { const s = new THREE.Mesh(new THREE.SphereGeometry(big * 0.015, 12, 8), new THREE.MeshBasicMaterial({ color: cssColor('--accent'), depthTest: false })); s.renderOrder = 11; o.add(s); helpers.push(s); }
+  });
+  const bones = []; root.traverse(o => { if (o.isSkinnedMesh) { const h = new THREE.SkeletonHelper(o.skeleton.bones[0]); h.material.depthTest = false; scene.add(h); bones.push(h); } });
+  // camera: 3/4 front-left, like the render sheets
+  camera.near = big / 200; camera.far = big * 60; camera.updateProjectionMatrix();
+  controls.target.copy(ctr);
+  camera.position.copy(ctr).add(new THREE.Vector3(1, 0.7, 1.15).normalize().multiplyScalar(big * 2.3));
+  controls.update();
+  // clips
+  const mixer = gltf.animations.length ? new THREE.AnimationMixer(root) : null;
+  const clipsEl = document.getElementById('clips'); clipsEl.querySelectorAll('button, .empty').forEach(e => e.remove());
+  const actions = new Map();
+  const play = name => {
+    for (const [n, a] of actions) { if (n === name) { a.reset().play(); } else a.stop(); }
+    clipsEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.clip === name ? 'true' : 'false'));
+  };
+  if (!gltf.animations.length) { const s = document.createElement('span'); s.className = 'empty'; s.textContent = 'none'; clipsEl.appendChild(s); }
+  for (const clip of gltf.animations) {
+    actions.set(clip.name, mixer.clipAction(clip));
+    const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.dataset.clip = clip.name;
+    b.textContent = `${clip.name} ${clip.duration.toFixed(1)}s`; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => play(b.getAttribute('aria-pressed') === 'true' ? null : clip.name));
+    clipsEl.appendChild(b);
+  }
+  if (gltf.animations.length) play(gltf.animations[0].name);
+  // stats
+  let tris = 0, nodes = 0; root.traverse(o => { nodes++; if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
+  document.getElementById('stats').textContent = `${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)} m · ${tris} tris · ${nodes - 1} nodes · grid ${cell} m`;
+  current = { root, mixer, actions, helpers, grid, bones };
+  syncHelpers();
+  statusEl.hidden = true;
+}
+
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.1);
+  current?.mixer?.update(dt);
+  controls.update();
+  renderer.render(scene, camera);
+});
+
+if (MODELS[0]?.items[0]) show(MODELS[0].items[0]); else statusEl.textContent = 'No models in models.js';
+</script>

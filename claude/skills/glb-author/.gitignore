@@ -1,0 +1,4 @@
+node_modules/
+# generated: rebuild with the .mjs next to them
+*.glb
+look/

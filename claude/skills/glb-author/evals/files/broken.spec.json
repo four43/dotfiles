@@ -1,0 +1,7 @@
+{
+  "size": [1.25, 1.9, 0.5],
+  "tolerance": 0.15,
+  "nodes": ["Bone_Base", "Bone_Top", "Column", "Crate"],
+  "sockets": ["Socket_Hat"],
+  "clips": { "Wave": { "duration": 1, "loop": true, "moves": ["Bone_Top"] } }
+}
