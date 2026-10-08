@@ -14,14 +14,3 @@ ssh() {
         command ssh "$@"
     fi
 }
-
-precmd() {
-    if [[ -n "$TMUX" ]]; then
-        current_window_name="$(tmux display-message -p '#W')"
-        echo $current_window_name > /tmp/window-name.txt
-        if [[ "$current_window_name" =~ ^(|zsh) ]]; then
-            tmux rename-window "$(basename "$(pwd)")"
-        fi
-    fi
-}
-

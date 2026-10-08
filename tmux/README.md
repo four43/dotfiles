@@ -13,12 +13,13 @@ Plugins are managed by [TPM](https://github.com/tmux-plugins/tpm) (Tmux Plugin M
  * [tmux-battery](https://github.com/tmux-plugins/tmux-battery) - Battery status for the status bar
  * [tmux-nova](https://github.com/o0th/tmux-nova) - Status bar theme, configured with the `@nova-*` options
 
-TPM itself comes from the AUR package `tmux-plugin-manager` (installed by `arch/install-dev-packages.sh`), which puts it at `/usr/share/tmux-plugin-manager/tpm`. The last line of `tmux.conf` runs it from there. Plugins are downloaded to `~/.tmux/plugins/`.
+On Arch, TPM itself comes from the AUR package `tmux-plugin-manager` (installed by `arch/install-dev-packages.sh`), which puts it at `/usr/share/tmux-plugin-manager/tpm`. On other hosts it's a git clone at `~/.tmux/plugins/tpm`. The end of `tmux.conf` runs the AUR copy if it exists, and the clone otherwise. Plugins are downloaded to `~/.tmux/plugins/`.
 
 ## Setup
 
 ```sh
-yay -S tmux-plugin-manager
+yay -S tmux-plugin-manager                                       # Arch
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm  # anywhere else
 tmux source-file ~/.tmux.conf
 ```
 
@@ -33,12 +34,13 @@ Then press `prefix + I` (capital i) to download the plugins. The prefix is `C-a`
 
 ## Troubleshooting
 
-**Status bar looks like the plain tmux default:** TPM didn't run, so the plugins never loaded. Check that `/usr/share/tmux-plugin-manager/tpm` exists. If it doesn't, install the package (see Setup) and reload.
+**Status bar looks like the plain tmux default:** TPM didn't run, so the plugins never loaded. Check that `/usr/share/tmux-plugin-manager/tpm` (Arch) or `~/.tmux/plugins/tpm/tpm` exists. If neither does, install TPM (see Setup) and reload.
 
 To load plugins in the running server without reloading the whole config:
 
 ```sh
-tmux run /usr/share/tmux-plugin-manager/tpm
+tmux run /usr/share/tmux-plugin-manager/tpm   # Arch
+tmux run ~/.tmux/plugins/tpm/tpm              # git clone
 ```
 
 Config changes don't apply to a running tmux server until you reload (`prefix + r`) or restart it (`tmux kill-server`).
