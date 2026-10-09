@@ -116,8 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "remote-dev hooks hold",
-            "_source": "remote-dev"
+            "command": "~/.claude/hooks/remote-dev-lease.sh hold"
           }
         ]
       }
@@ -136,8 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "remote-dev hooks release",
-            "_source": "remote-dev"
+            "command": "~/.claude/hooks/remote-dev-lease.sh release"
           }
         ]
       },
@@ -175,8 +173,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "remote-dev hooks hold",
-            "_source": "remote-dev"
+            "command": "~/.claude/hooks/remote-dev-lease.sh hold"
           }
         ]
       },
