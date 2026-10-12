@@ -5,8 +5,12 @@
 # stable path, so long-lived shells -- tmux panes especially -- recover on the
 # next login instead of holding a dangling socket.
 #
+# sshd runs this through the login shell, so zshenv has already run. Never
+# link the stable path to itself: `ln -sfn` would replace the link with a loop.
+#
 # Note: the presence of this file stops sshd from running xauth itself. Add
 # the xauth stanza from `man sshd` (SSHRC) if X11 forwarding is ever needed.
-if [ -S "$SSH_AUTH_SOCK" ]; then
-    ln -sfn "$SSH_AUTH_SOCK" "/run/user/$(id -u)/ssh-auth.sock"
+stable="/run/user/$(id -u)/ssh-auth.sock"
+if [ -S "$SSH_AUTH_SOCK" ] && [ "$SSH_AUTH_SOCK" != "$stable" ]; then
+    ln -sfn "$SSH_AUTH_SOCK" "$stable"
 fi

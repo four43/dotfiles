@@ -21,8 +21,10 @@ export DOTFILE_DIR TERMINAL EDITOR VIM_RUNTIME_DIR
 #
 # Preferred over both: the stable link ssh/rc points at the newest login's
 # forwarded socket, so a tmux pane recovers on the next login.
+# Interactive shells only: sshd runs ssh/rc through `zsh -c`, which reads this
+# file, and that shell must keep the socket sshd just forwarded.
 stable_ssh_sock="${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-auth.sock"
-if [[ -S "$stable_ssh_sock" ]]; then
+if [[ -o interactive && -S "$stable_ssh_sock" ]]; then
     export SSH_AUTH_SOCK="$stable_ssh_sock"
 fi
 unset stable_ssh_sock
