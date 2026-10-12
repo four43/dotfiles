@@ -1,8 +1,6 @@
 # Devcontainers CLI — start/attach to dev containers without VS Code in the loop.
 # Install with: yay -S devcontainer-cli  (or: npm i -g @devcontainers/cli)
 
-alias dc-build='devcontainer build --workspace-folder .'
-
 # Force-remove the devcontainer(s) for $PWD. @devcontainers/cli has no `down`
 # subcommand, so we do it via docker against the standard devcontainer label.
 # Compose-based projects can have multiple containers under one label.
@@ -50,6 +48,28 @@ _dc_set_ssh_args() {
 dc-up() {
     _dc_set_ssh_args
     devcontainer up --workspace-folder . "${_dc_up_ssh_args[@]}" "$@"
+}
+
+# Rebuild the devcontainer image for $PWD and replace the running container.
+# Goes through `devcontainer up` rather than `docker compose build` so all the
+# compose files are stacked and the configured target is built — a bare compose
+# build picks a different target and leaves the running container on its old
+# image.
+# Pass --no-cache to rebuild every layer; other args go through to `up`.
+# --build-no-cache is ignored unless the container is being created, hence
+# --remove-existing-container always.
+dc-build() {
+    local -a up_args
+    local arg
+    for arg in "$@"; do
+        case "$arg" in
+            --no-cache) up_args+=(--build-no-cache) ;;
+            *)          up_args+=("$arg") ;;
+        esac
+    done
+    _dc_set_ssh_args
+    devcontainer up --workspace-folder . --remove-existing-container \
+        "${_dc_up_ssh_args[@]}" "${up_args[@]}"
 }
 
 # Start the devcontainer for $PWD if no matching one is already running.
