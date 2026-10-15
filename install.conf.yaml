@@ -19,6 +19,11 @@
         create: true
         force: true
     ~/.config/alacritty: alacritty
+    ~/.config/fastfetch/config.jsonc:
+        path: fastfetch/config.jsonc
+        type: symlink
+        create: true
+        force: true
     # ~/.config/i3/config: i3/config
     ~/.config/environment.d/ssh_askpass.conf:
         path: arch/.config/environment.d/ssh_askpass.conf
@@ -105,6 +110,8 @@
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/bin/arch-system-update: arch/install/files/system-update.sh
+    ~/.local/bin/df-btrfs: bin/df-btrfs
+    ~/.local/bin/docker-status: bin/docker-status
     ~/.local/bin/code-with-secrets: bin/code-with-secrets
     # VS Code launcher override: pulls secrets from `pass` at GUI launch time.
     # See pass/README.md and bin/code-with-secrets.
