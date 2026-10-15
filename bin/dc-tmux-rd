@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Start (or reattach to) a tmux session "rd" with a window for xwc-data-meta
+# running `dc-down; dc-cy`.
+set -euo pipefail
+
+SESSION=rd
+PROJECTS=~/projects/VaisalaCorp
+
+if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+  meta=$(tmux new-session -d -s "$SESSION" -n xwc-data-meta -c "$PROJECTS/xwc-data-meta" -P -F '#{pane_id}')
+
+  # dc-down / dc-cy are zsh functions, so type them into the interactive shell
+  tmux send-keys -t "$meta" 'dc-down; dc-cy' C-m
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+  tmux switch-client -t "$SESSION"
+else
+  tmux attach-session -t "$SESSION"
+fi
