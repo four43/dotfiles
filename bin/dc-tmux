@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Start (or reattach to) a tmux session "dc" with one pane per devcontainer project,
+# each running `dc-down; dc-sshd`.
+set -euo pipefail
+
+SESSION=dc
+PROJECTS=~/projects/VaisalaCorp
+
+if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+  sdk=$(tmux new-session -d -s "$SESSION" -n xwe-data-sdk -c "$PROJECTS/xwe-data-sdk" -P -F '#{pane_id}')
+  data=$(tmux new-window -t "$SESSION" -n xwc-product-data -c "$PROJECTS/xwc-product-data" -P -F '#{pane_id}')
+
+  # dc-down / dc-sshd are zsh functions, so type them into the interactive shells
+  tmux send-keys -t "$sdk" 'dc-down; dc-sshd' C-m
+  tmux send-keys -t "$data" 'dc-down; dc-sshd' C-m
+  tmux select-window -t "$sdk"
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+  tmux switch-client -t "$SESSION"
+else
+  tmux attach-session -t "$SESSION"
+fi

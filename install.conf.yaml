@@ -110,6 +110,7 @@
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/bin/arch-system-update: arch/install/files/system-update.sh
+    ~/.local/bin/dc-tmux: bin/dc-tmux
     ~/.local/bin/df-btrfs: bin/df-btrfs
     ~/.local/bin/docker-status: bin/docker-status
     ~/.local/bin/code-with-secrets: bin/code-with-secrets
