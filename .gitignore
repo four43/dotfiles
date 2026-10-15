@@ -9,6 +9,7 @@ vim/bundle
 
 # Ignore local-only vim config files.
 vim/config/*local*.vim
+vim/config/.netrwhist
 
 # Ignore vim's netrwhist.
 vim/.netrwhist

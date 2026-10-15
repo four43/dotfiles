@@ -1,6 +1,5 @@
 *
 !.gitignore
-!.claude.json
 !settings.json
 !agents
 !agents/**
