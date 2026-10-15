@@ -1,10 +1,13 @@
+Include config-remote-dev
+
+Include ~/projects/VaisalaCorp/lightning-config/provisioning/ssh_config
+
 # Home Network
 
 Host home
     Hostname home.four43.com
     User smiller
     Port 289
-    ForwardAgent yes
 
 Host orion
     Hostname orion.four43.com
@@ -45,19 +48,13 @@ Host aeris-obs-summary-importer
     User ec2-user
     IdentityFile ~/.ssh/aerisweather/aeris-forecast.pem
 
-Host lightning-lounet-sshlp1
-    Hostname 199.33.75.246
-    Port 52022
+Host lightning-lou-net-sshlp1
     User sethm
     IdentityFile ~/.ssh/id_rsa_vaisala
-    ForwardAgent yes
 
-Host lightning-dalnet-sshlp1
-    Hostname 192.101.77.246
-    Port 52022
+Host lightning-dal-net-sshlp1
     User sethm
     IdentityFile ~/.ssh/id_rsa_vaisala
-    ForwardAgent yes
 
 # Defaults
 
