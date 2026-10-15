@@ -3,7 +3,7 @@
 // Prints PASS or FAIL lines with codes; exits 1 on any FAIL. WARN lines don't fail but each needs a reason to keep.
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
-import { readDoc, findSpec, sceneBox, nodeBox, wm, tris, drawnTris, loadThree, posedBox, nearest, NAME, f2, v3, THREE } from './lib.mjs';
+import { readDoc, findSpec, sceneBox, nodeBox, wm, tris, drawnTris, loadThree, posedBox, nearest, uvStretch, NAME, f2, v3, THREE } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const file = args.find(a => !a.startsWith('--') && args[args.indexOf(a) - 1] !== '--spec');
@@ -48,6 +48,11 @@ for (const mesh of root.listMeshes()) for (const [pi, p] of mesh.listPrimitives(
   if (!pos) { FAIL('NO_POSITION', where); continue; }
   if (!pos.getArray().every(Number.isFinite)) FAIL('NAN_POSITION', `${where} has NaN/Infinity positions`);
   if (!p.getAttribute('NORMAL') && !p.getMaterial()?.getExtension('KHR_materials_unlit')) FAIL('NO_NORMALS', `${where} has no NORMAL: it renders black under lights (the Khronos validator does not catch this)`);
+  if (p.getMode() === 4 && !p.getAttribute('TEXCOORD_0')) FAIL('NO_UV', `${where} has no TEXCOORD_0: a texture can't be mapped onto it. Kit shapes always have UVs; for other meshes, fix.mjs (uvs) box-projects them`);
+  else if (p.getMode() === 4) {
+    const st = uvStretch(p);
+    if (st.over > 0.1) WARN('UV_STRETCH', `${where}: ${Math.round(st.over * 100)}% of its surface is stretched over 3:1 in UV (worst ${st.worst === Infinity ? 'collapsed to a line' : st.worst.toFixed(1) + ':1'}); textures smear there. Kit shapes: use the default uv 'meters'; check with the viewer's UV checker or look.mjs --sheet diag`);
+  }
   const J = p.getAttribute('JOINTS_0'), W = p.getAttribute('WEIGHTS_0');
   if (J && ![5121, 5123].includes(J.getComponentType())) FAIL('JOINT_TYPE', `${where} JOINTS_0 must be Uint8/Uint16`);
   if (W) {

@@ -47,6 +47,17 @@ const hidden = new Set(); // meshes hidden by --zoom (by material, so their chil
 const NONE = new THREE.MeshBasicMaterial({ visible: false });
 const PALETTE = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#9a6324', '#000075', '#808000', '#469990'];
 const weightMats = new Map();
+// UV checker (same as the showcase viewer): 8x8 labelled cells per UV unit; square cells = no stretch, readable letters = not mirrored
+const UVMAT = (() => {
+  const N = 8, S = 64, cv = document.createElement('canvas'); cv.width = cv.height = N * S;
+  const c = cv.getContext('2d'); c.font = `bold ${S * 0.42}px sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    c.fillStyle = `hsl(${(i * 360) / N}, 60%, ${(i + j) % 2 ? 45 : 70}%)`; c.fillRect(i * S, j * S, S, S);
+    c.fillStyle = (i + j) % 2 ? '#fff' : '#111'; c.fillText(`${'ABCDEFGH'[i]}${N - j}`, i * S + S / 2, j * S + S / 2);
+  }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return { uv: new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }), none: new THREE.MeshBasicMaterial({ color: '#ff00ff' }) };
+})();
 const setPass = pass => model.traverse(o => {
   if (!o.isMesh || o.userData.helper) return;
   if (pass === 'weights') { // skinned: color = strongest bone; others ghosted
@@ -61,6 +72,7 @@ const setPass = pass => model.traverse(o => {
     } else o.material = new THREE.MeshStandardMaterial({ color: '#c8c2b8', transparent: true, opacity: 0.3, depthWrite: false });
   }
   if (pass === 'lit') o.material = orig.get(o);
+  if (pass === 'uv') o.material = o.geometry.attributes.uv ? UVMAT.uv : UVMAT.none;
   if (pass === 'faces-back') { // inside of faces: red unless the original material is double-sided
     const ds = [].concat(orig.get(o)).some(m => m.side === THREE.DoubleSide);
     o.material = new THREE.MeshBasicMaterial({ color: ds ? '#a8a29a' : '#ff0000', side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
@@ -138,6 +150,7 @@ if (sheet === 'diag') tiles.push(
   { view: '34', pass: 'wire', label: 'WIREFRAME 3/4 (skinned meshes: faceted)' },
   { view: '34', pass: 'ghost', label: 'NODES 3/4 (axes: R=X G=Y B=Z)', helpers: true },
   { view: views[0] || 'right', pass: 'ghost', label: `NODES ${LABEL[views[0] || 'right']}`, helpers: true });
+if (sheet === 'uv') for (const v of views.length ? views : ['front', 'left', '34', 'back', 'right', 'top']) tiles.push({ view: v, pass: 'uv', label: `UV ${LABEL[v]}` });
 if (sheet === 'anim') {
   if (!clip) throw new Error(`--sheet anim needs --clip; clips: ${gltf.animations.map(c => c.name).join(', ') || 'none'}`);
   const n = O.frames || 8;
@@ -156,7 +169,7 @@ const skinBones = []; model.traverse(o => { if (o.isSkinnedMesh) for (const b of
 const showHelpers = on => { axes.forEach(a => (a.visible = on)); skelHelpers.forEach(h => (h.visible = on)); };
 
 const labels = []; // drawn later in 2D
-const bg = { lit: '#e9eef2', clay: '#e9eef2', wire: '#ffffff', ghost: '#ffffff', faces: '#e9eef2', weights: '#ffffff' };
+const bg = { uv: '#e9eef2', lit: '#e9eef2', clay: '#e9eef2', wire: '#ffffff', ghost: '#ffffff', faces: '#e9eef2', weights: '#ffffff' };
 tiles.forEach((tile, i) => {
   const cx = (i % cols) * TW, cyTop = Math.floor(i / cols) * TW, cy = (rows - 1 - Math.floor(i / cols)) * TW;
   if (tile.t != null) pose(tile.t); else pose(O.t ?? 0);

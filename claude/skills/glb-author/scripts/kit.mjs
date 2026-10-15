@@ -129,18 +129,53 @@ export function model(name, { flat = true } = {}) {
     return g;
   }
 
+  // World-scale UVs: 1 UV unit = 1 m on every surface, so texels are square and the same size on every part.
+  // three.js's own layout (each face / wall squeezed into 0..1) is kept as `uvFit` for part(..., { uv: 'fit' }).
+  function worldUV(g) {
+    const uv = g.attributes.uv, p = g.parameters, idx = g.index.array;
+    g.setAttribute('uvFit', uv.clone());
+    const scaleGroup = (mat, su, sv) => { const seen = new Set();
+      for (const gr of g.groups) if (gr.materialIndex === mat) for (let k = gr.start; k < gr.start + gr.count; k++) { const i = idx[k]; if (!seen.has(i)) { seen.add(i); uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv); } } };
+    if (g.type === 'BoxGeometry') // material order +x -x +y -y +z -z; side faces run u along z (x faces) or x
+      [[p.depth, p.height], [p.depth, p.height], [p.width, p.depth], [p.width, p.depth], [p.width, p.height], [p.width, p.height]].forEach(([su, sv], f) => scaleGroup(f, su, sv));
+    else if (g.type === 'CylinderGeometry' || g.type === 'ConeGeometry') { // wall at its mean circumference; caps are disks of diameter 2r
+      const rT = p.radiusTop ?? 0, rB = p.radiusBottom ?? p.radius; // ConeGeometry only has `radius`
+      scaleGroup(0, (rT + rB) / 2 * p.thetaLength, Math.hypot(p.height, rB - rT));
+      scaleGroup(1, 2 * rT, 2 * rT); scaleGroup(2, 2 * rB, 2 * rB);
+    }
+    else if (g.type === 'SphereGeometry') for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * p.radius * p.phiLength, uv.getY(i) * p.radius * p.thetaLength);
+    else if (g.type === 'TorusGeometry') for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * p.radius * p.arc, uv.getY(i) * 2 * Math.PI * p.tube);
+    else if (g.type === 'LatheGeometry') { // v = arc length along the profile (three spaces it evenly per point); u at the mean radius
+      const pts = p.points, arc = [0]; for (let j = 1; j < pts.length; j++) arc.push(arc[j - 1] + pts[j].distanceTo(pts[j - 1]));
+      const rMean = pts.reduce((s, q, j) => s + (j ? (q.x + pts[j - 1].x) / 2 * (arc[j] - arc[j - 1]) : 0), 0) / (arc.at(-1) || 1);
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rMean * p.phiLength, arc[i % pts.length]);
+    }
+    uv.needsUpdate = true;
+    return g;
+  }
+
+  // per-part UV choice: uv 'fit' = three.js 0..1 per face (decals); uvScale = UV units per meter (a texture repeats every 1/uvScale m)
+  function chooseUV(nm, g, { uv = 'meters', uvScale = 1 } = {}) {
+    if (!['meters', 'fit'].includes(uv)) fail(`${nm}: uv "${uv}" must be 'meters' or 'fit'`);
+    if (uv === 'fit') { if (!g.attributes.uvFit) fail(`${nm}: uv 'fit' needs box/cyl/cone/sphere/torus/lathe (extrude and wedge UVs are always meters)`); g.setAttribute('uv', g.attributes.uvFit); }
+    else if (uvScale !== 1) { const a = g.attributes.uv.clone(); for (let i = 0; i < a.count; i++) a.setXY(i, a.getX(i) * uvScale, a.getY(i) * uvScale); g.setAttribute('uv', a); }
+    g.deleteAttribute('uvFit');
+    return g;
+  }
+
   const matFor = o => o.material ?? material(null, { color: o.color, map: o.map, roughness: o.roughness, metalness: o.metalness, opacity: o.opacity, unlit: o.unlit, doubleSided: o.doubleSided });
 
   const api = {
     doc, root, scene, THREE,
     // ---- shapes (three.js geometry, centered on the origin; part() moves them by anchor) ----
-    box: (w, h, d, seg = [1, 1, 1]) => new THREE.BoxGeometry(w, h, d, ...seg),
-    cyl: (rTop, rBottom, h, sides = 8, hSeg = 1) => new THREE.CylinderGeometry(rTop, rBottom, h, sides, hSeg),
-    cone: (r, h, sides = 8) => new THREE.ConeGeometry(r, h, sides),
-    sphere: (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h),
-    torus: (r, tube, radial = 6, tubular = 12, arcDeg = 360) => new THREE.TorusGeometry(r, tube, radial, tubular, arcDeg * D2R),
+    // UVs are in meters (see worldUV); extrude and wedge come that way from three.js
+    box: (w, h, d, seg = [1, 1, 1]) => worldUV(new THREE.BoxGeometry(w, h, d, ...seg)),
+    cyl: (rTop, rBottom, h, sides = 8, hSeg = 1) => worldUV(new THREE.CylinderGeometry(rTop, rBottom, h, sides, hSeg)),
+    cone: (r, h, sides = 8) => worldUV(new THREE.ConeGeometry(r, h, sides)),
+    sphere: (r, w = 8, h = 6) => worldUV(new THREE.SphereGeometry(r, w, h)),
+    torus: (r, tube, radial = 6, tubular = 12, arcDeg = 360) => worldUV(new THREE.TorusGeometry(r, tube, radial, tubular, arcDeg * D2R)),
     // profile: [[radius, y], ...] bottom to top, spun around +Y
-    lathe: (profile, sides = 8) => new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), sides),
+    lathe: (profile, sides = 8) => worldUV(new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), sides)),
     // outline: [[x, y], ...] in the XY plane, extruded `depth` along +Z
     extrude: (outline, depth, bevel = 0) => new THREE.ExtrudeGeometry(new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x, y))), { depth, bevelEnabled: bevel > 0, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 1 }),
     wedge: (w, h, d) => { // ramp: full height at +Z, zero height at -Z
@@ -161,12 +196,13 @@ export function model(name, { flat = true } = {}) {
      * Mesh part. The node origin is the pivot: place it with `at` (parent-local) or `world`, then `anchor` says which
      * side of the shape touches that pivot (e.g. a leg hanging from the hip: anchor 'top').
      * opts: parent, at | world, rot [deg], scale, anchor, offset, geoRot [deg, rotates the shape not the node],
-     *       color '#hex' | material, map (texture), roughness, metalness, opacity, unlit, doubleSided, extras
+     *       color '#hex' | material, map (texture), roughness, metalness, opacity, unlit, doubleSided, extras,
+     *       uv 'meters' (default: 1 UV unit = 1 m, no stretch) | 'fit' (each face 0..1, for decals), uvScale (UV units per meter)
      */
     part(nm, geo, o = {}) {
       if (!geo?.isBufferGeometry) fail(`${nm}: second argument must be a shape (m.box(...), m.cyl(...), ...)`);
       const n = newNode(nm, o);
-      return n.setMesh(doc.createMesh(nm).addPrimitive(primitive(placeGeometry(geo, o), matFor(o))));
+      return n.setMesh(doc.createMesh(nm).addPrimitive(primitive(chooseUV(nm, placeGeometry(geo, o), o), matFor(o))));
     },
 
     /**
@@ -177,7 +213,7 @@ export function model(name, { flat = true } = {}) {
       const A = new THREE.Vector3(...vec3(a, `${nm} a`)), B = new THREE.Vector3(...vec3(b, `${nm} b`)), dir = B.clone().sub(A), len = dir.length();
       if (len < 1e-6) fail(`beam ${nm}: a and b are the same point`);
       const [w, d] = Array.isArray(o.size) ? o.size : [o.size ?? 0.04, o.size ?? 0.04];
-      const geo = o.round ? new THREE.CylinderGeometry(w / 2, w / 2, len, o.sides ?? 8) : new THREE.BoxGeometry(w, len, d);
+      const geo = o.round ? api.cyl(w / 2, w / 2, len, o.sides ?? 8) : api.box(w, len, d);
       const n = api.part(nm, geo, { ...o, world: a, anchor: 'bottom', rot: undefined, at: undefined });
       const qWorld = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
       const parentQ = new THREE.Quaternion(); worldMatrix(n.getParentNode()).decompose(new THREE.Vector3(), parentQ, new THREE.Vector3());
@@ -199,7 +235,7 @@ export function model(name, { flat = true } = {}) {
       if (!NAME.test(nm) || nodes.has(nm)) fail(`skinned name "${nm}" invalid or duplicate`);
       const bnames = o.bones || fail(`${nm}: opts.bones is required`);
       const joints = bnames.map(b => (bones.has(b) ? nodes.get(b) : fail(`${nm}: "${b}" is not a bone (make it with m.bone)`)));
-      const geos = pieces.map((p, i) => placeGeometry(p.geo, p).translate(...vec3(p.world ?? [0, 0, 0], `${nm} piece ${i}.world`)));
+      const geos = pieces.map((p, i) => chooseUV(`${nm} piece ${i}`, placeGeometry(p.geo, p), { uv: p.uv ?? o.uv, uvScale: p.uvScale ?? o.uvScale }).translate(...vec3(p.world ?? [0, 0, 0], `${nm} piece ${i}.world`)));
       const toFlat = g => (flat && g.index ? g.toNonIndexed() : g);
       const geo = mergeGeometries(geos.map(toFlat).map(g => { const c = g.clone(); for (const k of Object.keys(c.attributes)) if (!['position', 'normal', 'uv'].includes(k)) c.deleteAttribute(k); return c; }));
       if (!geo) fail(`${nm}: pieces could not be merged (mixed attributes?)`);

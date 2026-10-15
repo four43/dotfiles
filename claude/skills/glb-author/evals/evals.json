@@ -23,14 +23,14 @@
     {
       "id": "textured",
       "prompt": "Make crate.glb, a 1 m wooden crate with a plank texture (generated, not a flat colour) and a darker frame around each face.",
-      "assert": ["validate PASS", "1 texture, power of two", "bbox ~1 x 1 x 1 m, grounded"],
+      "assert": ["validate PASS", "1 texture, power of two", "bbox ~1 x 1 x 1 m, grounded", "no UV_STRETCH; rendered --sheet uv and judged it"],
       "judged": "Plank pattern visible, not black or stretched"
     },
     {
       "id": "repair",
       "prompt": "This GLB (evals/files/broken.glb, spec evals/files/broken.spec.json) loads wrong in our game. Find everything wrong with it and fix it.",
       "setup": "node evals/files/make-broken.mjs (from the skill dir)",
-      "assert": ["reports dotted names, non-root skinned mesh, weights summing to 0.8, zero-weight joints, missing normals, inside-out crate, missing Socket_Hat", "fixed file passes validate with the spec"],
+      "assert": ["reports dotted names, non-root skinned mesh, weights summing to 0.8, zero-weight joints, missing normals, missing UVs, inside-out crate, missing Socket_Hat", "fixed file passes validate with the spec"],
       "judged": "-"
     },
     {

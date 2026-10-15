@@ -103,6 +103,7 @@ h1 { font-family: var(--display); font-weight: 600; font-size: 26px; letter-spac
         <button class="chip" id="t-marks" aria-pressed="true">Sockets &amp; pivots</button>
         <button class="chip" id="t-bones" aria-pressed="false">Bones</button>
         <button class="chip" id="t-spin" aria-pressed="false">Turntable</button>
+        <button class="chip" id="t-uv" aria-pressed="false" title="Checker on the UVs: square cells = no stretch, readable letters = not mirrored. Magenta = no UVs">UV checker</button>
       </div>
       <div class="stats" id="stats"></div>
     </div>
@@ -163,12 +164,29 @@ function resize() {
 new ResizeObserver(resize).observe(stageEl); resize();
 
 const loader = new GLTFLoader();
-const toggles = { marks: document.getElementById('t-marks'), bones: document.getElementById('t-bones'), spin: document.getElementById('t-spin') };
+const toggles = { marks: document.getElementById('t-marks'), bones: document.getElementById('t-bones'), spin: document.getElementById('t-spin'), uv: document.getElementById('t-uv') };
 for (const b of Object.values(toggles)) b.addEventListener('click', () => { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); syncHelpers(); });
 const on = k => toggles[k].getAttribute('aria-pressed') === 'true';
 
+// UV checker: 8x8 labelled cells per UV unit. Square cells = no stretch; mirrored or rotated letters = flipped UVs.
+const uvChecker = (() => {
+  const N = 8, S = 64, cv = document.createElement('canvas'); cv.width = cv.height = N * S;
+  const c = cv.getContext('2d'); c.font = `bold ${S * 0.42}px system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { // i = column (u), j = row from the top (v = 1 at the top in three.js)
+    c.fillStyle = `hsl(${(i * 360) / N}, 60%, ${(i + j) % 2 ? 45 : 70}%)`; c.fillRect(i * S, j * S, S, S);
+    c.fillStyle = (i + j) % 2 ? '#fff' : '#111'; c.fillText(`${'ABCDEFGH'[i]}${N - j}`, i * S + S / 2, j * S + S / 2);
+  }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return { uv: new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }), none: new THREE.MeshBasicMaterial({ color: '#ff00ff' }) };
+})();
+
 function syncHelpers() {
   if (!current) return;
+  current.root.traverse(o => {
+    if (!o.isMesh) return;
+    o.userData.__mat ??= o.material;
+    o.material = on('uv') ? (o.geometry.attributes.uv ? uvChecker.uv : uvChecker.none) : o.userData.__mat;
+  });
   current.helpers.forEach(h => (h.visible = on('marks')));
   current.bones.forEach(h => (h.visible = on('bones')));
   controls.autoRotate = on('spin');

@@ -25,10 +25,24 @@ Read this when fixing a GLB the kit didn't make, or when a validate code isn't s
 | `SIZE`, `MISSING_*`, `CLIP_*`, `*_BUDGET` | spec mismatch | fix the model or the spec, whichever is wrong |
 | `NPOT_TEXTURE` | texture side not a power of two | resize to 64/128/256… |
 | `METALLIC` | metallic ≥ 0.5 without a texture; glTF defaults metallic to **1** when unset, and three.js renders that near-black without an env map | `setMetallicFactor(0)` |
+| `NO_UV` | triangle primitive has no TEXCOORD_0: no texture can be mapped | kit shapes always have them; `fix.mjs` (uvs) box-projects from the normals; a hand-painted texture needs a real unwrap (Blender: Smart UV Project) |
+| `UV_STRETCH` | >10% of a primitive's area is stretched over 3:1 in UV (a texture smears there) | kit: drop `uv: 'fit'`; otherwise re-unwrap the stretched part (see UV mapping below) |
 | `OPEN_SHELL` | mesh has open edges and a single-sided material: see-through from behind | cap the hole, or `setDoubleSided(true)` for deliberate planes |
 | `NO_SPEC` | nothing checked against intent | write `<name>.spec.json` or pass `--spec` |
 
 `scripts/fix.mjs in.glb out.glb` fixes the purely mechanical codes (names, weights, normals, winding, metal, skin root; `--ground` to re-origin).
+
+## UV mapping
+
+Goal: square texels, about the same size everywhere, seams where nobody looks.
+
+- **Measure, don't eyeball.** validate reports `UV_STRETCH`; `look.mjs --sheet uv` and the viewer's *UV checker* put a labelled checker on the UVs. Squares = no stretch, cell size = texel density, mirrored letters = flipped UVs, magenta = no UVs.
+- **One density.** Keep UV units per meter the same on every part (the kit's meter UVs do this). A part with 4× the density shows a 4× finer texture next to its neighbour.
+- **Cut, don't stretch.** A curved surface can't lie flat without either stretching or a seam. Cut seams (separate UV islands) along hard edges and hidden places: the underside, the back, the inside of a limb, where parts meet.
+- **Poles and tips pinch.** Sphere poles and cone tips squeeze every column into a point. Keep detail out of them, or cap them with a separate flat island.
+- **Mirrored UVs** are fine for color, wrong for normal maps (the tangent space flips). Don't mirror if a normal map may come later.
+- **Atlases** (several parts sharing one image) need non-overlapping islands with a few texels of padding, or colors bleed at mip levels. The kit gives each part its own UVs from 0 up, so share one image across parts only for a tiling pattern.
+- `fix.mjs` (uvs) box-projects per vertex from the normal's main axis, in units of the primitive's largest side. Good enough for a tiling texture; smooth curved meshes get seams where the main axis changes.
 
 ## Hierarchy
 

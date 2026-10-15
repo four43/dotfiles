@@ -34,6 +34,7 @@ Chromium comes from Playwright's cache. If look.mjs says no Chromium was found, 
 - **Sockets:** empty nodes named `Socket_<Thing>`, made with `m.socket()`. Game code finds them with `getObjectByName`.
 - **Rigging:** rigid parts → node rig, no skin (wheels, doors, arms, most low-poly animals). Skin only when one continuous surface must bend.
 - **Colors:** flat material colors per part. Texture only when asked for, or when a pattern is needed (planks, straw, a face).
+- **UVs:** every mesh has UVs (`TEXCOORD_0`), even untextured ones, so a texture can be added later. Kit shapes come in **meters** (1 UV unit = 1 m): square texels, the same density on every part, no stretch. `uvScale` sizes a pattern. `uv: 'fit'` (each face 0..1) is only for a decal on one face. `UV_STRETCH` and `--sheet uv` catch distortion.
 - **Shading:** `model(name)` is faceted low-poly. Use `model(name, { flat: false })` for smooth round things (snakes, fruit, skinned tubes).
 
 ## Workflow
@@ -41,10 +42,10 @@ Chromium comes from Playwright's cache. If look.mjs says no Chromium was found, 
 Copy this checklist and track it:
 
 ```
-- [ ] 1 SPEC   write <name>.spec.json (numbers + visual checks) BEFORE any code
+- [ ] 1 SPEC   look at reference models (Poly Pizza, Kenney); write <name>.spec.json (numbers + visual checks) BEFORE any code
 - [ ] 2 BUILD  write <name>.model.mjs from a template; node <name>.model.mjs
 - [ ] 3 CHECK  node $SKILL/scripts/validate.mjs <name>.glb   -> fix until PASS
-- [ ] 4 LOOK   node $SKILL/scripts/look.mjs <name>.glb (+ --sheet diag, + --sheet anim per clip); Read every PNG
+- [ ] 4 LOOK   node $SKILL/scripts/look.mjs <name>.glb (+ --sheet diag, + --sheet uv if textured, + --sheet anim per clip); Read every PNG
 - [ ] 5 JUDGE  answer each spec check Yes/No/Unclear citing a tile; fix Nos at node level; repeat 2-5
 - [ ] 6 HAND OFF  publish the showcase viewer, list kept WARNs with reasons, give the game-code snippet
 ```
@@ -63,6 +64,18 @@ For a small asset (under ~20 parts), build all three at once, then judge them in
 **Edits stay local.** Change the named part and rebuild; never regenerate the whole script. `look.mjs` keeps the previous render as `*-prev.png`, one version back. To keep a baseline across several rebuilds, render it once with `--out before.png`. Read both before you claim a fix worked.
 
 ## 1. Spec (`<name>.spec.json`, next to the GLB)
+
+**Look at existing models first.** Before writing numbers, find two or three low-poly examples of the thing you're building:
+
+| Source | What's there |
+|---|---|
+| [Poly Pizza](https://poly.pizza/) | Thousands of low-poly models, searchable, GLB downloads. License is per model (CC0 or CC-BY): check the model page and credit the author for CC-BY. |
+| [Kenney 3D assets](https://kenney.nl/assets/category:3D) | Themed kits (vehicles, furniture, nature, characters…). All CC0. Download includes GLB. |
+
+Use them to:
+- **Borrow proportions and part breakdown.** How many pieces, which parts are separate, what the silhouette emphasizes. Feed this into `size`, `nodes` and `checks`.
+- **Match a style.** If the game already uses a Kenney kit, match its scale, palette and level of detail.
+- **Skip building.** If a model already fits, download it and go to *Repairing a GLB you didn't build* to add names, pivots, sockets or clips. Tell the user its source and license.
 
 ```json
 {
@@ -128,6 +141,7 @@ node $SKILL/scripts/validate.mjs wagon.glb          # PASS / FAIL [CODE] lines, 
 node $SKILL/scripts/inspect.mjs wagon.glb [--attrs] # tree with world positions/sizes, materials, skins, clips; --attrs dumps vertex data
 node $SKILL/scripts/look.mjs wagon.glb              # geo sheet: FRONT, LEFT, 3/4, BACK, RIGHT, TOP
 node $SKILL/scripts/look.mjs wagon.glb --sheet diag # faces (red = inside showing), clay or skin weights, wireframe, labeled pivots/sockets/bones
+node $SKILL/scripts/look.mjs wagon.glb --sheet uv   # labelled UV checker, 6 views: square cells = no stretch, magenta = no UVs
 node $SKILL/scripts/look.mjs wagon.glb --sheet anim --clip Roll [--view front] [--frames 8]
 node $SKILL/scripts/look.mjs wagon.glb --zoom wheel_FL        # a part isolated and framed; an empty/socket: framed in context, marked magenta
 node $SKILL/scripts/look.mjs wagon.glb --view bottom,front     # geo sheet with just these views (front back left right top bottom 34 34back)
@@ -150,6 +164,7 @@ Treat every WARN as a question. Keep it only if you can say why (e.g. "OFF_CENTE
    - names
    - weights and unused joint slots
    - normals
+   - missing UVs (box-projected: fine for tiling textures; a painted texture needs a real unwrap)
    - inside-out winding
    - metallic=1
    - a skinned mesh that isn't at the root
@@ -174,7 +189,7 @@ node $SKILL/scripts/showcase.mjs --out <dir>/showcase --title "Farm animals" [--
 
 This builds an interactive viewer (`viewer/template.html`):
 - orbit the model and play each clip;
-- toggle socket/pivot markers, bones and a turntable;
+- toggle socket/pivot markers, bones, a turntable and a UV checker (square cells = no stretch);
 - the validate verdict appears next to each model;
 - the spec's `title` and `description` become each model's name and note.
 
@@ -204,6 +219,9 @@ If the session has no Artifact tool, tell the user to open the `.html` locally i
 | Red in diag faces tile | Inside-out winding or a hole (OPEN_SHELL); solid patch = real defect, hairline specks along edges = seams |
 | Clip plays but nothing moves (STATIC_TRACK) | 360° between two keys is a no-op (kit splits), or keys equal the rest pose |
 | Loop pops (LOOP_SEAM) | First and last keys must match as poses (0° and 360° match); `m.wave` loops by construction |
+| Texture smeared or streaked on one part (UV_STRETCH) | That part has `uv: 'fit'` on a long face, or a non-kit unwrap. Use the default meter UVs; check with `--sheet uv` |
+| Texture pattern too big / too small on a part | `uvScale` (UV units per meter): `uvScale: 4` repeats the texture every 25 cm |
+| NO_UV on a downloaded model | `fix.mjs` box-projects UVs; see UV mapping in `references/gltf-rules.md` |
 | MATERIAL_BUDGET exceeded | Each distinct color + roughness + metalness is its own material: reuse exact values, or share one with `m.material(name, …)` |
 
 ## References
@@ -211,5 +229,5 @@ If the session has no Artifact tool, tell the user to open the `.html` locally i
 | File | Read when |
 |---|---|
 | `references/kit-api.md` | You need an option not in the table above, morph targets, or raw glTF-Transform |
-| `references/gltf-rules.md` | Fixing a GLB not made with the kit, or a validate code you don't understand |
+| `references/gltf-rules.md` | Fixing a GLB not made with the kit, a validate code you don't understand, or UV mapping technique (seams, density, poles) |
 | `references/game-code.md` | Handing off: loading, sockets, AnimationMixer, cloning skinned models |

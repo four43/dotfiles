@@ -1,8 +1,10 @@
 // Repair the mechanical defects validate.mjs reports, on a GLB the kit didn't make. Prints every change it makes.
-// Usage: node fix.mjs in.glb out.glb [--only names,weights,normals,winding,metal,skinroot] [--ground]
+// Usage: node fix.mjs in.glb out.glb [--only names,weights,normals,uvs,winding,metal,skinroot] [--ground]
 //   names     rename nodes/clips/materials to A-Z a-z 0-9 _ - and make them unique (BAD_NAME, DUP_NAME)
 //   weights   divide each vertex's weights by their sum; joint index 0 wherever weight is 0 (WEIGHT_SUM, JOINTS_USED_ZERO_WEIGHT)
 //   normals   add missing NORMALs, normalize non-unit ones (NO_NORMALS, ACCESSOR_VECTOR3_NON_UNIT)
+//   uvs       box-project TEXCOORD_0 on triangle primitives that have none, from the normals (NO_UV). Good for
+//             tiling textures; a hand-painted texture needs a real unwrap
 //   winding   reverse triangles of closed inside-out shells (INSIDE_OUT)
 //   metal     metallic -> 0 when >= 0.5 with no metal texture (METALLIC)
 //   skinroot  move skinned mesh nodes to the scene root with identity TRS, baking the old world matrix into the
@@ -15,7 +17,7 @@ import { io, readDoc, sceneBox, wm, THREE, f2 } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const [inFile, outFile] = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--only');
-if (!inFile || !outFile) { console.error('usage: node fix.mjs in.glb out.glb [--only names,weights,normals,winding,metal,skinroot] [--ground]'); process.exit(2); }
+if (!inFile || !outFile) { console.error('usage: node fix.mjs in.glb out.glb [--only names,weights,normals,uvs,winding,metal,skinroot] [--ground]'); process.exit(2); }
 const only = args.includes('--only') ? new Set(args[args.indexOf('--only') + 1].split(',')) : null;
 const on = k => !only || only.has(k);
 const doc = await readDoc(inFile), root = doc.getRoot();
@@ -98,6 +100,22 @@ for (const mesh of root.listMeshes()) for (const [pi, p] of mesh.listPrimitives(
 if (on('normals')) {
   const missing = root.listMeshes().flatMap(m => m.listPrimitives()).filter(p => !p.getAttribute('NORMAL')).length;
   if (missing) { await doc.transform(normals({ overwrite: false })); log('normals', `${missing} primitives got computed normals (smooth across shared vertices)`); }
+}
+
+if (on('uvs')) for (const mesh of root.listMeshes()) for (const [pi, p] of mesh.listPrimitives().entries()) {
+  const P = p.getAttribute('POSITION'), N = p.getAttribute('NORMAL');
+  if (p.getMode() !== 4 || p.getAttribute('TEXCOORD_0') || !N) continue;
+  // box projection: each vertex drops its normal's dominant axis; 1 UV unit = the primitive's largest extent
+  const lo = P.getMinNormalized([]), hi = P.getMaxNormalized([]), span = Math.max(...hi.map((x, k) => x - lo[k])) || 1;
+  const plane = [[2, 1], [0, 2], [0, 1]]; // dominant x -> (z, y), y -> (x, z), z -> (x, y)
+  const uv = new Float32Array(P.getCount() * 2);
+  for (let i = 0; i < P.getCount(); i++) {
+    const v = P.getElement(i, []), n = N.getElement(i, []).map(Math.abs);
+    const [a, b] = plane[n.indexOf(Math.max(...n))];
+    uv[i * 2] = (v[a] - lo[a]) / span; uv[i * 2 + 1] = 1 - (v[b] - lo[b]) / span;
+  }
+  p.setAttribute('TEXCOORD_0', doc.createAccessor().setType('VEC2').setArray(uv).setBuffer(root.listBuffers()[0]));
+  log('uvs', `${mesh.getName() || 'mesh'}#${pi}: box-projected TEXCOORD_0`);
 }
 
 if (on('metal')) for (const m of root.listMaterials())

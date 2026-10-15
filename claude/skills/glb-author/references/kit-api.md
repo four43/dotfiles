@@ -48,6 +48,7 @@ Shapes are three.js geometries, so `.scale(x, y, z)`, `.rotateY(rad)` and `.tran
 | `geoRot: [x,y,z]` | rotate the shape (not the node) in degrees, before anchoring |
 | `color: '#hex'` | sRGB hex. The kit converts it to the linear factor glTF wants. Same color = shared material |
 | `map: texture` | from `m.texture`. Keep `color: '#ffffff'` so the texture isn't tinted |
+| `uv`, `uvScale` | `'meters'` (default, no stretch) or `'fit'` (each face 0..1, for decals); `uvScale` = UV units per meter. See Textures |
 | `roughness`, `metalness`, `opacity` (<1 → BLEND), `unlit`, `doubleSided` | material settings. `doubleSided` for single planes (leaves, flags, paper) |
 | `material` | a material from `m.material(name, opts)` to share by name |
 
@@ -56,11 +57,15 @@ Shapes are three.js geometries, so `.scale(x, y, z)`, `.rotateY(rad)` and `.tran
 - `m.texture(name, { width, height, pixel: (u, v, x, y) => [r, g, b, a?] })` builds a PNG. Values are 0–255 and `v = 0` is the top row.
 - `{ file: 'path.png' }` loads a PNG from disk; `{ image: Uint8Array }` uses raw bytes.
 - Use powers of two (16–256 is plenty for low poly).
-- Shapes come with three.js UVs:
-  - Box faces each map 0..1.
-  - Cylinders, cones and lathes: u runs around the axis, starting at +Z (u=0, the seam) and turning toward +X. v runs along the axis, v=0 at the bottom.
-  - After `geoRot` the seam turns with the shape: `[90,0,0]` puts it underneath. That's handy for a belly stripe: color `u` near 0 or 1.
-- For a repeating pattern, use more cells inside the pixel function rather than texture repeat.
+- **UVs are in meters** (`uv: 'meters'`, the default): 1 UV unit = 1 m on every surface. Texels stay square (no stretch) and the same size on every part, so a texture repeats every meter and a tiling pattern lines up across parts. glTF samplers repeat by default.
+  - Box: each face is its own rectangle, its real width × height.
+  - Cylinders, cones, lathes: u runs around the axis at the mean circumference, starting at +Z (the seam) and turning toward +X. v runs along the surface from the bottom (lathe: true arc length along the profile). Caps are disks of diameter 2r.
+  - Sphere: u around at the equator, v pole to pole. Poles pinch: keep patterns out of the top and bottom rows.
+  - Torus: u along the ring, v around the tube. Extrude and wedge: three.js world UVs (already meters).
+  - After `geoRot` the seam turns with the shape: `[90,0,0]` puts it underneath. That's handy for a belly stripe.
+- `uvScale: n` = n UV units per meter: the texture repeats every 1/n m. Use it to size a pattern (`uvScale: 4` = 25 cm planks per tile) instead of repeating cells in the pixel function.
+- `uv: 'fit'`: three.js's layout, every face or wall squeezed into 0..1. Only for a decal that must cover exactly one face (a painted face, a frame around a crate panel), and only on a face that is near-square or where the stretch is intended. validate flags `UV_STRETCH` otherwise. Not available on extrude/wedge.
+- Check UVs with `look.mjs --sheet uv` (checker: square cells = no stretch) before judging a texture.
 
 ## Skinning
 

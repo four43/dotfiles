@@ -31,13 +31,23 @@ test('broken.glb fails with every planted defect', () => {
   execFileSync('node', [path.join(SKILL, 'evals/files/make-broken.mjs')]);
   const r = run('validate.mjs', path.join(SKILL, 'evals/files/broken.glb'));
   assert.equal(r.status, 1);
-  for (const code of ['BAD_NAME', 'WEIGHT_SUM', 'NO_NORMALS', 'INSIDE_OUT', 'SKIN_NOT_ROOT', 'MISSING_SOCKET', 'gltf:ACCESSOR_JOINTS_USED_ZERO_WEIGHT', 'STATIC_TRACK'])
+  for (const code of ['BAD_NAME', 'WEIGHT_SUM', 'NO_NORMALS', 'NO_UV', 'INSIDE_OUT', 'SKIN_NOT_ROOT', 'MISSING_SOCKET', 'gltf:ACCESSOR_JOINTS_USED_ZERO_WEIGHT', 'STATIC_TRACK'])
     assert.match(r.stdout, new RegExp(`\\[${code}\\]`), `expected ${code}`);
 });
 
-test('look.mjs renders geo, diag and anim sheets', () => {
+test('fix.mjs repairs the mechanical defects in broken.glb', () => {
+  const out = path.join(tmp, 'fixed.glb');
+  const f = run('fix.mjs', path.join(SKILL, 'evals/files/broken.glb'), out);
+  assert.equal(f.status, 0, f.stdout + f.stderr);
+  assert.match(f.stdout, /fixed \[uvs\]/);
+  const r = run('validate.mjs', out);
+  for (const code of ['BAD_NAME', 'WEIGHT_SUM', 'NO_NORMALS', 'NO_UV', 'INSIDE_OUT', 'SKIN_NOT_ROOT'])
+    assert.doesNotMatch(r.stdout, new RegExp(`\\[${code}\\]`), `${code} still reported:\n${r.stdout}`);
+});
+
+test('look.mjs renders geo, diag, uv and anim sheets', () => {
   const glb = path.join(tmp, 'pig.glb');
-  for (const args of [[], ['--sheet', 'diag'], ['--sheet', 'anim', '--clip', 'Walk']]) {
+  for (const args of [[], ['--sheet', 'diag'], ['--sheet', 'uv'], ['--sheet', 'anim', '--clip', 'Walk']]) {
     const r = run('look.mjs', glb, ...args);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const png = r.stdout.match(/wrote (\S+\.png)/)[1];
@@ -54,6 +64,21 @@ test('kit keeps held keys, honours wave cycles, rejects bad names', async () => 
   const w = m.clip('Wag', { duration: 2, loop: true }, { arm: { rot: m.wave([0, 30, 0], { cycles: 3 }) } });
   assert.equal(w.listChannels()[0].getSampler().getInput().getCount(), 25);
   assert.throws(() => m.group('Arm.L'), /must match/);
+});
+
+test('kit UVs are in meters with no stretch; uv fit squeezes each face into 0..1', async () => {
+  const { model } = await import(path.join(SKILL, 'scripts', 'kit.mjs'));
+  const m = model('uvs');
+  const shapes = { box: m.box(2, 0.1, 0.3), cyl: m.cyl(0.3, 0.3, 0.1, 12), cone: m.cone(0.2, 0.6), sphere: m.sphere(0.4), torus: m.torus(0.5, 0.05), lathe: m.lathe([[0.1, 0], [0.3, 0.05], [0.25, 0.6]]) };
+  let x = 0; for (const [k, g] of Object.entries(shapes)) m.part(k, g, { at: [x += 3, 0, 0] });
+  m.part('fit', m.box(2, 0.1, 0.3), { at: [0, 0, 3], uv: 'fit' });
+  const uv = m.node('box').getMesh().listPrimitives()[0].getAttribute('TEXCOORD_0');
+  assert.ok(Math.abs(uv.getMax([])[0] - 2) < 1e-6, `2 m box face should span 2 UV units, got ${uv.getMax([])[0]}`);
+  const out = path.join(tmp, 'uvs.glb'); await m.write(out);
+  const r = run('validate.mjs', out);
+  assert.match(r.stdout, /\[UV_STRETCH\] fit#0/);
+  assert.equal(r.stdout.match(/\[UV_STRETCH\]/g).length, 1, r.stdout);
+  assert.throws(() => m.part('bad', m.wedge(1, 1, 1), { uv: 'fit' }), /always meters/);
 });
 
 test('look --zoom on a node under a mesh renders the part, not a blank sheet', async () => {

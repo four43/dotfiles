@@ -1,8 +1,10 @@
 // Render a GLB to a labeled PNG sheet in headless Chromium (software WebGL, no GPU needed), then Read the PNG.
-// Usage: node look.mjs model.glb [--sheet geo|diag|anim] [--clip Walk] [--frames 8] [--t 0.5] [--zoom nodeName]
+// Usage: node look.mjs model.glb [--sheet geo|diag|uv|anim] [--clip Walk] [--frames 8] [--t 0.5] [--zoom nodeName]
 //                     [--view front|back|left|right|top|bottom|34|34back  (geo: comma list)]  (left = model's left = +X) [--out file.png]
 //   geo  (default) 6 views, lit: FRONT RIGHT 3/4 / BACK LEFT TOP. Grid at y=0, orange bbox.
 //   diag normals (magenta = hole or flipped face), clay, wireframe, node axes + labels for empties/sockets/bones.
+//   uv   geo's 6 views with a labelled checker on the UVs: square cells = no stretch, readable letters = not mirrored,
+//        cell size = texel density, magenta = no UVs. --view picks views as for geo.
 //   anim filmstrip of --frames poses of --clip from --view (default right).
 // Writes <glb dir>/look/<name>-<sheet>[-clip][-zoom].png; the previous render is kept as ...-prev.png for before/after.
 import fs from 'node:fs';
@@ -16,7 +18,7 @@ const THREE_DIR = path.join(HERE, '..', 'node_modules', 'three');
 const argv = process.argv.slice(2);
 const opt = k => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : undefined; };
 const file = argv.find((a, i) => !a.startsWith('--') && !(argv[i - 1] || '').startsWith('--'));
-if (!file || !fs.existsSync(file)) { console.error('usage: node look.mjs model.glb [--sheet geo|diag|anim] [--clip name] [--frames 8] [--t sec] [--zoom node] [--view v] [--out png]'); process.exit(2); }
+if (!file || !fs.existsSync(file)) { console.error('usage: node look.mjs model.glb [--sheet geo|diag|uv|anim] [--clip name] [--frames 8] [--t sec] [--zoom node] [--view v] [--out png]'); process.exit(2); }
 const name = path.basename(file, path.extname(file));
 const L = { name, sheet: opt('sheet') || 'geo', clip: opt('clip'), t: opt('t') != null ? +opt('t') : undefined, frames: opt('frames') ? +opt('frames') : undefined, zoom: opt('zoom'), view: opt('view') };
 const out = opt('out') || path.join(path.dirname(file), 'look', [name, L.sheet, L.clip, L.zoom, L.t != null && L.sheet !== 'anim' ? `t${L.t}` : null].filter(Boolean).join('-') + '.png');

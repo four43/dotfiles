@@ -8,7 +8,7 @@ const m = model('wagon');
 // numbers first: every placement below derives from these
 const L = 2.4, W = 1.3, BED_Y = 0.55, BED_T = 0.08, WHEEL_R = 0.32, WHEEL_W = 0.1, AXLE_Z = 0.75;
 
-// a planks texture: dark lines across a warm wood color (u along the plank, v across)
+// a planks texture: dark lines across a warm wood color (u along the plank, v across). UVs are meters, so it repeats every 1 m
 const planks = m.texture('planks', { width: 64, height: 64, pixel: (u, v) => {
   const seam = (v * 6) % 1 < 0.08, grain = 0.92 + 0.08 * Math.sin(u * 40 + v * 7);
   return seam ? [70, 45, 25] : [176 * grain, 124 * grain, 74 * grain];
