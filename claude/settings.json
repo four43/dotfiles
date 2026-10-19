@@ -115,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/require-tag-approval.sh",
+            "command": "~/.claude/hooks/require-tag-approval.py",
             "statusMessage": "Checking release gate..."
           }
         ]
@@ -354,7 +354,6 @@
     ],
     "soft_deny": [
       "$defaults",
-      "Bash(git tag:*)",
       "Bash(git push origin v*)"
     ],
     "environment": [
