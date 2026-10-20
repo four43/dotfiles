@@ -34,6 +34,7 @@ sudo pacman -S \
 	ttf-noto-nerd \
 	noto-fonts-emoji \
 	uv \
+    wl-clipboard \
 	&& echo "Installed dev tools"
 
 # Install yay
