@@ -62,6 +62,24 @@ def segments(tokens):
         yield seg
 
 
+def strip_redirects(seg):
+    """Drop `2>&1`, `>/dev/null`, `< in` so fd numbers and redirect targets
+    aren't read as tag names or refspecs (`2` looks like a version)."""
+    out = []
+    skip = False
+    for k, tok in enumerate(seg):
+        if skip:
+            skip = False
+            continue
+        if tok[:1] in ("<", ">"):
+            skip = True
+            continue
+        if tok.isdigit() and k + 1 < len(seg) and seg[k + 1][:1] in ("<", ">"):
+            continue
+        out.append(tok)
+    return out
+
+
 def tag_writes(args):
     if not args:
         return False
@@ -111,6 +129,7 @@ def git_subcommand(seg, i):
 
 
 def check_segment(seg):
+    seg = strip_redirects(seg)
     for i, tok in enumerate(seg):
         if tok == "git" or tok.endswith("/git"):
             sub, args = git_subcommand(seg, i)
