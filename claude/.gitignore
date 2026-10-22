@@ -9,3 +9,5 @@
 !skills/**
 skills/synced
 !statusline.sh
+__pycache__/
+skills/.trash/
