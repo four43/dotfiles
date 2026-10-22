@@ -1,5 +1,8 @@
 export BUILDX_NO_DEFAULT_ATTESTATIONS=1 # via https://stackoverflow.com/questions/75131872/error-failed-to-solve-failed-commit-on-ref-unexpected-status-400-bad-reques#comment137924263_75317155
 export COMPOSE_BAKE=true
+# buildx >=0.20 makes bake refuse to read files outside the build context; devcontainer CLI writes its
+# generated Dockerfile-with-features to /tmp, so `devcontainer up` fails with "pass --allow=fs.read=..."
+export BUILDX_BAKE_ENTITLEMENTS_FS=0
 
 pathmunge "$HOME/.dotfiles/docker/cli-plugins" after
 
