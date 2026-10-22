@@ -29,3 +29,7 @@
     path = ~/.gitconfig-work
 [includeIf "gitdir:~/projects/vaisala-xweather/"]
     path = ~/.gitconfig-work
+
+# Machine-local overrides (not in the repo); missing file is ignored.
+[include]
+    path = ~/.gitconfig.local
