@@ -13,4 +13,18 @@
 stable="/run/user/$(id -u)/ssh-auth.sock"
 if [ -S "$SSH_AUTH_SOCK" ] && [ "$SSH_AUTH_SOCK" != "$stable" ]; then
     ln -sfn "$SSH_AUTH_SOCK" "$stable"
+
+    # Devcontainers can't use the symlink: Docker resolves it when the container
+    # is created and binds that one socket inode, which sshd deletes at
+    # disconnect. Instead keep a *hard link* to the live socket in a directory
+    # that dc-up bind-mounts whole (60-devcontainer-aliases.zsh). A directory
+    # mount sees the replaced entry, so containers recover on the next login.
+    # Hard links can't cross filesystems, so this has to live in /tmp beside
+    # sshd's socket. /tmp is shared: refuse a dir someone else made or a symlink.
+    dc_dir="/tmp/dc-ssh-agent-$(id -u)"
+    mkdir -m 700 "$dc_dir" 2>/dev/null
+    if [ -d "$dc_dir" ] && [ ! -L "$dc_dir" ] && [ -O "$dc_dir" ]; then
+        ln -f "$SSH_AUTH_SOCK" "$dc_dir/agent.sock.new" 2>/dev/null \
+            && mv -f "$dc_dir/agent.sock.new" "$dc_dir/agent.sock"
+    fi
 fi

@@ -25,24 +25,33 @@ dc-down() {
 # --remote-env. Populated each call so it tracks the current host SSH_AUTH_SOCK.
 # Opt out with DC_SKIP_SSH=1.
 #
-# Note the socket is bound by inode at create time: if the host agent restarts,
-# the container keeps pointing at the dead one and every ssh call in there fails
-# with "Connection refused" until the container is recreated. The host socket is
-# kept at a stable, systemd-socket-activated path (see
-# arch/.config/environment.d/ssh_auth_sock.conf) so a rotated agent reuses the
-# same socket file rather than minting a new one.
+# A bind-mounted *file* is bound by inode at create time (symlinks resolved): if
+# the socket is replaced, the container keeps the dead one and every ssh call in
+# there fails with "Connection refused" until the container is recreated. Over
+# SSH that happens on every reconnect, since sshd mints a new socket per login.
+# So when ssh/rc has set up /tmp/dc-ssh-agent-$UID (a dir holding a hard link to
+# the newest login's socket) we mount the *directory*, which tracks the
+# replacement. Otherwise (local desktop) fall back to the file: there the
+# systemd-socket-activated agent (arch/.config/environment.d/ssh_auth_sock.conf)
+# keeps one socket file for its lifetime.
 _dc_up_ssh_args=()
 _dc_exec_ssh_args=()
 _dc_set_ssh_args() {
     _dc_up_ssh_args=()
     _dc_exec_ssh_args=()
     [[ -z "$DC_SKIP_SSH" ]] || return
-    [[ -n "$SSH_AUTH_SOCK" && -S "$SSH_AUTH_SOCK" ]] || return
-    _dc_up_ssh_args=(
-        --mount "type=bind,source=$SSH_AUTH_SOCK,target=/tmp/dc-ssh-agent.sock"
-        --remote-env "SSH_AUTH_SOCK=/tmp/dc-ssh-agent.sock"
-    )
-    _dc_exec_ssh_args=(--remote-env "SSH_AUTH_SOCK=/tmp/dc-ssh-agent.sock")
+    local dc_dir="/tmp/dc-ssh-agent-$UID" sock mount
+    if [[ -d "$dc_dir" && ! -L "$dc_dir" && -O "$dc_dir" && -S "$dc_dir/agent.sock" ]]; then
+        sock=/tmp/dc-ssh-agent/agent.sock
+        mount="type=bind,source=$dc_dir,target=/tmp/dc-ssh-agent"
+    elif [[ -n "$SSH_AUTH_SOCK" && -S "$SSH_AUTH_SOCK" ]]; then
+        sock=/tmp/dc-ssh-agent.sock
+        mount="type=bind,source=$SSH_AUTH_SOCK,target=$sock"
+    else
+        return
+    fi
+    _dc_up_ssh_args=(--mount "$mount" --remote-env "SSH_AUTH_SOCK=$sock")
+    _dc_exec_ssh_args=(--remote-env "SSH_AUTH_SOCK=$sock")
 }
 
 dc-up() {
