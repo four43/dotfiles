@@ -10,8 +10,23 @@ function _jq_instance_output_tsv() {
     cat - | jq -r '.Reservations[].Instances[] | [.InstanceId, (if has("Tags") then .Tags[] | select(.Key == "Name").Value else "None" end), .PublicDnsName, .PrivateIpAddress, .State.Name] | @tsv'
 }
 
+# Parses the config files directly; `aws configure list-profiles` takes ~2s, too slow for the chpwd hook.
 function aws-profiles() {
-    aws configure list-profiles
+    local config="${AWS_CONFIG_FILE:-$HOME/.aws/config}"
+    local creds="${AWS_SHARED_CREDENTIALS_FILE:-$HOME/.aws/credentials}"
+    local line
+    local -aU profiles
+    if [[ -r "$config" ]]; then
+        for line in "${(@f)$(<"$config")}"; do
+            [[ "$line" =~ '^\[[[:space:]]*(profile[[:space:]]+)?([^][:space:]]+)[[:space:]]*\]' ]] && profiles+=("${match[2]}")
+        done
+    fi
+    if [[ -r "$creds" ]]; then
+        for line in "${(@f)$(<"$creds")}"; do
+            [[ "$line" =~ '^\[[[:space:]]*([^][:space:]]+)[[:space:]]*\]' ]] && profiles+=("${match[1]}")
+        done
+    fi
+    print -rl -- $profiles
 }
 
 function aws-profile-switch() {

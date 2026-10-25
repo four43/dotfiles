@@ -133,11 +133,9 @@ function aws_auto_switch() {
 		if [[ $PWD =~ ^$project_dir ]]; then
 			project_namespace="$(echo "${PWD#$project_dir}" | awk -F'/' '{print $2}')"
 			if [[ -z "$AWS_PROFILE" ]] || [[ "$AWS_PROFILE" != "$project_namespace" ]]; then
-				set -o pipefail
-				if aws-profiles | grep -s "$project_namespace" >/dev/null; then
+				if (( ${${(f)"$(aws-profiles)"}[(Ie)$project_namespace]} )); then
 					export AWS_PROFILE="$project_namespace"
 				fi
-				set +o pipefail
 			fi
 		fi
 	fi
