@@ -50,6 +50,14 @@ if [[ -d "$host_specific_env" ]]; then
     done
 fi
 
+# Machine-local, untracked overrides (e.g. a default AWS_PROFILE). Lives outside
+# the repo so nothing needs ignoring; sourced after hostenv so it wins.
+local_env="$HOME/.zshenv.local"
+if [[ -f "$local_env" ]]; then
+    source "$local_env"
+fi
+unset local_env
+
 secret_env="$HOME/.zshenv.secret"
 if [[ -f "$secret_env" ]]; then
     source "$secret_env"
