@@ -167,13 +167,13 @@
         ]
       },
       {
+        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/tmux-state.sh waiting"
           }
-        ],
-        "matcher": "permission_prompt"
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -221,7 +221,7 @@
     "command": "~/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "atlassian@xwe-ai-skills": true,
+    "atlassian@xwe-ai-skills": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
     "code-review@claude-plugins-official": false,
@@ -239,18 +239,26 @@
     "skill-creator@claude-plugins-official": false,
     "slack@claude-plugins-official": false,
     "superpowers@claude-plugins-official": true,
-    "xwe-infra-engineer@xwe-ai-skills": false,
+    "xwe-infra-engineer@xwe-ai-skills": true,
     "xwe-project-manager@xwe-ai-skills": false,
     "xwe-software-engineer@xwe-ai-skills": true,
-    "xweather-branding@xwe-ai-skills": false,
+    "xweather-branding@xwe-ai-skills": true,
     "xweather@xwe-ai-skills": true,
-    "mattpocock-skills@claude-plugins-official": true
+    "mattpocock-skills@claude-plugins-official": true,
+    "deep-research@xwe-ai-skills": true,
+    "md-preview@xwe-ai-skills": true
   },
   "extraKnownMarketplaces": {
     "xwe-ai-skills": {
       "source": {
         "source": "github",
         "repo": "VaisalaCorp/xwe-ai-skills"
+      }
+    },
+    "vaisala-xweather": {
+      "source": {
+        "source": "github",
+        "repo": "vaisala-xweather/xweather-agent-skills"
       }
     }
   },
