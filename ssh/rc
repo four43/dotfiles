@@ -23,7 +23,10 @@ if [ -S "$SSH_AUTH_SOCK" ] && [ "$SSH_AUTH_SOCK" != "$stable" ]; then
     # sshd's socket. /tmp is shared: refuse a dir someone else made or a symlink.
     dc_dir="/tmp/dc-ssh-agent-$(id -u)"
     mkdir -m 700 "$dc_dir" 2>/dev/null
-    if [ -d "$dc_dir" ] && [ ! -L "$dc_dir" ] && [ -O "$dc_dir" ]; then
+    # Skip when the link is already current (e.g. a ControlMaster-multiplexed
+    # login reuses the same socket); mv refuses to rename onto the same inode.
+    if [ -d "$dc_dir" ] && [ ! -L "$dc_dir" ] && [ -O "$dc_dir" ] \
+       && ! [ "$dc_dir/agent.sock" -ef "$SSH_AUTH_SOCK" ]; then
         ln -f "$SSH_AUTH_SOCK" "$dc_dir/agent.sock.new" 2>/dev/null \
             && mv -f "$dc_dir/agent.sock.new" "$dc_dir/agent.sock"
     fi
