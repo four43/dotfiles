@@ -1,14 +1,26 @@
 #!/usr/bin/env bash
-# Start (or reattach to) a tmux session "dc" with one pane per devcontainer project,
-# each running `dc-down; dc-sshd`.
+# Start (or reattach to) a tmux session "dc": a first window "W" running the
+# fleet-up-watch watcher (serves scripts/fleet-request from xwc-data-meta, starting
+# containers on demand), then one window per devcontainer project, each running
+# `dc-down; dc-sshd`. Install the watcher first: xwc-data-meta/scripts/fleet-up-watch --install
 set -euo pipefail
 
 SESSION=dc
 PROJECTS=~/projects/VaisalaCorp
+WATCHER=~/.local/bin/fleet-up-watch
 
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-  sdk=$(tmux new-session -d -s "$SESSION" -n xwe-data-sdk -c "$PROJECTS/xwe-data-sdk" -P -F '#{pane_id}')
+  watch=$(tmux new-session -d -s "$SESSION" -n W -c ~ -P -F '#{pane_id}')
+  sdk=$(tmux new-window -t "$SESSION" -n xwe-data-sdk -c "$PROJECTS/xwe-data-sdk" -P -F '#{pane_id}')
   data=$(tmux new-window -t "$SESSION" -n xwc-product-data -c "$PROJECTS/xwc-product-data" -P -F '#{pane_id}')
+
+  # Typed into a shell rather than run as the pane command, so the pane (and the
+  # error) survives if the watcher exits.
+  if [[ -x "$WATCHER" ]]; then
+    tmux send-keys -t "$watch" "$WATCHER" C-m
+  else
+    tmux send-keys -t "$watch" "echo 'fleet-up-watch not installed: run xwc-data-meta/scripts/fleet-up-watch --install'" C-m
+  fi
 
   # dc-down / dc-sshd are zsh functions, so type them into the interactive shells
   tmux send-keys -t "$sdk" 'dc-down; dc-sshd' C-m
