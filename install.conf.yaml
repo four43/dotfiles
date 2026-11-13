@@ -110,6 +110,7 @@
     ~/.gitignore_global: git/gitignore
     ~/.inputrc: inputrc
     ~/.local/bin/arch-system-update: arch/install/files/system-update.sh
+    ~/.local/bin/al2023-system-update: al2023/system-update.sh
     ~/.local/bin/tmux-dc: bin/tmux-dc
     ~/.local/bin/tmux-rd: bin/tmux-rd
     ~/.local/bin/df-btrfs: bin/df-btrfs
